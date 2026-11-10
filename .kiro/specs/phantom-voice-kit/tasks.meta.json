@@ -465,6 +465,16 @@
         "executionId": "cb9d9fb0-e46b-46a7-ac85-4b4913f11d6b",
         "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
         "timestamp": 1794324243506
+      },
+      {
+        "executionId": "7c1b3280-7afc-4730-b16f-74ecef233aec",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794329925284
+      },
+      {
+        "executionId": "7c1b3280-7afc-4730-b16f-74ecef233aec",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794330245923
       }
     ],
     "12. Add the localization Kiro hook": [
@@ -527,6 +537,83 @@
         "executionId": "e77c3706-c099-4a43-9046-76aba16971cd",
         "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
         "timestamp": 1794329018630
+      }
+    ],
+    "13.1 Create `skeleton/voice-commands.js`": [
+      {
+        "executionId": "7c1b3280-7afc-4730-b16f-74ecef233aec",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794330255089
+      },
+      {
+        "executionId": "7c1b3280-7afc-4730-b16f-74ecef233aec",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794330469797
+      }
+    ],
+    "13.2 Extend `server/routes/extract-fields.js` with field help": [
+      {
+        "executionId": "7c1b3280-7afc-4730-b16f-74ecef233aec",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794330255994
+      },
+      {
+        "executionId": "7c1b3280-7afc-4730-b16f-74ecef233aec",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794330470450
+      }
+    ],
+    "13.3 Add How it works and the privacy note": [
+      {
+        "executionId": "7c1b3280-7afc-4730-b16f-74ecef233aec",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794330494255
+      },
+      {
+        "executionId": "7c1b3280-7afc-4730-b16f-74ecef233aec",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794330716221
+      }
+    ],
+    "13.4 Spirit Clerk voice confirm and field help": [
+      {
+        "executionId": "7c1b3280-7afc-4730-b16f-74ecef233aec",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794330717256
+      },
+      {
+        "executionId": "7c1b3280-7afc-4730-b16f-74ecef233aec",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794330999504
+      },
+      {
+        "executionId": "7c1b3280-7afc-4730-b16f-74ecef233aec",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794331384958
+      },
+      {
+        "executionId": "7c1b3280-7afc-4730-b16f-74ecef233aec",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794331696989
+      }
+    ],
+    "13.5 Ghost Tutor topic by voice": [
+      {
+        "executionId": "7c1b3280-7afc-4730-b16f-74ecef233aec",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794331000362
+      },
+      {
+        "executionId": "7c1b3280-7afc-4730-b16f-74ecef233aec",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794331383781
+      }
+    ],
+    "13. UX improvements for low-literacy users": [
+      {
+        "executionId": "7c1b3280-7afc-4730-b16f-74ecef233aec",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794331384476
       }
     ]
   }

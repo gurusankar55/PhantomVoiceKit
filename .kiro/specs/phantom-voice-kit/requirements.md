@@ -32,6 +32,8 @@ Phantom Voice Kit is a reusable skeleton for voice-first web applications with a
 - **Quiz_Question**: A question asked by Ghost_Tutor after a Lesson_Segment to check understanding.
 - **Feedback**: Ghost_Tutor's spoken evaluation of the user's answer to a Quiz_Question.
 - **Text_Fallback**: A text input box available as an alternative to speaking.
+- **Voice_Command**: A short spoken word such as yes or again that the System recognises to confirm or redo.
+- **Field_Help**: A short, simple sentence in the Chosen_Language, returned by the AI_Backend for a Form_Field, that explains what the field means with a small example.
 
 ---
 
@@ -257,12 +259,12 @@ Phantom Voice Kit is a reusable skeleton for voice-first web applications with a
 #### Acceptance Criteria
 
 1. THE System SHALL provide one shared navigation module in the skeleton folder that renders the Navigation_Header on the home screen, Spirit Clerk, and Ghost Tutor, with a menu (hamburger) button on the left, a "← Back" button next to it, and the language dropdown on the right.
-2. WHEN the user activates the menu button, THE Navigation_Header SHALL open a side drawer that slides in from the left and lists three links: "Home" (/), "Spirit Clerk" (/apps/spirit-clerk/index.html), and "Ghost Tutor" (/apps/ghost-tutor/index.html).
-3. THE drawer SHALL highlight the link for the current page and mark it with ria-current="page".
-4. THE menu button SHALL set ria-expanded to 	rue while the drawer is open and alse while it is closed, and SHALL have an ria-label that describes its action.
+2. WHEN the user activates the menu button, THE Navigation_Header SHALL open a side drawer that slides in from the left (from the right in right-to-left languages, see Requirement 17.8) and lists three links: "Home" (`/`), "Spirit Clerk" (`/apps/spirit-clerk/index.html`), and "Ghost Tutor" (`/apps/ghost-tutor/index.html`).
+3. THE drawer SHALL highlight the link for the current page and mark it with `aria-current="page"`.
+4. THE menu button SHALL set `aria-expanded` to `true` while the drawer is open and `false` while it is closed, and SHALL have an `aria-label` that describes its action.
 5. WHEN the user activates a drawer link, clicks outside the drawer, or presses the Escape key, THE Navigation_Header SHALL close the drawer.
 6. WHEN the user activates the Back button AND the current app has a previous screen in its screen history, THE System SHALL return to that previous screen inside the app.
-7. WHEN the user activates the Back button on the first screen of an app, THE System SHALL navigate to the home screen (/).
+7. WHEN the user activates the Back button on the first screen of an app, THE System SHALL navigate to the home screen (`/`).
 8. WHILE the home screen is displayed, THE Navigation_Header SHALL show the menu button and SHALL hide the Back button.
 9. WHEN the user tries to leave the Spirit Clerk form-fill screen before all fields are processed (by the Back button or by a drawer link), THE System SHALL ask for confirmation with the text "Your answers will be lost. Go back?" and SHALL leave the screen only if the user confirms.
 10. WHEN the user navigates away from a page or screen using the Navigation_Header, THE System SHALL stop any Speech_Output in progress.
@@ -277,7 +279,7 @@ Phantom Voice Kit is a reusable skeleton for voice-first web applications with a
 #### Acceptance Criteria
 
 1. THE language dropdown SHALL list each of the 20 supported languages by its own name in its own script followed by the English name in parentheses, for example "தமிழ் (Tamil)", "हिन्दी (Hindi)", and "中文 (Chinese)".
-2. THE System SHALL store every fixed UI string used on the home screen, the Navigation_Header, and Spirit Clerk (titles, buttons, labels, placeholders, tips, aria-labels, confirmation dialogs, error messages, and status messages) in Locale_Files, with `skeleton/locales/en.json` as the source of truth and one Locale_File for each of the other 19 languages.
+2. THE System SHALL store every fixed UI string used on the home screen, the Navigation_Header, Spirit Clerk, and Ghost Tutor (titles, buttons, labels, placeholders, tips, aria-labels, confirmation dialogs, error messages, status messages, spoken voice prompts, and the Voice_Command word lists) in Locale_Files, with `skeleton/locales/en.json` as the source of truth and one Locale_File for each of the other 19 languages.
 3. THE skeleton SHALL provide an i18n module that exposes `t(key)`, loads `/skeleton/locales/<code>.json` on demand, caches each loaded file, and falls back to the English text for any key that is missing in the chosen language.
 4. THE i18n module SHALL translate elements marked with `data-i18n` attributes (text, and attributes such as `aria-label` and `placeholder`) when `applyTranslations(root)` is called.
 5. WHEN the user changes the Chosen_Language, THE System SHALL update all visible text, aria-labels, placeholders, and dialog messages to that language immediately, without reloading the page.
@@ -287,3 +289,80 @@ Phantom Voice Kit is a reusable skeleton for voice-first web applications with a
 9. THE text of the PDF summary SHALL always be in English, regardless of the Chosen_Language, and form labels, answers, and AI-generated text SHALL NOT be treated as UI strings.
 10. EVERY Locale_File SHALL contain exactly the same keys as `en.json` and SHALL contain no empty values.
 11. WHEN `skeleton/locales/en.json` is saved, THE System SHALL run a Kiro agent hook that adds new or changed keys to the other 19 Locale_Files with natural translations, removes keys that no longer exist in `en.json`, and never renames keys.
+
+---
+
+### Requirement 18: Voice Commands
+
+**User Story:** As a user who cannot easily use buttons or type, I want to say a short word such as "yes" or "again" to confirm or redo my answer, so that I can complete the whole flow by voice alone.
+
+#### Acceptance Criteria
+
+1. THE Skeleton SHALL provide a shared module `skeleton/voice-commands.js` that exports a pure function `matchCommand(text, words)` returning `"yes"`, `"redo"`, or `null`, where `words` is an object `{ yes: string[], redo: string[] }`.
+2. THE System SHALL build `words` from the Locale_File keys `voice.yesWords` and `voice.redoWords`, each holding a "|"-separated list of short words in that language (for example English `yes|ok|correct` and `again|no|redo`; Tamil `சரி|ஆமாம்|ஓகே` and `மறுபடி|இல்லை|திரும்ப`), and every Locale_File SHALL contain both keys.
+3. WHEN `matchCommand` compares an utterance with the word lists, THE Skeleton SHALL ignore letter case, punctuation (including `।`, `。`, `،`, and `؟`), and extra whitespace.
+4. WHEN the cleaned utterance equals a word in a list, or consists only of repetitions of one word from a list (for example "yes yes"), THE Skeleton SHALL return the command of that list.
+5. IF the cleaned utterance matches a word in both lists, THEN THE Skeleton SHALL return `null`; IF it matches no word, or is empty, THEN THE Skeleton SHALL also return `null`.
+6. WHEN Spirit_Clerk has shown the Heard_Text and the English_Meaning of a Field_Answer, THE Spirit_Clerk SHALL ask by voice in the Chosen_Language "Is this correct? Say yes, or say again." and listen once for a Voice_Command.
+7. WHEN the Voice_Command heard is "yes", THE Spirit_Clerk SHALL act as if the user pressed Confirm; WHEN it is "redo", THE Spirit_Clerk SHALL act as if the user pressed Redo.
+8. IF the user says anything else, or says nothing, THEN THE Spirit_Clerk SHALL leave the Confirm and Redo buttons waiting for the user.
+9. THE Confirm and Redo buttons SHALL keep working at all times, and a spoken Voice_Command SHALL never be stored as a Field_Answer.
+10. THE Ghost_Tutor SHALL use the same "yes" Voice_Command for the topic confirmation described in Requirement 19.
+
+---
+
+### Requirement 19: Topic by Voice (Ghost Tutor)
+
+**User Story:** As a user who cannot type well, I want to say the topic I want to learn about and confirm it by voice, so that I can start a lesson without typing.
+
+#### Acceptance Criteria
+
+1. THE Ghost_Tutor SHALL display a microphone button next to the topic input that uses the skeleton Speech_Input in the Chosen_Language.
+2. WHEN Speech_Input produces Heard_Text on the topic screen, THE Ghost_Tutor SHALL place the cleaned Heard_Text in the topic input, limited to 100 characters.
+3. WHEN the topic input has been filled by voice, THE Ghost_Tutor SHALL ask by voice and on screen "Shall I teach you about <topic>? Say yes, or press Start." in the Chosen_Language and listen once for a Voice_Command.
+4. WHEN the user says "yes" or presses Start, THE Ghost_Tutor SHALL begin the lesson using the same validation and request as Requirement 11.
+5. IF the user says anything else, or says nothing, THEN THE Ghost_Tutor SHALL leave the topic in the input box so the user can edit it or press Start.
+6. IF the browser does not support SpeechRecognition, THEN THE Ghost_Tutor SHALL hide the microphone button next to the topic input.
+
+---
+
+### Requirement 20: Field Help (Spirit Clerk)
+
+**User Story:** As a user who does not know what a form term means, I want to hear a simple explanation of each question, so that I can answer correctly.
+
+#### Acceptance Criteria
+
+1. THE AI_Backend SHALL return, for each Form_Field from `/api/extract-fields`, an extra `help` string containing one short, simple sentence in the Chosen_Language that explains what the field means with a small example (for example what "IFSC code" or "DOB" means), using the same route and the same single Gemini call.
+2. IF the Google Gemini API returns a Form_Field with a missing or blank `help`, THEN THE AI_Backend SHALL return `help` as an empty string for that field and SHALL NOT fail the request.
+3. THE Spirit_Clerk SHALL display a "(?)" help button next to each question, with a translated accessible name and a size of at least 44x44 pixels.
+4. WHEN the user activates the help button, THE Spirit_Clerk SHALL display the Field_Help text and speak it using Speech_Output in the Chosen_Language.
+5. WHILE the Field_Help is being spoken, THE Spirit_Clerk SHALL pause listening for the answer and SHALL resume listening after the Field_Help has finished.
+6. IF a Form_Field has no Field_Help, THEN THE Spirit_Clerk SHALL hide the help button for that field.
+7. WHEN the user changes the Chosen_Language, THE Spirit_Clerk SHALL translate the Field_Help with the translate request and cache it per language, in the same way as the questions.
+8. IF translating the Field_Help fails, THEN THE Spirit_Clerk SHALL display the original Field_Help with the audio-unavailable note and SHALL NOT speak it with a mismatched voice.
+
+---
+
+### Requirement 21: How It Works
+
+**User Story:** As a first-time user who cannot read much, I want to see three simple steps at the top of each app, so that I know what to do before I start.
+
+#### Acceptance Criteria
+
+1. THE Spirit_Clerk SHALL display at the top of its first screen three short numbered steps: "1. Upload a photo or PDF of your form.", "2. Answer each question by voice or by typing.", and "3. Check your answers and download the PDF."
+2. THE Ghost_Tutor SHALL display at the top of its first screen three short numbered steps: "1. Say or pick a topic.", "2. The ghost teaches you in 4 short parts.", and "3. Answer one question after each part."
+3. THE System SHALL store the text of all six steps in Locale_Files so that they are fully translated in all 20 languages and update immediately when the Chosen_Language changes.
+4. WHEN the screen width is between 320 px and 767 px, THE System SHALL stack the three steps vertically; WHEN the screen is wider, THE System SHALL show the three steps side by side.
+
+---
+
+### Requirement 22: Privacy
+
+**User Story:** As a user who uploads a personal form, I want to know what happens to my data and be sure it is not stored, so that I can decide whether to use the app.
+
+#### Acceptance Criteria
+
+1. THE Spirit_Clerk SHALL display on its upload screen, translated into the Chosen_Language, the note: "Your form is read by Google Gemini AI to find the questions. This app does not save your form or your answers. Do not upload documents you do not want to share."
+2. THE AI_Backend SHALL NOT write uploaded files, answers, or translated text to disk, a database, or logs.
+3. THE AI_Backend SHALL keep uploaded files only in memory for the duration of the request.
+4. IF an error is logged by the AI_Backend, THEN THE AI_Backend SHALL log only error codes or messages and never request bodies.

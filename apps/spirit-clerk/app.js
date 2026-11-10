@@ -1,4 +1,4 @@
-﻿// Spirit Clerk - app.js
+// Spirit Clerk - app.js
 // Task 6.3: the Upload screen.
 // Tasks 6.4 (form fill) and 6.5 (summary) will extend this file.
 
@@ -12,6 +12,7 @@ import { nextRedoOrSkip, nextSilenceOrSkip, pdfFilename, cleanLabel } from '/app
 import { cleanAnswer } from '/skeleton/text-fallback-utils.js';
 import { createNavMenu, createScreenHistory } from '/skeleton/nav-menu.js';
 import { initI18n, t, setI18nText, clearI18n } from '/skeleton/i18n.js';
+import { matchCommand, parseWords } from '/skeleton/voice-commands.js';
 
 // Load the translations BEFORE the nav and language dropdown are created.
 await initI18n();
@@ -60,7 +61,9 @@ const confirmButton = document.getElementById('confirm-button');
 const redoButton = document.getElementById('redo-button');
 const fillMessage = document.getElementById('fill-message');
 const fillLoading = document.getElementById('fill-loading');
-
+const helpButton = document.getElementById('help-button');
+const helpText = document.getElementById('help-text');
+const confirmPrompt = document.getElementById('confirm-prompt');
 // ---------- Form-fill state ----------
 
 let fillActive = false;   // true while the form-fill screen is running
@@ -74,7 +77,10 @@ let voiceDisabled = false; // true when only typing should be used
 let speechInput = null;   // result of createSpeechInput (may be { supported: false })
 let speechOutput = null;  // result of createSpeechOutput
 let textFallbackReady = false; // the typed box is created only once
-
+let listenMode = '';      // '' | 'answer' (hearing an answer) | 'command' (hearing yes / redo)
+let voiceToken = 0;       // bumped whenever speech/mic is stopped; old callbacks check it
+let commandPending = false; // the confirm prompt is being spoken; we will listen after it
+let helpActive = false;   // true while the help text is being fetched or spoken
 // ---------- Screen helper ----------
 
 // Tracks the screens the user has seen (upload is the first one).
@@ -108,6 +114,12 @@ function onLanguageChanged() {
     phase = 'asking';
     fillLoading.hidden = true;
     askCurrentQuestion();
+  } else if (phase === 'confirming') {
+    // Hide the old help (it was in the old language) and ask the
+    // confirm question again in the new language, then listen once more.
+    helpText.textContent = '';
+    helpText.hidden = true;
+    promptConfirm();
   }
 }
 
@@ -296,6 +308,7 @@ uploadConfirm.addEventListener('click', async () => {
       ...f,
       questionLang: lang,
       questionTexts: { [lang]: f.question },
+      helpTexts: { [lang]: typeof f.help === 'string' ? f.help : '' },
     }));
     state.answers = [];
     state.currentIndex = 0;
@@ -335,6 +348,10 @@ function setListening(isListening) {
 
 // Stop any speech that is playing and any microphone that is listening.
 function stopEverything() {
+  voiceToken += 1;        // old speech callbacks must not start the microphone
+  listenMode = '';
+  commandPending = false;
+  helpActive = false;
   if (speechOutput) speechOutput.stop();
   if (speechInput && speechInput.supported) speechInput.stop();
   setListening(false);
@@ -415,6 +432,11 @@ function askCurrentQuestion(notice) {
   // Reset the screen for this question.
   fillLoading.hidden = true;
   confirmControls.hidden = true;
+  clearI18n(confirmPrompt);
+  confirmPrompt.hidden = true;
+  helpText.textContent = '';
+  helpText.hidden = true;
+  helpButton.hidden = !(typeof field.help === 'string' && field.help.trim() !== '');
   renderDualDisplay(dualDisplayContainer, { heardText: '', englishMeaning: '' });
   clearI18n(fillAudioNote);
   fillAudioNote.hidden = true;
@@ -448,6 +470,7 @@ function askCurrentQuestion(notice) {
 
   // Speak the given question text.
   function speakQuestion(text) {
+    if (helpActive) return; // the help is being read: do not talk over it
     speechOutput.speak(text, {
       onEnd: afterSpeech,
       onError: (info) => {
@@ -494,36 +517,130 @@ let autoListenTried = false; // auto-listen happens at most once per question
 function autoStartListening() {
   if (autoListenTried) return; // never start twice
   autoListenTried = true;
+  if (phase !== 'asking' || micListening || voiceDisabled || helpActive) return;
+  startAnswerListening();
+}
+
+// Open the microphone for an ANSWER.
+function startAnswerListening() {
   if (phase !== 'asking' || micListening || voiceDisabled) return;
   if (!speechInput || !speechInput.supported) return;
+  listenMode = 'answer';
   setListening(true); // set first: start() may report an error right away
   speechInput.start();
 }
 
-// The mic button toggles listening on and off.
-micButton.addEventListener('click', () => {
-  if (phase !== 'asking' || !speechInput || !speechInput.supported || voiceDisabled) return;
-  autoListenTried = true; // the user is in control now
-  if (micListening) {
-    speechInput.stop();
-    setListening(false);
-    return;
-  }
-  clearFillMessage();
-  if (speechOutput) speechOutput.stop(); // do not listen to our own voice
+// Open the microphone ONCE for a command ("yes" / "again").
+function startCommandListening() {
+  commandPending = false;
+  if (phase !== 'confirming' || micListening || voiceDisabled) return;
+  if (!speechInput || !speechInput.supported) return;
+  listenMode = 'command';
   setListening(true);
   speechInput.start();
+}
+
+// Stop command listening (if it is on). Used before Confirm / Redo run.
+function cancelCommandListening() {
+  commandPending = false;
+  if (listenMode !== 'command') return;
+  listenMode = '';
+  if (speechInput && speechInput.supported) speechInput.stop();
+  setListening(false);
+}
+
+// Show and speak "Is this right? Say yes or again.", then listen once.
+function promptConfirm() {
+  const myId = askId;
+  const myToken = voiceToken;
+  setI18nText(confirmPrompt, 'spiritClerk.confirmPrompt');
+  confirmPrompt.hidden = false;
+  commandPending = true;
+
+  let done = false;
+  function listenAfterPrompt() {
+    if (done) return;
+    done = true;
+    // Ignore if the question changed, speech was stopped, or help is open.
+    if (myId !== askId || myToken !== voiceToken || phase !== 'confirming' || helpActive) return;
+    startCommandListening();
+  }
+  speechOutput.speak(t('spiritClerk.confirmPrompt'), {
+    onEnd: listenAfterPrompt,
+    onError: listenAfterPrompt, // no audio: still listen
+  });
+}
+
+// The mic button toggles listening on and off.
+micButton.addEventListener('click', () => {
+  if (!speechInput || !speechInput.supported || voiceDisabled) return;
+
+  if (phase === 'asking') {
+    autoListenTried = true; // the user is in control now
+    if (micListening) {
+      speechInput.stop();
+      listenMode = '';
+      setListening(false);
+      return;
+    }
+    clearFillMessage();
+    stopEverything(); // silences question / help speech: do not listen to our own voice
+    startAnswerListening();
+  } else if (phase === 'confirming') {
+    // One more listen for a command (never an answer).
+    if (micListening && listenMode === 'command') {
+      cancelCommandListening();
+      return;
+    }
+    clearFillMessage();
+    stopEverything();
+    startCommandListening();
+  }
 });
 
-// A voice answer arrived.
+// A voice result arrived.
 function handleVoiceResult(text) {
   if (!micListening) return; // we already stopped listening: stale result
-  handleAnswer(text);
+  if (listenMode === 'command') {
+    handleCommandResult(text);
+  } else if (listenMode === 'answer') {
+    handleAnswer(text);
+  }
+}
+
+// A spoken command while confirming. It is never stored as an answer.
+function handleCommandResult(text) {
+  if (phase !== 'confirming') return;
+  listenMode = '';
+  setListening(false);
+  const command = matchCommand(text, {
+    yes: parseWords(t('voice.yesWords')),
+    redo: parseWords(t('voice.redoWords')),
+  });
+  if (command === 'yes') doConfirm();
+  else if (command === 'redo') doRedo();
+  // Anything else: the buttons keep waiting.
 }
 
 // The microphone reported a problem.
 function handleVoiceError(info) {
-  if (phase !== 'asking' || !info) return;
+  if (!info) return;
+
+  // Command listening: just stop. No silence counting, no re-ask.
+  if (listenMode === 'command') {
+    listenMode = '';
+    setListening(false);
+    if (info.fallbackOnly) {
+      voiceDisabled = true;
+      micButton.hidden = true;
+      setI18nText(micMessage, 'spiritClerk.voiceNotWorking');
+      micMessage.hidden = false;
+    }
+    return;
+  }
+
+  if (phase !== 'asking') return;
+  listenMode = '';
   setListening(false);
 
   if (info.inactivity) {
@@ -537,7 +654,6 @@ function handleVoiceError(info) {
     showFillMessage('spiritClerk.tryAgain');
   }
 }
-
 // Nothing was heard for a long time.
 function handleSilence() {
   if (nextSilenceOrSkip(silenceCount) === 'reask') {
@@ -577,6 +693,7 @@ async function handleAnswer(text) {
   phase = 'confirming';
   renderDualDisplay(dualDisplayContainer, pendingAnswer);
   confirmControls.hidden = false;
+  promptConfirm(); // ask aloud, then listen once for "yes" / "again"
 }
 
 // Save the answer for the current field (kept in field order).

@@ -39,7 +39,8 @@ app.use('/api/evaluate', createEvaluateRouter(callGemini));
 // (Express recognises error handlers by their four parameters.)
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
-  console.error('Server error:', err?.message ?? err);
+  // Log only a short code. Body-parser messages can quote the request body.
+  console.error('Server error:', err?.type || err?.code || 'unknown');
   res.status(500).json({ error: 'internal_error' });
 });
 

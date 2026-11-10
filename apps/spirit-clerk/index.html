@@ -18,6 +18,13 @@
     <!-- Screen 1: upload a form -->
     <section id="screen-upload" class="screen">
       <h2 data-i18n="spiritClerk.uploadHeading">Upload your form</h2>
+      <h3 class="how-it-works-title" data-i18n="howItWorks.title">How it works</h3>
+      <ol class="how-it-works">
+        <li class="how-it-works__step"><span class="how-it-works__num" aria-hidden="true">1</span><span data-i18n="spiritClerk.step1">Upload a photo or PDF of your form.</span></li>
+        <li class="how-it-works__step"><span class="how-it-works__num" aria-hidden="true">2</span><span data-i18n="spiritClerk.step2">Answer each question by voice or by typing.</span></li>
+        <li class="how-it-works__step"><span class="how-it-works__num" aria-hidden="true">3</span><span data-i18n="spiritClerk.step3">Check your answers and download the PDF.</span></li>
+      </ol>
+      <p class="privacy-note"><span class="privacy-note__icon" aria-hidden="true"></span><span data-i18n="spiritClerk.privacyNote">Your form is read by Google Gemini AI to find the questions. This app does not save your form or your answers. Do not upload documents you do not want to share.</span></p>
       <label for="file-input" data-i18n="spiritClerk.fileLabel">Choose a PDF or a photo of your form</label>
       <!-- The real input is visually hidden; the label below acts as our own translated button.
            The input must come BEFORE the button so the focus style (sibling selector) works. -->
@@ -34,7 +41,11 @@
     <!-- Screen 2: answer each question -->
     <section id="screen-fill" class="screen" hidden>
       <p id="fill-progress"></p>
-      <h2 id="fill-question"></h2>
+      <div class="question-row">
+        <h2 id="fill-question"></h2>
+        <button id="help-button" type="button" class="btn btn--secondary help-button" data-i18n-attr="aria-label:spiritClerk.helpLabel;title:spiritClerk.helpLabel" aria-label="What does this mean?" hidden>?</button>
+      </div>
+      <p id="help-text" class="help-text" hidden></p>
       <p id="fill-audio-note" hidden></p>
 
       <button id="mic-button" type="button" class="btn" data-i18n="spiritClerk.speak">Speak</button>
@@ -47,6 +58,7 @@
       <div id="dual-display-container" hidden></div>
 
       <div id="confirm-controls" hidden>
+        <p id="confirm-prompt" hidden></p>
         <button id="confirm-button" type="button" class="btn" data-i18n="spiritClerk.confirm">Confirm</button>
         <button id="redo-button" type="button" class="btn btn--secondary" data-i18n="spiritClerk.redo">Redo</button>
       </div>

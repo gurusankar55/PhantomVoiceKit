@@ -111,6 +111,62 @@
   border-color: var(--color-orange-light);
 }
 
+/* Topic box + microphone button side by side; wraps on narrow screens */
+.topic-input-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  max-width: 100%;
+}
+
+.topic-input-row #topic-input {
+  flex: 1 1 12rem;
+  width: auto;
+  min-width: 0;
+}
+
+.topic-mic {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1, 0.25rem);
+  flex: 0 0 auto;
+  min-width: 44px;
+  min-height: 44px;
+  max-width: 100%;
+}
+
+.topic-mic[hidden] {
+  display: none;
+}
+
+.topic-mic.listening {
+  animation: gt-pulse 1.2s ease-in-out infinite;
+}
+
+/* Small microphone drawn with a CSS mask (square fallback if unsupported) */
+.icon-mic {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 1.25rem;
+  height: 1.25rem;
+  background-color: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 14a3 3 0 003-3V5a3 3 0 00-6 0v6a3 3 0 003 3zm5-3a5 5 0 01-10 0H5a7 7 0 006 6.92V21h2v-3.08A7 7 0 0019 11h-2z'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 14a3 3 0 003-3V5a3 3 0 00-6 0v6a3 3 0 003 3zm5-3a5 5 0 01-10 0H5a7 7 0 006 6.92V21h2v-3.08A7 7 0 0019 11h-2z'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+/* The spoken confirmation question */
+.topic-confirm {
+  margin: 0;
+  font-size: 1.1rem;
+  font-style: italic;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  color: var(--color-orange-light);
+}
+
 #topic-input {
   width: 100%;
 }
@@ -315,6 +371,7 @@
 /* ---------- Reduced motion: no pulsing ---------- */
 @media (prefers-reduced-motion: reduce) {
   #mic-button.listening,
+  .topic-mic.listening,
   .listening {
     animation: none;
   }

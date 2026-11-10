@@ -617,3 +617,62 @@ body.nav-open {
     transition: none;
   }
 }
+
+/* ---------- 15. How it works (three numbered steps) ---------- */
+/* Small orange label above the steps */
+.how-it-works-title {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-orange-light);
+}
+
+/* The <ol> gives the numbering to screen readers; the big number is decoration */
+.how-it-works {
+  display: grid;
+  grid-template-columns: 1fr; /* stacked on phones (320-767 px) */
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.how-it-works__step {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0; /* lets the text wrap instead of widening the page */
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--color-surface);
+  border-inline-start: 6px solid var(--color-orange);
+  border-radius: var(--radius);
+  color: var(--color-ghost);
+  overflow-wrap: anywhere;
+}
+
+.how-it-works__num {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  font-weight: 700;
+  font-size: 1.25rem;
+  line-height: 1;
+  color: var(--color-bg);
+  background-color: var(--color-orange);
+  border-radius: 50%;
+}
+
+/* Side by side from 768 px */
+@media (min-width: 768px) {
+  .how-it-works {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-3);
+  }
+}

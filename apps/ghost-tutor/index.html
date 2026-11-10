@@ -18,12 +18,23 @@
     <!-- Screen 1: pick a topic -->
     <section id="screen-topic" class="screen">
       <h2 data-i18n="ghostTutor.topicHeading">Pick a topic</h2>
+      <h3 class="how-it-works-title" data-i18n="howItWorks.title">How it works</h3>
+      <ol class="how-it-works">
+        <li class="how-it-works__step"><span class="how-it-works__num" aria-hidden="true">1</span><span data-i18n="ghostTutor.step1">Say or pick a topic.</span></li>
+        <li class="how-it-works__step"><span class="how-it-works__num" aria-hidden="true">2</span><span data-i18n="ghostTutor.step2">The ghost teaches you in 4 short parts.</span></li>
+        <li class="how-it-works__step"><span class="how-it-works__num" aria-hidden="true">3</span><span data-i18n="ghostTutor.step3">Answer one question after each part.</span></li>
+      </ol>
       <p class="topic-hint" data-i18n="ghostTutor.topicHint">Tap a topic or type your own.</p>
       <!-- Suggestion buttons are added by app.js -->
       <div id="topic-suggestions" class="topic-grid" role="group" data-i18n-attr="aria-label:ghostTutor.suggestionsLabel" aria-label="Suggested topics"></div>
 
       <label for="topic-input" data-i18n="ghostTutor.topicLabel">Or type a topic</label>
-      <input type="text" id="topic-input" maxlength="100" autocomplete="off" data-i18n-attr="placeholder:ghostTutor.topicPlaceholder" placeholder="For example: the moon" />
+      <div class="topic-input-row">
+        <input type="text" id="topic-input" maxlength="100" autocomplete="off" data-i18n-attr="placeholder:ghostTutor.topicPlaceholder" placeholder="For example: the moon" />
+        <button id="topic-mic" type="button" class="btn btn--secondary topic-mic" data-i18n-attr="aria-label:ghostTutor.topicMicLabel" aria-label="Say a topic"><span class="icon-mic" aria-hidden="true"></span><span data-i18n="ghostTutor.speak">Speak</span></button>
+      </div>
+      <!-- The spoken confirmation question ("Shall I teach you about ...?") -->
+      <p id="topic-confirm" class="topic-confirm" hidden></p>
       <button id="topic-start" type="button" class="btn" data-i18n="ghostTutor.start">Start lesson</button>
       <p id="topic-message" class="error-message" role="alert" hidden></p>
       <div id="topic-loading" class="loading" hidden><span class="spinner"></span> <span data-i18n="ghostTutor.loadingLesson">Preparing your lesson...</span></div>

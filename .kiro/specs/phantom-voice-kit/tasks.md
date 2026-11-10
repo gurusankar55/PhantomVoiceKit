@@ -2,7 +2,7 @@
 
 ## Overview
 
-Build the Phantom Voice Kit from the ground up: project scaffolding → Express server + Gemini proxy → shared skeleton modules → home screen → Spirit Clerk app → Ghost Tutor app → README files → automated tests. Each task creates or modifies exactly one file (or one closely related group) and wires it into the preceding steps.
+Build the Phantom Voice Kit from the ground up: project scaffolding → Express server + Gemini proxy → shared skeleton modules → home screen → Spirit Clerk app → Ghost Tutor app → README files → automated tests → UX improvements for low-literacy users (voice commands, field help, how it works, privacy note, topic by voice). Each task creates or modifies exactly one file (or one closely related group) and wires it into the preceding steps.
 
 ## Tasks
 
@@ -350,6 +350,29 @@ Build the Phantom Voice Kit from the ground up: project scaffolding → Express 
     - Test placeholders such as `{n}` in an English value also appear in the translated value
     - _Requirements: R17_
 
+  - [ ] 11.10 Create `tests/unit/voiceCommands.test.js`
+    - Import `matchCommand`, `parseWords` from `skeleton/voice-commands.js`
+    - English examples with `words = { yes: ['yes','ok','correct'], redo: ['again','no','redo'] }`: `'Yes.'` → `'yes'`; `'  OK!! '` → `'yes'`; `'again'` → `'redo'`; `'No'` → `'redo'`; `'yes yes'` → `'yes'`; `'maybe'` → `null`; `''` → `null`
+    - Tamil: load `skeleton/locales/ta.json` with `fs`, build words with `parseWords` from `voice.yesWords` / `voice.redoWords`; `'சரி'` → `'yes'` and `'மறுபடி'` → `'redo'`
+    - Arabic: load `skeleton/locales/ar.json`; a yes word followed by the Arabic question mark (e.g. `'نعم؟'`) → `'yes'`
+    - A word present in both lists → `null`
+    - `parseWords`: trims entries and drops empty entries (e.g. `' yes | |ok||'` → `['yes','ok']`)
+    - Property test (fast-check, ≥100 runs): for any word `w` taken from a list and any added surrounding punctuation, whitespace and case changes, `matchCommand` returns that list's command
+    - Locale check: for every `skeleton/locales/*.json`, `voice.yesWords` and `voice.redoWords` each parse to at least 2 words and the two lists share no word
+    - _Requirements: R18_
+
+  - [ ] 11.11 Extend `tests/unit/routes.test.js` for field help
+    - Use a fake `callGemini` returning `fields` with and without `help` (missing, blank, non-string)
+    - Test every returned field has a string `help`, and it is `""` when the fake omitted it or returned a blank/non-string value; the request still succeeds with HTTP 200
+    - Test the prompt passed to `callGemini` mentions the help sentence and the requested `lang`
+    - _Requirements: R20_
+
+  - [ ] 11.12 Create `tests/unit/privacy.test.js`
+    - Static check: read every file under `server/` with `fs`; none imports or calls fs write APIs (`writeFile`, `appendFile`, `createWriteStream`, `mkdir`) or a database / upload-storage package (e.g. `multer`, `sqlite`, `mongoose`, `pg`)
+    - Static check: no `console.log` / `console.error` call in `server/` logs `req.body`
+    - Supertest check: `POST /api/extract-fields` with a fake `callGemini` leaves no new files in the repository or the OS temp directory (compare directory listings before and after)
+    - _Requirements: R22_
+
   - [ ]* 11.6 Write property test for translation non-empty preservation
     - `// Feature: phantom-voice-kit, Property 1: Translation non-empty preservation`
     - Use fast-check to generate arbitrary non-empty, non-whitespace strings as `text` and arbitrary valid `targetLang` strings
@@ -377,6 +400,45 @@ Build the Phantom Voice Kit from the ground up: project scaffolding → Express 
     - Trigger `fileEdited` on `skeleton/locales/en.json`, action `askAgent`
     - Prompt: add new or changed keys to the other 19 locale files with natural, simple translations; remove keys that no longer exist in `en.json`; never change key names; keep `{placeholders}`; leave unchanged keys untouched; validate that every file is valid JSON with the same keys as `en.json`
     - _Requirements: R17_
+
+- [x] 13. UX improvements for low-literacy users
+  - [x] 13.1 Create `skeleton/voice-commands.js`
+    - Export pure functions `matchCommand(text, words)`, `parseWords(str)` and `normalize(text)`; no DOM access, importable in Node
+    - `parseWords(str)`: split on `|`, trim each entry, drop empty entries
+    - `normalize(text)`: `toLocaleLowerCase()`, remove punctuation and symbols with `\p{P}` and `\p{S}` (Unicode `u` flag), collapse whitespace and trim
+    - `matchCommand(text, words)` with `words = { yes: string[], redo: string[] }`: compare the whole cleaned utterance with each cleaned word, also accept an utterance made only of repeats of one word (e.g. "yes yes"); return `'yes'`, `'redo'` or `null`; return `null` if both lists match
+    - Add keys `voice.yesWords` and `voice.redoWords` (a `|`-separated list of short words) to `skeleton/locales/en.json` and all 19 other locale files, e.g. English `yes|ok|correct` and `again|no|redo`
+    - _Requirements: R18, R17_
+
+  - [x] 13.2 Extend `server/routes/extract-fields.js` with field help
+    - Extend the prompt to ask for a `help` string per field: one short, simple sentence in `lang` explaining what the field means with a small example
+    - Normalise each returned field so `help` is a string, `""` if missing, blank or not a string; a missing `help` never fails the request
+    - Keep the same route and the same single Gemini call
+    - Confirm no route or module in `server/` writes request data to disk or logs (no fs writes, no logging of `req.body`)
+    - _Requirements: R20, R22, R7_
+
+  - [x] 13.3 Add How it works and the privacy note
+    - `skeleton/theme.css`: shared `.how-it-works` styles using CSS logical properties; steps stacked vertically on 320–767 px and side by side on wider screens; touch-friendly spacing, no horizontal overflow
+    - `apps/spirit-clerk/index.html` and `apps/ghost-tutor/index.html`: add the three-step `.how-it-works` list at the top of the first screen, with `data-i18n` on every step
+    - `apps/spirit-clerk/index.html`: add the privacy note on the upload screen with `data-i18n`
+    - Add the new keys (six steps and the privacy note) to `skeleton/locales/en.json` and all 19 other locale files
+    - _Requirements: R21, R22, R17_
+
+  - [x] 13.4 Spirit Clerk voice confirm and field help
+    - `apps/spirit-clerk/app.js`, `index.html`, `style.css`
+    - After the dual display is shown, speak `t('spiritClerk.confirmPrompt')` and listen once; run `matchCommand` on the Heard_Text with words built by `parseWords(t('voice.yesWords'))` / `parseWords(t('voice.redoWords'))`; `'yes'` → Confirm, `'redo'` → Redo, anything else → keep waiting; Confirm/Redo buttons keep working; a spoken command is never stored as an answer
+    - Add a "(?)" help button (44×44 px, translated `aria-label`) next to each question; activating it shows and speaks `field.help`, pausing listening while it speaks and resuming after; hide the button when the field has no help
+    - Cache help texts per language like the questions; on language change translate them with `translate()`; if translation fails show the original help with the audio-unavailable note and do not speak it
+    - Add the new keys (e.g. `spiritClerk.confirmPrompt`, help button label) to `skeleton/locales/en.json` and all 19 other locale files
+    - _Requirements: R18, R20, R17, R9_
+
+  - [x] 13.5 Ghost Tutor topic by voice
+    - `apps/ghost-tutor/app.js`, `index.html`, `style.css`
+    - Add a microphone button next to the topic input using the skeleton speech input in the Chosen_Language; hide it when speech input is not supported
+    - Put the cleaned Heard_Text (max 100 chars) into the topic box; speak and show `t('ghostTutor.confirmTopic', { topic })` and listen once with `matchCommand`
+    - `'yes'` or pressing Start begins the lesson with the same validation and request as typed topics; any other words leave the topic in the box for editing
+    - Add the new keys (e.g. `ghostTutor.confirmTopic`, mic button label) to `skeleton/locales/en.json` and all 19 other locale files
+    - _Requirements: R19, R18, R17, R11_
 
 ## Notes
 
@@ -413,9 +475,13 @@ Build the Phantom Voice Kit from the ground up: project scaffolding → Express 
     { "id": 18, "tasks": ["8.4"] },
     { "id": 19, "tasks": ["10.1", "10.2"] },
     { "id": 20, "tasks": ["11.1", "11.2", "11.3", "11.4"] },
-    { "id": 21, "tasks": ["11.5", "11.9"] },
+    { "id": 21, "tasks": ["11.5", "11.9", "11.10", "11.11", "11.12"] },
     { "id": 22, "tasks": ["11.6", "11.7", "11.8"] },
-    { "id": 23, "tasks": ["12.1"] }
+    { "id": 23, "tasks": ["12.1"] },
+    { "id": 24, "tasks": ["13.1", "13.2"] },
+    { "id": 25, "tasks": ["13.3"] },
+    { "id": 26, "tasks": ["13.4"] },
+    { "id": 27, "tasks": ["13.5"] }
   ]
 }
 ```

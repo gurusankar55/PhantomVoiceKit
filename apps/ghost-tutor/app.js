@@ -11,6 +11,7 @@ import { lesson, translate, evaluate } from '/skeleton/api-client.js';
 import { createNavMenu, createScreenHistory } from '/skeleton/nav-menu.js';
 import { initI18n, t, setI18nText, clearI18n } from '/skeleton/i18n.js';
 import { computeHasMore } from '/apps/ghost-tutor/lesson-utils.js';
+import { matchCommand, parseWords } from '/skeleton/voice-commands.js';
 
 // Load the translations BEFORE the nav and language dropdown are created.
 await initI18n();
@@ -40,6 +41,9 @@ const topicInput = document.getElementById('topic-input');
 const topicStart = document.getElementById('topic-start');
 const topicMessage = document.getElementById('topic-message');
 const topicLoading = document.getElementById('topic-loading');
+const topicMic = document.getElementById('topic-mic');
+const topicMicText = topicMic.querySelector('[data-i18n]'); // the "Speak" / "Stop" label
+const topicConfirm = document.getElementById('topic-confirm');
 
 // ---------- Screen helper ----------
 
@@ -52,6 +56,8 @@ function showScreen(name) {
   for (const [key, el] of Object.entries(screens)) {
     el.hidden = key !== name;
   }
+  // Back on the topic screen: make fresh speech engines in the current language.
+  if (name === 'topic') createTopicEngines();
 }
 
 // ---------- Stopping speech ----------
@@ -71,6 +77,7 @@ function stopEverything() {
 // Back button. Returns true if we handled it, false to let the nav go Home.
 function handleBack() {
   if (!screenHistory.canGoBack()) return false;
+  stopTopicVoice();
   leaveLesson();
   showScreen(screenHistory.back());
   return true;
@@ -78,6 +85,7 @@ function handleBack() {
 
 // Called when the user really leaves the page: stop speech and microphone.
 function onLeave() {
+  stopTopicVoice();
   stopEverything();
 }
 
@@ -134,6 +142,7 @@ for (const key of TOPIC_KEYS) {
   button.setAttribute('aria-pressed', 'false');
   setI18nText(button, key); // stays translated when the language changes
   button.addEventListener('click', () => {
+    cancelTopicVoice(); // picking a chip cancels voice and hides the question
     setSelectedChip(key);
     topicInput.value = t(key); // translated text at click time
     clearTopicMessage();
@@ -144,6 +153,7 @@ for (const key of TOPIC_KEYS) {
 
 // Typing changes the topic: drop the chip selection if the text no longer matches.
 topicInput.addEventListener('input', () => {
+  cancelTopicVoice(); // typing cancels voice and hides the question
   if (selectedChipKey && topicInput.value !== t(selectedChipKey)) {
     setSelectedChip('');
   }
@@ -190,6 +200,8 @@ function setTopicBusy(busy) {
 // Validate the typed topic, ask the server for a lesson, then start it.
 async function submitTopic() {
   if (topicStart.disabled) return; // a request is already running
+
+  cancelTopicVoice(); // Start (or a spoken "yes") ends any topic listening
 
   const topic = topicInput.value.trim().slice(0, 100);
   if (topic === '') {
@@ -240,6 +252,141 @@ topicInput.addEventListener('keydown', (event) => {
     submitTopic();
   }
 });
+
+// ---------- Topic by voice (task 13.5) ----------
+
+// The topic screen has its own speech engines, separate from the lesson ones.
+let topicSpeechInput = null;
+let topicSpeechOutput = null;
+let topicListening = false;  // is the topic microphone open?
+let topicMode = '';          // 'topic' (hearing a topic) | 'command' (hearing yes)
+let topicToken = 0;          // changes whenever voice must be cancelled
+let topicListenToken = 0;    // the token that was current when listening began
+
+// Update the mic button: orange pulse and "Stop" while listening.
+function setTopicListening(isListening) {
+  topicListening = isListening;
+  topicMic.classList.toggle('listening', isListening);
+  topicMic.setAttribute('aria-pressed', String(isListening));
+  setI18nText(topicMicText, isListening ? 'ghostTutor.stop' : 'ghostTutor.speak');
+}
+
+// Hide the spoken question.
+function hideTopicConfirm() {
+  clearI18n(topicConfirm);
+  topicConfirm.hidden = true;
+}
+
+// Stop topic speech and microphone. Late results are ignored afterwards.
+function stopTopicVoice() {
+  topicToken += 1;
+  topicMode = '';
+  if (topicSpeechOutput) topicSpeechOutput.stop();
+  if (topicSpeechInput && topicSpeechInput.supported) topicSpeechInput.stop();
+  setTopicListening(false);
+}
+
+// Stop voice AND hide the question (used by typing, chips, Start).
+function cancelTopicVoice() {
+  stopTopicVoice();
+  hideTopicConfirm();
+}
+
+// (Re)create the topic speech engines in the current language.
+function createTopicEngines() {
+  stopTopicVoice();
+  const lang = state.language.bcp47;
+  topicSpeechOutput = createSpeechOutput({ lang });
+
+  // Events from an old, replaced engine are ignored.
+  const created = createSpeechInput({
+    lang,
+    onResult: (text) => {
+      if (topicSpeechInput === created) handleTopicResult(text);
+    },
+    onError: (info) => {
+      if (topicSpeechInput === created) handleTopicError(info);
+    },
+  });
+  topicSpeechInput = created;
+  topicMic.hidden = !created.supported;
+}
+
+// Open the microphone in the given mode.
+function listenOnTopicScreen(mode) {
+  if (!topicSpeechInput || !topicSpeechInput.supported) return;
+  topicMode = mode;
+  topicListenToken = topicToken;
+  setTopicListening(true); // first: start() may report an error right away
+  topicSpeechInput.start();
+}
+
+// Mic button: toggle listening for a spoken topic.
+topicMic.addEventListener('click', () => {
+  if (topicStart.disabled) return; // a lesson request is running
+  if (topicListening) {
+    stopTopicVoice();
+    return;
+  }
+  stopTopicVoice(); // also silences the spoken question
+  hideTopicConfirm();
+  clearTopicMessage();
+  listenOnTopicScreen('topic');
+});
+
+// Something was heard on the topic screen.
+function handleTopicResult(text) {
+  // Ignore anything that is not for the current listening session.
+  if (!topicListening || topicListenToken !== topicToken) return;
+  setTopicListening(false);
+
+  if (topicMode === 'topic') {
+    const topic = String(text || '').trim().slice(0, 100);
+    if (topic === '') return;
+    topicInput.value = topic;
+    setSelectedChip('');
+    clearTopicMessage();
+    askTopicConfirmation(topic);
+  } else if (topicMode === 'command') {
+    topicMode = '';
+    const command = matchCommand(text, {
+      yes: parseWords(t('voice.yesWords')),
+      redo: parseWords(t('voice.redoWords')),
+    });
+    if (command === 'yes') submitTopic(); // same checks and request as Start
+    // Anything else: keep the topic and the question on screen.
+  }
+}
+
+// The microphone reported silence or a problem.
+function handleTopicError(info) {
+  if (!topicListening || topicListenToken !== topicToken) return;
+  topicMode = '';
+  setTopicListening(false);
+  if (info && info.fallbackOnly) topicMic.hidden = true;
+}
+
+// Show and speak "Shall I teach you about ...?", then listen once for "yes".
+function askTopicConfirmation(topic) {
+  topicToken += 1;
+  const myToken = topicToken;
+  setI18nText(topicConfirm, 'ghostTutor.confirmTopic', { topic });
+  topicConfirm.hidden = false;
+
+  let finished = false;
+  function listenAfterQuestion() {
+    if (finished) return;
+    finished = true;
+    if (myToken !== topicToken) return; // cancelled meanwhile
+    listenOnTopicScreen('command');
+  }
+  topicSpeechOutput.speak(t('ghostTutor.confirmTopic', { topic }), {
+    onEnd: listenAfterQuestion,
+    onError: listenAfterQuestion, // no audio: still listen
+  });
+}
+
+createTopicEngines();
 
 // ---------- Lesson screen (task 8.4) ----------
 
@@ -432,6 +579,7 @@ function getFeedbackText(item) {
 // ----- Starting and leaving -----
 
 function startLesson() {
+  cancelTopicVoice(); // topic speech and microphone end when the lesson starts
   showScreen('lesson');
 
   askId += 1;
@@ -742,7 +890,12 @@ newTopicButton.addEventListener('click', () => {
 
 // Rebuild speech for the new language and repeat the current step in it.
 function onLanguageChanged() {
-  if (screens.lesson.hidden) return; // not on the lesson screen
+  if (screens.lesson.hidden) {
+    // Topic screen: new engines for the new language. The question (if shown)
+    // re-translates by itself; it is not spoken again.
+    createTopicEngines();
+    return;
+  }
 
   stopEverything();
   askId += 1;

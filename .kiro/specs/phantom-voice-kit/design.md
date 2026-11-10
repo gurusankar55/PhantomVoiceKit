@@ -68,6 +68,7 @@ This ensures `server/`, `.kiro/`, `.env`, `package.json`, and `LICENSE` are neve
 │   ├── dual-display.js
 │   ├── text-fallback.js
 │   ├── nav-menu.js
+│   ├── voice-commands.js   ← pure: matchCommand(text, words), parseWords(str), normalize(text)
 │   ├── i18n.js
 │   ├── locales/
 │   │   ├── en.json
@@ -143,6 +144,32 @@ Shared navigation header (Requirement 16). Exposes `createNavMenu(headerEl, { cu
 
 **Speech:** Every navigation first calls `window.speechSynthesis.cancel()` and the optional `onLeave()` hook (apps use it to stop the microphone). A `pagehide` listener also cancels speech.
 
+### `voice-commands.js`
+
+Voice commands (Requirement 18). A pure module with no DOM access, so it can be imported and tested in Node. It exports:
+
+```js
+matchCommand(text, words) → 'yes' | 'redo' | null   // words = { yes: string[], redo: string[] }
+parseWords(str)           → string[]                // helper
+normalize(text)           → string                  // helper
+```
+
+- `parseWords(str)` splits a "|"-separated locale string (e.g. `"yes|ok|correct"`), trims every entry and drops empty entries. A missing or non-string value gives `[]`.
+- `normalize(text)` lower-cases with `toLocaleLowerCase()`, removes punctuation and symbols with the Unicode property escapes `\p{P}` and `\p{S}` (so `.`, `!`, `।`, `。`, `،`, `؟` are all removed; the regex uses the `u` flag), and collapses runs of whitespace to one space and trims the result. Words from the lists are normalised the same way before comparing.
+- `matchCommand(text, words)` normalises the utterance and compares the **whole** cleaned utterance with each normalised word. It also accepts an utterance whose words are all the same command word (e.g. "yes yes"). If the utterance matches both lists it returns `null`; if it matches neither, or is empty, it returns `null`.
+
+Apps build `words` from the current locale and call `matchCommand` with the Heard_Text:
+
+```js
+const words = {
+  yes:  parseWords(t('voice.yesWords')),    // e.g. "yes|ok|correct"
+  redo: parseWords(t('voice.redoWords'))    // e.g. "again|no|redo"
+};
+const command = matchCommand(heardText, words);
+```
+
+Every Locale_File has both keys (`voice.yesWords`, `voice.redoWords`). The lists hold short words in that language, and the two lists of one language share no word.
+
 ### `i18n.js` and `locales/*.json`
 
 Localization (Requirement 17). All fixed UI strings live in `skeleton/locales/<code>.json`, a flat `{ "key.name": "text" }` object where `<code>` is the part of the BCP-47 code before the dash (`en`, `ta`, `hi`, `zh`, `pt`, ...). `en.json` is the source of truth; the other 19 files have exactly the same keys.
@@ -162,7 +189,7 @@ Localization (Requirement 17). All fixed UI strings live in `skeleton/locales/<c
 
 **Keeping files in sync:** A Kiro hook (`.kiro/hooks/sync-locales.kiro.hook`) runs when `en.json` is saved and asks the agent to add new or changed keys to the other 19 files, remove deleted keys, and never rename keys. A unit test (task 11.9) checks that all files have the same keys as `en.json` and no empty values.
 
-### `theme.css`A stylesheet imported by all pages. Defines CSS custom properties for the Halloween palette (dark purples, oranges, ghost-white), typography (`@font-face` or Google Fonts with a fallback stack), ghost-themed iconography via CSS masks or inline SVG, styles for the Navigation_Header (`.nav-header`, hamburger, Back button, drawer, overlay), and a mobile-first responsive baseline ensuring 44×44 px minimum touch targets and no horizontal overflow on widths 320–767 px. Asset load failures are handled by CSS fallbacks (background-color instead of background-image, etc.).
+### `theme.css`A stylesheet imported by all pages. Defines CSS custom properties for the Halloween palette (dark purples, oranges, ghost-white), typography (`@font-face` or Google Fonts with a fallback stack), ghost-themed iconography via CSS masks or inline SVG, styles for the Navigation_Header (`.nav-header`, hamburger, Back button, drawer, overlay), the shared `.how-it-works` step list used by both apps (stacked on 320-767 px, side by side on wider screens, CSS logical properties), and a mobile-first responsive baseline ensuring 44×44 px minimum touch targets and no horizontal overflow on widths 320–767 px. Asset load failures are handled by CSS fallbacks (background-color instead of background-image, etc.).
 
 ### `api-client.js`
 
@@ -170,7 +197,7 @@ Exposes one async function per backend route:
 
 ```js
 translate({ text, targetLang })          → { translation }
-extractFields({ fileBase64, mimeType, lang }) → { fields: [{ label, inputType, question }] }
+extractFields({ fileBase64, mimeType, lang }) → { fields: [{ label, inputType, question, help }] }
 lesson({ topic, lang }) → { segments: [{ segment, quizQuestion }] }
 evaluate({ topic, question, answer, lang }) → { feedback }
 ```
@@ -191,6 +218,7 @@ Each function calls the corresponding `POST /api/*` endpoint, enforces a 5-secon
 | DualDisplay | `skeleton/dual-display.js` | `renderDualDisplay(el, { heardText, englishMeaning }) → void` |
 | TextFallback | `skeleton/text-fallback.js` | `createTextFallback(el, { onSubmit, onError }) → void` |
 | I18n | `skeleton/i18n.js` | `initI18n()`, `setLocale(bcp47)`, `onLocaleChange(cb)`, `t(key, params)`, `applyTranslations(root)`, `setI18nText(el, key, params)`, `setI18nAttr(el, attr, key)` |
+| VoiceCommands | `skeleton/voice-commands.js` | `matchCommand(text, words) → 'yes' \| 'redo' \| null`; `parseWords(str) → string[]`; `normalize(text) → string` (pure, no DOM) |
 | NavMenu | `skeleton/nav-menu.js` | `createNavMenu(headerEl, { current, showBack, onBack, getLeaveMessage, onLeave }) → { languageEl, setBackVisible(v), closeMenu() }`; `createScreenHistory(first) → { visit, back, current, canGoBack }` |
 | APIClient | `skeleton/api-client.js` | `translate()`, `extractFields()`, `lesson()`, `evaluate()` (see Skeleton Modules) |
 
@@ -232,9 +260,12 @@ Each function calls the corresponding `POST /api/*` endpoint, enforces a 5-secon
 {
   label: string,                                          // e.g. "Date of Birth"
   inputType: "text" | "date" | "checkbox" | "selection",
-  question: string                                        // spoken question in Chosen_Language
+  question: string,                                       // spoken question in Chosen_Language
+  help: string                                            // one short sentence in Chosen_Language explaining the field with a small example; "" if none
 }
 ```
+
+> Spirit Clerk keeps a per-language cache of translated texts in memory, keyed by language code: `questions` (already used for translated questions) and `helpTexts`, a map `{ [langCode]: string[] }` with one help string per field in field order. When the language changes and no cache entry exists, the help texts are translated with `translate()` and stored; later switches back to that language reuse the cache. If translation fails, nothing is cached for that language and the original help is shown with the audio-unavailable note.
 
 ### Field Answer (Spirit Clerk)
 
@@ -305,8 +336,9 @@ All Gemini calls set `responseMimeType: 'application/json'` in the generation co
 | Field | Detail |
 |---|---|
 | Request body | `{ fileBase64: string, mimeType: 'application/pdf' \| 'image/jpeg' \| 'image/png' \| 'image/webp', lang: string }` |
-| Response | `{ fields: [{ label: string, inputType: 'text'\|'date'\|'checkbox'\|'selection', question: string }] }` |
-| Prompt strategy | Sends the base64-encoded file as an inline part. "Identify all form fields in this document. For each field, also generate a short, friendly spoken question in `{lang}` regardless of what language the form is written in. Return a JSON array `fields` where each item has `label` (string), `inputType` (one of: text, date, checkbox, selection), and `question` (string, the spoken question in `{lang}`)." |
+| Response | `{ fields: [{ label: string, inputType: 'text'\|'date'\|'checkbox'\|'selection', question: string, help: string }] }` |
+| Prompt strategy | Sends the base64-encoded file as an inline part. "Identify all form fields in this document. For each field, also generate a short, friendly spoken question in `{lang}` regardless of what language the form is written in, and one short, simple help sentence in `{lang}` that explains what the field means with a small example. Return a JSON array `fields` where each item has `label` (string), `inputType` (one of: text, date, checkbox, selection), `question` (string, the spoken question in `{lang}`), and `help` (string, the help sentence in `{lang}`)." Still one Gemini call on the same route; no new route. |
+| Help default | After parsing, each field is normalised so `help` is always a string: a missing, non-string or blank `help` becomes `""`. A missing `help` never fails the request. |
 | Timeout | 30 s via `gemini.js` → HTTP 504 |
 | Validation | Returns HTTP 400 if `fileBase64` is empty or `mimeType` is unsupported |
 
@@ -330,6 +362,15 @@ All Gemini calls set `responseMimeType: 'application/json'` in the generation co
 | Timeout | 30 s via `gemini.js` → HTTP 504 |
 | Validation | Returns HTTP 400 if `answer` is empty |
 
+### Privacy and data handling
+
+Requirement 22. The server persists nothing:
+
+- No route or module writes uploaded files, answers or translated text to disk or to a database. There is no upload-storage package (no `multer` disk storage) and no `fs` write calls (`writeFile`, `appendFile`, `createWriteStream`, `mkdir`) anywhere in `server/`.
+- Uploaded forms arrive as base64 inside the JSON body, parsed by `express.json({ limit: '15mb' })`. They live only in memory for the duration of the request and are passed straight to `callGemini` as an inline part.
+- Nothing logs request bodies. Any `console.error` call logs only an error code or message (for example `err.code`), never `req.body`, the file, the answers or the translated text.
+- The browser side stores only `chosenLang` and `chosenLangLabel` in `sessionStorage`; answers stay in memory in the page.
+
 ---
 
 ## Frontend Pages
@@ -348,10 +389,14 @@ All Gemini calls set `responseMimeType: 'application/json'` in the generation co
 
 **Imports:** `nav-menu.js`, `speech-input.js`, `speech-output.js`, `dual-display.js`, `text-fallback.js`, `api-client.js`, `language-dropdown.js`, `theme.css`
 
+**How it works (R21):** At the top of the upload screen a `<ol class="how-it-works">` shows three short steps marked with `data-i18n` ("1. Upload a photo or PDF of your form.", "2. Answer each question by voice or by typing.", "3. Check your answers and download the PDF."). The shared `.how-it-works` styles live in `skeleton/theme.css`: the steps stack vertically on 320-767 px screens and sit side by side on wider screens, using CSS logical properties so they mirror in right-to-left languages.
+
+**Privacy note (R22):** The upload screen also shows a translated note (`data-i18n`): "Your form is read by Google Gemini AI to find the questions. This app does not save your form or your answers. Do not upload documents you do not want to share."
+
 **Screen flow:**
 
 1. **Upload screen** — file input accepting PDF/JPEG/PNG/WEBP ≤ 10 MB. Validates size and type client-side before sending. On confirm, calls `extractFields()` and shows a loading spinner. On success, advances to the form-fill screen. On zero fields, shows a retry message.
-2. **Form-fill screen** — iterates `fields[]` in order. For each field, uses `field.question` (returned directly by `extractFields()`) as the spoken question, speaks it via `speech-output.js`, displays it, and waits for voice input (`speech-input.js`) or text fallback. Shows `dual-display.js` with Heard_Text + English_Meaning. Presents confirm / redo controls. Tracks redo count (max 3, then skips). Silence handling follows R9.5: if no voice input and no text-fallback is received within 30 seconds of asking a question, the app re-asks the same question once. If a further 30 seconds pass with no input, the field is marked as skipped and the app advances to the next field. This 30-second inactivity timer is managed by `speech-input.js`; Spirit Clerk listens for the `onError({ inactivity: true })` event to trigger the re-ask or skip logic, tracking a `silenceCount` per field (max 1 re-ask before skip).
+2. **Form-fill screen** — iterates `fields[]` in order. For each field, uses `field.question` (returned directly by `extractFields()`) as the spoken question, speaks it via `speech-output.js`, displays it, and waits for voice input (`speech-input.js`) or text fallback. Shows `dual-display.js` with Heard_Text + English_Meaning. Presents confirm / redo controls. **Voice confirm step (R18):** once the dual display is shown, the app speaks `t('spiritClerk.confirmPrompt')` ("Is this correct? Say yes, or say again."), then listens once with `speech-input.js` and passes the Heard_Text to `matchCommand(heardText, words)`. `'yes'` runs the Confirm handler, `'redo'` runs the Redo handler, and anything else (including silence or an error) leaves the Confirm/Redo buttons waiting. The buttons always keep working, and the spoken command is never stored as the answer. **Field help (R20):** next to each question a "(?)" help button (44x44 px, translated `aria-label`) shows `field.help` and speaks it; while the help is spoken the microphone is paused and listening resumes afterwards. If `field.help` is empty the button is hidden. On a language change the help texts are translated with `translate()` and cached per language in `helpTexts`, like the questions; if translation fails the original help is shown with the audio-unavailable note and is not spoken. Tracks redo count (max 3, then skips). Silence handling follows R9.5: if no voice input and no text-fallback is received within 30 seconds of asking a question, the app re-asks the same question once. If a further 30 seconds pass with no input, the field is marked as skipped and the app advances to the next field. This 30-second inactivity timer is managed by `speech-input.js`; Spirit Clerk listens for the `onError({ inactivity: true })` event to trigger the re-ask or skip logic, tracking a `silenceCount` per field (max 1 re-ask before skip).
 3. **Filled summary screen** — before rendering, checks all non-skipped `FieldAnswer` entries for empty `englishMeaning` and calls `translate()` for any that are missing. Then lists all field-answer pairs in document order using `englishMeaning` as the answer text, counts skipped fields, and provides a "Download PDF" button (jsPDF from CDN). PDF filename: `{formName}_{YYYY-MM-DD}.pdf`. On PDF error, retains the summary.
 
 The language dropdown is displayed in the page header. When the user changes the language, the Spirit Clerk re-creates the active `SpeechInput` and `SpeechOutput` instances with the new BCP-47 code (after any in-progress speech completes), satisfying R1.3.
@@ -364,9 +409,11 @@ The language dropdown is displayed in the page header. When the user changes the
 
 **Imports:** `nav-menu.js`, `speech-input.js`, `speech-output.js`, `dual-display.js`, `text-fallback.js`, `api-client.js`, `language-dropdown.js`, `theme.css`
 
+**How it works (R21):** At the top of the topic screen the same `<ol class="how-it-works">` markup (styles shared in `skeleton/theme.css`) shows three translated steps: "1. Say or pick a topic.", "2. The ghost teaches you in 4 short parts.", "3. Answer one question after each part."
+
 **Screen flow:**
 
-1. **Topic selection screen** — displays 5–20 suggested topic buttons plus a free-text input (max 100 chars). Validates non-empty on submit. Calls `lesson({ topic, lang })` with a 25-second client-side timeout. Stores the returned `segments` array (4 items) in memory. Shows a loading indicator.
+1. **Topic selection screen** — displays 5–20 suggested topic buttons plus a free-text input (max 100 chars). **Topic by voice (R19):** a microphone button next to the input uses `speech-input.js` in the Chosen_Language; the cleaned Heard_Text (max 100 chars) is put into the topic box. The app then speaks and shows `t('ghostTutor.confirmTopic', { topic })` ("Shall I teach you about {topic}? Say yes, or press Start.") and listens once with `matchCommand`. `'yes'` or pressing Start begins the lesson with the same validation and request as typed topics; any other words, or silence, leave the topic in the box for editing. If `createSpeechInput` returns `supported: false` the mic button is hidden. Validates non-empty on submit. Calls `lesson({ topic, lang })` with a 25-second client-side timeout. Stores the returned `segments` array (4 items) in memory. Shows a loading indicator.
 2. **Lesson screen** — iterates through `segments[0]` through `segments[3]` locally. Speaks each `segment` via `speech-output.js`, displays transcript within 500 ms of audio start. Then speaks the `quizQuestion`, displays it, and opens a 30-second answer window. On timeout, re-asks once. Accepts voice or text fallback, shows `dual-display.js`, then calls `evaluate()`. On eval timeout (10 s client-side), re-asks the question. `hasMore` is computed locally: `true` while `segmentIndex < 3`, `false` when `segmentIndex === 3` and feedback has been delivered.
 3. **Feedback display** — speaks and displays `feedback`. If `hasMore` is true, advances to next segment (`segmentIndex + 1`). If false, speaks and displays a topic-complete message. No further calls to `/api/lesson` are made.
 
@@ -576,6 +623,7 @@ To enable testing without a browser or live API, the following logic is extracte
 | `nextSilenceOrSkip(silenceCount)` | `apps/spirit-clerk/form-utils.js` | Returns `'reask'` if `silenceCount < 1`, `'skip'` if `silenceCount >= 1` |
 | `pdfFilename(formName, date)` | `apps/spirit-clerk/form-utils.js` | Returns `'{formName}_{YYYY-MM-DD}.pdf'` |
 | `computeHasMore(segmentIndex)` | `apps/ghost-tutor/lesson-utils.js` | Returns `true` if `segmentIndex < 3`, `false` if `segmentIndex === 3` |
+| `matchCommand(text, words)` | `skeleton/voice-commands.js` | Returns `'yes'`, `'redo'` or `null` after ignoring case, punctuation and extra whitespace |
 
 ### Unit Tests
 
