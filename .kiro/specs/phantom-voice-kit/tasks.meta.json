@@ -1,0 +1,359 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1. Set up project scaffold": [
+      {
+        "executionId": "465939fc-ed69-44cc-b26c-e15e494c4caa",
+        "chatSessionId": "sess_39207d8f-3c02-48c0-8c9b-b683b476e16a",
+        "timestamp": 1794296968768
+      },
+      {
+        "executionId": "465939fc-ed69-44cc-b26c-e15e494c4caa",
+        "chatSessionId": "sess_39207d8f-3c02-48c0-8c9b-b683b476e16a",
+        "timestamp": 1794297064212
+      }
+    ],
+    "1.1 Create `package.json`": [
+      {
+        "executionId": "465939fc-ed69-44cc-b26c-e15e494c4caa",
+        "chatSessionId": "sess_39207d8f-3c02-48c0-8c9b-b683b476e16a",
+        "timestamp": 1794296988285
+      },
+      {
+        "executionId": "465939fc-ed69-44cc-b26c-e15e494c4caa",
+        "chatSessionId": "sess_39207d8f-3c02-48c0-8c9b-b683b476e16a",
+        "timestamp": 1794297063468
+      }
+    ],
+    "1.2 Create `.gitignore`, `.env.example`, and `LICENSE`": [
+      {
+        "executionId": "465939fc-ed69-44cc-b26c-e15e494c4caa",
+        "chatSessionId": "sess_39207d8f-3c02-48c0-8c9b-b683b476e16a",
+        "timestamp": 1794296988820
+      },
+      {
+        "executionId": "465939fc-ed69-44cc-b26c-e15e494c4caa",
+        "chatSessionId": "sess_39207d8f-3c02-48c0-8c9b-b683b476e16a",
+        "timestamp": 1794297063938
+      }
+    ],
+    "2.1 Create `server/gemini.js`": [
+      {
+        "executionId": "6bcd3174-8be3-4309-b445-efb057fc5a6b",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794297463520
+      },
+      {
+        "executionId": "6bcd3174-8be3-4309-b445-efb057fc5a6b",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794297534209
+      }
+    ],
+    "2.2 Create `server/index.js`": [
+      {
+        "executionId": "6bcd3174-8be3-4309-b445-efb057fc5a6b",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794297542457
+      },
+      {
+        "executionId": "6bcd3174-8be3-4309-b445-efb057fc5a6b",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794297607680
+      }
+    ],
+    "2.3 Create `server/routes/translate.js`": [
+      {
+        "executionId": "6bcd3174-8be3-4309-b445-efb057fc5a6b",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794297616395
+      },
+      {
+        "executionId": "6bcd3174-8be3-4309-b445-efb057fc5a6b",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794297838230
+      }
+    ],
+    "2.4 Create `server/routes/extract-fields.js`": [
+      {
+        "executionId": "6bcd3174-8be3-4309-b445-efb057fc5a6b",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794297617012
+      },
+      {
+        "executionId": "6bcd3174-8be3-4309-b445-efb057fc5a6b",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794297838892
+      }
+    ],
+    "2.5 Create `server/routes/lesson.js`": [
+      {
+        "executionId": "6bcd3174-8be3-4309-b445-efb057fc5a6b",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794297617832
+      },
+      {
+        "executionId": "6bcd3174-8be3-4309-b445-efb057fc5a6b",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794297839545
+      }
+    ],
+    "2.6 Create `server/routes/evaluate.js`": [
+      {
+        "executionId": "6bcd3174-8be3-4309-b445-efb057fc5a6b",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794297618305
+      },
+      {
+        "executionId": "6bcd3174-8be3-4309-b445-efb057fc5a6b",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794297840206
+      }
+    ],
+    "2. Implement the Express server and Gemini proxy": [
+      {
+        "executionId": "6bcd3174-8be3-4309-b445-efb057fc5a6b",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794297840561
+      }
+    ],
+    "3. Checkpoint — verify server routes": [
+      {
+        "executionId": "7c0b1fa5-2a30-4a3a-ab38-41ce85ef1670",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794298908098
+      }
+    ],
+    "4.1 Create `skeleton/speech-output-utils.js`": [
+      {
+        "executionId": "7c0b1fa5-2a30-4a3a-ab38-41ce85ef1670",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794298918929
+      },
+      {
+        "executionId": "7c0b1fa5-2a30-4a3a-ab38-41ce85ef1670",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794298982788
+      }
+    ],
+    "4.2 Create `skeleton/text-fallback-utils.js`": [
+      {
+        "executionId": "7c0b1fa5-2a30-4a3a-ab38-41ce85ef1670",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794298919289
+      },
+      {
+        "executionId": "7c0b1fa5-2a30-4a3a-ab38-41ce85ef1670",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794298983225
+      }
+    ],
+    "4.3 Create `apps/spirit-clerk/form-utils.js`": [
+      {
+        "executionId": "7c0b1fa5-2a30-4a3a-ab38-41ce85ef1670",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794298920050
+      },
+      {
+        "executionId": "7c0b1fa5-2a30-4a3a-ab38-41ce85ef1670",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794298984060
+      }
+    ],
+    "4.4 Create `apps/ghost-tutor/lesson-utils.js`": [
+      {
+        "executionId": "7c0b1fa5-2a30-4a3a-ab38-41ce85ef1670",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794298920530
+      },
+      {
+        "executionId": "7c0b1fa5-2a30-4a3a-ab38-41ce85ef1670",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794298984683
+      }
+    ],
+    "4.5 Create `skeleton/speech-input.js`": [
+      {
+        "executionId": "7c0b1fa5-2a30-4a3a-ab38-41ce85ef1670",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794298996192
+      },
+      {
+        "executionId": "7c0b1fa5-2a30-4a3a-ab38-41ce85ef1670",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794299113675
+      }
+    ],
+    "4.6 Create `skeleton/speech-output.js`": [
+      {
+        "executionId": "7c0b1fa5-2a30-4a3a-ab38-41ce85ef1670",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794298996808
+      },
+      {
+        "executionId": "7c0b1fa5-2a30-4a3a-ab38-41ce85ef1670",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794299131770
+      }
+    ],
+    "4.7 Create `skeleton/language-dropdown.js`": [
+      {
+        "executionId": "7c0b1fa5-2a30-4a3a-ab38-41ce85ef1670",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794298997342
+      },
+      {
+        "executionId": "7c0b1fa5-2a30-4a3a-ab38-41ce85ef1670",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794299158295
+      }
+    ],
+    "4.8 Create `skeleton/dual-display.js`": [
+      {
+        "executionId": "7c0b1fa5-2a30-4a3a-ab38-41ce85ef1670",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794298997854
+      },
+      {
+        "executionId": "7c0b1fa5-2a30-4a3a-ab38-41ce85ef1670",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794299175106
+      }
+    ],
+    "4.9 Create `skeleton/text-fallback.js`": [
+      {
+        "executionId": "7c0b1fa5-2a30-4a3a-ab38-41ce85ef1670",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794298998192
+      },
+      {
+        "executionId": "7c0b1fa5-2a30-4a3a-ab38-41ce85ef1670",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794299201337
+      }
+    ],
+    "4.10 Create `skeleton/theme.css`": [
+      {
+        "executionId": "7c0b1fa5-2a30-4a3a-ab38-41ce85ef1670",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794299219422
+      },
+      {
+        "executionId": "7c0b1fa5-2a30-4a3a-ab38-41ce85ef1670",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794299314913
+      }
+    ],
+    "4.11 Create `skeleton/api-client.js`": [
+      {
+        "executionId": "7c0b1fa5-2a30-4a3a-ab38-41ce85ef1670",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794299235067
+      },
+      {
+        "executionId": "7c0b1fa5-2a30-4a3a-ab38-41ce85ef1670",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794299315472
+      }
+    ],
+    "4. Implement skeleton modules": [
+      {
+        "executionId": "7c0b1fa5-2a30-4a3a-ab38-41ce85ef1670",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794299315880
+      }
+    ],
+    "5.1 Create `index.html`": [
+      {
+        "executionId": "37f25da7-6450-4806-b9a2-a9ff431accfd",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794299897013
+      },
+      {
+        "executionId": "37f25da7-6450-4806-b9a2-a9ff431accfd",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794300047856
+      }
+    ],
+    "5. Create Home Screen": [
+      {
+        "executionId": "37f25da7-6450-4806-b9a2-a9ff431accfd",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794300048238
+      }
+    ],
+    "6.1 Create `apps/spirit-clerk/style.css`": [
+      {
+        "executionId": "bbd10896-1cbc-45be-bed5-362c2a240ad5",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794305240601
+      },
+      {
+        "executionId": "bbd10896-1cbc-45be-bed5-362c2a240ad5",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794305333235
+      }
+    ],
+    "6.2 Create `apps/spirit-clerk/index.html`": [
+      {
+        "executionId": "bbd10896-1cbc-45be-bed5-362c2a240ad5",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794305241170
+      },
+      {
+        "executionId": "bbd10896-1cbc-45be-bed5-362c2a240ad5",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794305333709
+      }
+    ],
+    "6.3 Create `apps/spirit-clerk/app.js` — Upload screen": [
+      {
+        "executionId": "bbd10896-1cbc-45be-bed5-362c2a240ad5",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794305346097
+      },
+      {
+        "executionId": "bbd10896-1cbc-45be-bed5-362c2a240ad5",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794305473659
+      }
+    ],
+    "6.4 Extend `apps/spirit-clerk/app.js` — Form-fill screen": [
+      {
+        "executionId": "bbd10896-1cbc-45be-bed5-362c2a240ad5",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794305485716
+      },
+      {
+        "executionId": "bbd10896-1cbc-45be-bed5-362c2a240ad5",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794305674104
+      }
+    ],
+    "6.5 Extend `apps/spirit-clerk/app.js` — Filled summary screen": [
+      {
+        "executionId": "bbd10896-1cbc-45be-bed5-362c2a240ad5",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794305684623
+      },
+      {
+        "executionId": "bbd10896-1cbc-45be-bed5-362c2a240ad5",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794305748538
+      }
+    ],
+    "6. Implement Spirit Clerk app": [
+      {
+        "executionId": "bbd10896-1cbc-45be-bed5-362c2a240ad5",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794305749194
+      }
+    ],
+    "7. Checkpoint — verify Spirit Clerk": [
+      {
+        "executionId": "fd3a9f8a-9b19-4814-9681-216622258249",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794306881380
+      }
+    ]
+  }
+}

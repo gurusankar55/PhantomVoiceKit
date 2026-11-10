@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Phantom Voice Kit</title>
+  <!-- Shared Halloween theme (absolute path, per project rules) -->
+  <link rel="stylesheet" href="/skeleton/theme.css" />
+  <style>
+    /* Small page-specific styles for the home screen only. */
+    .home-header { text-align: center; margin-bottom: var(--space-4); }
+    .home-ghost { font-size: 4rem; color: var(--color-ghost); }
+    .home-subtitle { color: var(--color-ghost-dim); }
+    .home-section { margin-bottom: var(--space-4); }
+    .home-choices { display: flex; flex-direction: column; gap: var(--space-3); }
+    .home-choices .btn { flex-direction: column; }
+    .home-choice-hint { font-size: 0.95rem; font-weight: 400; }
+    .home-tip {
+      padding: var(--space-3);
+      font-size: 0.95rem;
+      color: var(--color-ghost-dim);
+      background-color: var(--color-surface);
+      border: 2px dashed var(--color-border);
+      border-radius: var(--radius);
+    }
+  </style>
+</head>
+<body>
+  <header class="home-header">
+    <!-- Ghost mascot (decorative, so hidden from screen readers) -->
+    <div class="home-ghost"><span class="icon-ghost" aria-hidden="true"></span></div>
+    <h1>Phantom Voice Kit</h1>
+    <p class="home-subtitle">Speak your language. The ghosts will listen.</p>
+  </header>
+
+  <main>
+    <!-- The language dropdown is rendered into this container by language-dropdown.js -->
+    <section class="home-section" aria-label="Choose your language">
+      <div id="language-container"></div>
+    </section>
+
+    <!-- Navigation to the two apps. Links styled as large buttons. -->
+    <nav class="home-section home-choices" aria-label="Choose an app">
+      <a class="btn btn--large" href="/apps/spirit-clerk/index.html">
+        <span>Spirit Clerk</span>
+        <span class="home-choice-hint">Fill in a form by voice</span>
+      </a>
+      <a class="btn btn--large" href="/apps/ghost-tutor/index.html">
+        <span>Ghost Tutor</span>
+        <span class="home-choice-hint">Learn a topic by voice</span>
+      </a>
+    </nav>
+
+    <p class="home-tip">For the best voices in Indian languages, open this app in Microsoft Edge.</p>
+  </main>
+
+  <script type="module">
+    import { createLanguageDropdown } from '/skeleton/language-dropdown.js';
+
+    // Renders the dropdown (English by default) and saves the choice to sessionStorage.
+    createLanguageDropdown(document.getElementById('language-container'));
+  </script>
+</body>
+</html>

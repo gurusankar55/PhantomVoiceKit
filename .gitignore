@@ -1,0 +1,7 @@
+# Dependencies
+node_modules/
+
+# Secrets (never commit your real API key)
+.env
+
+# NOTE: .kiro/ is intentionally NOT ignored

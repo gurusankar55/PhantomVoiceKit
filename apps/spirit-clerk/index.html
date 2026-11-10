@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Spirit Clerk</title>
+  <!-- Shared theme and app styles (absolute paths, per project rules) -->
+  <link rel="stylesheet" href="/skeleton/theme.css" />
+  <link rel="stylesheet" href="/apps/spirit-clerk/style.css" />
+</head>
+<body>
+  <header class="app-header">
+    <h1>Spirit Clerk</h1>
+    <!-- The language dropdown is rendered into this container by app.js -->
+    <div id="language-container"></div>
+    <a class="btn btn--secondary" href="/">Home</a>
+  </header>
+
+  <main id="app">
+
+    <!-- Screen 1: upload a form -->
+    <section id="screen-upload" class="screen">
+      <h2>Upload your form</h2>
+      <label for="file-input">Choose a PDF or a photo of your form</label>
+      <input type="file" id="file-input" accept="application/pdf,image/jpeg,image/png,image/webp" />
+      <button id="upload-confirm" type="button" class="btn" disabled>Read my form</button>
+      <p id="upload-message" class="error-message" role="alert" hidden></p>
+      <div id="upload-loading" hidden><span class="spinner"></span> <span>Reading your form...</span></div>
+    </section>
+
+    <!-- Screen 2: answer each question -->
+    <section id="screen-fill" class="screen" hidden>
+      <p id="fill-progress"></p>
+      <h2 id="fill-question"></h2>
+      <p id="fill-audio-note" hidden></p>
+
+      <button id="mic-button" type="button" class="btn">Speak</button>
+      <p id="mic-message" hidden></p>
+
+      <!-- Typed-answer fallback is rendered here by app.js -->
+      <div id="text-fallback-container"></div>
+
+      <!-- Shows the answer in the user's language and in English -->
+      <div id="dual-display-container" hidden></div>
+
+      <div id="confirm-controls" hidden>
+        <button id="confirm-button" type="button" class="btn">Confirm</button>
+        <button id="redo-button" type="button" class="btn btn--secondary">Redo</button>
+      </div>
+
+      <p id="fill-message" role="alert" hidden></p>
+      <div id="fill-loading" hidden><span class="spinner"></span> <span>Please wait...</span></div>
+    </section>
+
+    <!-- Screen 3: summary and PDF download -->
+    <section id="screen-summary" class="screen" hidden>
+      <h2>Your filled form</h2>
+      <div id="summary-loading" hidden><span class="spinner"></span> <span>Preparing your summary...</span></div>
+      <ul id="summary-list"></ul>
+      <p id="summary-skipped" hidden></p>
+      <button id="download-pdf" type="button" class="btn">Download PDF</button>
+      <p id="summary-message" class="error-message" role="alert" hidden></p>
+    </section>
+
+  </main>
+
+  <!-- jsPDF must load BEFORE app.js so window.jspdf exists -->
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script type="module" src="/apps/spirit-clerk/app.js"></script>
+</body>
+</html>
