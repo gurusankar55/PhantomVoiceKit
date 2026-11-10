@@ -9,14 +9,11 @@
   <link rel="stylesheet" href="/apps/spirit-clerk/style.css" />
 </head>
 <body>
-  <header class="app-header">
-    <h1>Spirit Clerk</h1>
-    <!-- The language dropdown is rendered into this container by app.js -->
-    <div id="language-container"></div>
-    <a class="btn btn--secondary" href="/">Home</a>
-  </header>
+  <!-- Shared navigation header (menu, Back, language) is built by app.js -->
+  <header id="app-header"></header>
 
   <main id="app">
+    <h1 class="app-title">Spirit Clerk</h1>
 
     <!-- Screen 1: upload a form -->
     <section id="screen-upload" class="screen">

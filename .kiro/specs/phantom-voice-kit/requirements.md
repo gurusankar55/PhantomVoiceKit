@@ -11,6 +11,7 @@ Phantom Voice Kit is a reusable skeleton for voice-first web applications with a
 
 ## Glossary
 
+- **Navigation_Header**: The shared top header bar rendered by the skeleton on every page, containing the menu button, the Back button, and the language dropdown.
 - **System**: The Phantom Voice Kit application, including both Spirit Clerk and Ghost Tutor apps and the shared skeleton.
 - **Skeleton**: The shared template and infrastructure used by both Spirit Clerk and Ghost Tutor.
 - **Spirit_Clerk**: The form-filling application built on the Skeleton.
@@ -216,8 +217,8 @@ Phantom Voice Kit is a reusable skeleton for voice-first web applications with a
 2. WHEN the user selects a language on the home screen and then opens an app, THE System SHALL carry the Chosen_Language into Spirit Clerk or Ghost Tutor without requiring the user to select it again.
 3. WHEN the user activates the "Spirit Clerk" button, THE System SHALL navigate to the Spirit Clerk upload screen.
 4. WHEN the user activates the "Ghost Tutor" button, THE System SHALL navigate to the Ghost Tutor topic selection screen.
-5. THE Spirit_Clerk SHALL display a "Home" button that navigates the user back to the home screen.
-6. THE Ghost_Tutor SHALL display a "Home" button that navigates the user back to the home screen.
+5. THE Spirit_Clerk SHALL provide a way to navigate back to the home screen through the Navigation_Header defined in Requirement 16 (the "Home" link in the menu drawer and the Back button).
+6. THE Ghost_Tutor SHALL provide a way to navigate back to the home screen through the Navigation_Header defined in Requirement 16 (the "Home" link in the menu drawer and the Back button).
 7. THE home screen SHALL apply the same ghost and Halloween visual theme as defined in Requirement 6.
 8. WHEN the home screen is displayed, THE System SHALL show a short tip reading "For the best voices in Indian languages, open this app in Microsoft Edge."
 
@@ -245,3 +246,23 @@ Phantom Voice Kit is a reusable skeleton for voice-first web applications with a
 1. THE System SHALL include an MIT License file named LICENSE at the root of the repository.
 2. THE LICENSE file SHALL contain the standard MIT License text with the copyright year and author name filled in.
 3. THE repository's .gitignore file SHALL NOT exclude the .kiro folder, so that spec and configuration files are committed alongside the source code.
+
+---
+
+### Requirement 16: Navigation
+
+**User Story:** As a user, I want a menu and a Back button on every screen, so that I can move between the apps and return to earlier screens without getting lost.
+
+#### Acceptance Criteria
+
+1. THE System SHALL provide one shared navigation module in the skeleton folder that renders the Navigation_Header on the home screen, Spirit Clerk, and Ghost Tutor, with a menu (hamburger) button on the left, a "← Back" button next to it, and the language dropdown on the right.
+2. WHEN the user activates the menu button, THE Navigation_Header SHALL open a side drawer that slides in from the left and lists three links: "Home" (/), "Spirit Clerk" (/apps/spirit-clerk/index.html), and "Ghost Tutor" (/apps/ghost-tutor/index.html).
+3. THE drawer SHALL highlight the link for the current page and mark it with ria-current="page".
+4. THE menu button SHALL set ria-expanded to 	rue while the drawer is open and alse while it is closed, and SHALL have an ria-label that describes its action.
+5. WHEN the user activates a drawer link, clicks outside the drawer, or presses the Escape key, THE Navigation_Header SHALL close the drawer.
+6. WHEN the user activates the Back button AND the current app has a previous screen in its screen history, THE System SHALL return to that previous screen inside the app.
+7. WHEN the user activates the Back button on the first screen of an app, THE System SHALL navigate to the home screen (/).
+8. WHILE the home screen is displayed, THE Navigation_Header SHALL show the menu button and SHALL hide the Back button.
+9. WHEN the user tries to leave the Spirit Clerk form-fill screen before all fields are processed (by the Back button or by a drawer link), THE System SHALL ask for confirmation with the text "Your answers will be lost. Go back?" and SHALL leave the screen only if the user confirms.
+10. WHEN the user navigates away from a page or screen using the Navigation_Header, THE System SHALL stop any Speech_Output in progress.
+11. THE Navigation_Header SHALL apply the Halloween theme defined in Requirement 6, SHALL make every control at least 44×44 px, and SHALL not cause horizontal overflow on viewport widths from 320 px to 767 px.

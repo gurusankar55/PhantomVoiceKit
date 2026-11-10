@@ -10,6 +10,7 @@ import { createTextFallback } from '/skeleton/text-fallback.js';
 import { extractFields, translate } from '/skeleton/api-client.js';
 import { nextRedoOrSkip, nextSilenceOrSkip, pdfFilename, cleanLabel } from '/apps/spirit-clerk/form-utils.js';
 import { cleanAnswer } from '/skeleton/text-fallback-utils.js';
+import { createNavMenu, createScreenHistory } from '/skeleton/nav-menu.js';
 
 // ---------- Constants ----------
 
@@ -36,7 +37,6 @@ const screens = {
   fill: document.getElementById('screen-fill'),
   summary: document.getElementById('screen-summary'),
 };
-const languageContainer = document.getElementById('language-container');
 const fileInput = document.getElementById('file-input');
 const uploadConfirm = document.getElementById('upload-confirm');
 const uploadMessage = document.getElementById('upload-message');
@@ -72,8 +72,12 @@ let textFallbackReady = false; // the typed box is created only once
 
 // ---------- Screen helper ----------
 
+// Tracks the screens the user has seen (upload is the first one).
+const screenHistory = createScreenHistory('upload');
+
 // Show one screen ('upload' | 'fill' | 'summary') and hide the others.
 function showScreen(name) {
+  screenHistory.visit(name); // remember it so Back can return here
   for (const [key, el] of Object.entries(screens)) {
     el.hidden = key !== name;
   }
@@ -102,7 +106,65 @@ function onLanguageChanged() {
   }
 }
 
-createLanguageDropdown(languageContainer, {
+// ---------- Navigation header (menu, Back, language) ----------
+
+const LEAVE_MESSAGE = 'Your answers will be lost. Go back?';
+
+// Ask before leaving only while the user is answering questions.
+function getLeaveMessage() {
+  return screenHistory.current() === 'fill' && fillActive ? LEAVE_MESSAGE : null;
+}
+
+// Called when the user really leaves the page: stop speech and microphone.
+function onLeave() {
+  stopEverything();
+}
+
+// Back button. Returns true if we handled it, false to let the nav go Home.
+function handleBack() {
+  if (!screenHistory.canGoBack()) return false;
+
+  if (screenHistory.current() === 'fill' && fillActive) {
+    if (!window.confirm(LEAVE_MESSAGE)) return true; // stay, but handled
+    // Leave the fill screen cleanly.
+    askId += 1;
+    stopEverything();
+    fillActive = false;
+    phase = 'idle';
+    pendingAnswer = null;
+    state.answers = [];
+    fillLoading.hidden = true;
+    confirmControls.hidden = true;
+  }
+
+  const previous = screenHistory.back();
+  if (previous === 'fill') {
+    reopenLastQuestion(); // coming back from the summary
+  } else {
+    showScreen(previous);
+  }
+  return true;
+}
+
+// From the summary, go back to the last question (stored answers are kept).
+function reopenLastQuestion() {
+  showScreen('fill');
+  fillActive = true;
+  state.currentIndex = state.fields.length - 1;
+  redoCount = 0;
+  silenceCount = 0;
+  askCurrentQuestion();
+}
+
+// The nav is created before the language dropdown, which lives inside it.
+const nav = createNavMenu(document.getElementById('app-header'), {
+  current: 'spirit-clerk',
+  onBack: handleBack,
+  getLeaveMessage,
+  onLeave,
+});
+
+createLanguageDropdown(nav.languageEl, {
   onChange: (lang) => {
     state.language = lang;
     onLanguageChanged();

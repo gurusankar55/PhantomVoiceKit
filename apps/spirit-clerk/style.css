@@ -4,6 +4,13 @@
    Only layout rules live here; colors/sizes come from the theme's variables.
    ========================================================================== */
 
+/* ---------- Page heading ---------- */
+.app-title {
+  text-align: center;
+  margin: var(--space-3) 0;
+  color: var(--color-orange);
+  text-shadow: 0 0 12px var(--color-border);
+}
 /* ---------- Layout: the app and its screens ---------- */
 #app {
   width: 100%;

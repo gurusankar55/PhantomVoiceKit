@@ -165,6 +165,18 @@ Build the Phantom Voice Kit from the ground up: project scaffolding → Express 
     - All interactive controls meet 44×44 px minimum touch target
     - _Requirements: R1, R13_
 
+  - [x] 5.2 Create `skeleton/nav-menu.js` and apply it to the Home Screen
+    - Export `createNavMenu(headerEl, { current, showBack, onBack, getLeaveMessage, onLeave })` returning `{ languageEl, setBackVisible(visible), closeMenu() }`, and `createScreenHistory(firstScreen)` returning `{ visit(name), back(), current(), canGoBack() }`
+    - Render a top header bar: hamburger button (three lines) on the left, "← Back" button next to it, language dropdown slot (`languageEl`) on the right
+    - Hamburger opens a left slide-in drawer with links Home (`/`), Spirit Clerk (`/apps/spirit-clerk/index.html`), Ghost Tutor (`/apps/ghost-tutor/index.html`); highlight the current page with a class and `aria-current="page"`
+    - Hamburger uses `aria-expanded`, `aria-controls` and an `aria-label` ("Open menu" / "Close menu"); drawer closes on link click, outside (overlay) click, or Escape; drawer is not keyboard-reachable while closed
+    - Back: call `onBack()`; if it returns `true` the app handled it, otherwise navigate to `/`; `showBack: false` hides Back (Home Screen)
+    - Before any navigation call `getLeaveMessage()`; if it returns text, ask `window.confirm` and cancel navigation when declined
+    - Before any navigation call `window.speechSynthesis.cancel()` and `onLeave()`; also cancel speech on `pagehide`
+    - Add navigation styles to `skeleton/theme.css` (spooky theme, 44×44 px touch targets, no horizontal overflow at 320–767 px, `prefers-reduced-motion` respected)
+    - Update `index.html` to use the header (`showBack: false`, `current: 'home'`) with the language dropdown rendered into `languageEl`
+    - _Requirements: R16, R13, R6_
+
 - [x] 6. Implement Spirit Clerk app
   - [x] 6.1 Create `apps/spirit-clerk/style.css`
     - Extend `skeleton/theme.css` with Spirit Clerk–specific layout rules
@@ -175,9 +187,9 @@ Build the Phantom Voice Kit from the ground up: project scaffolding → Express 
     - Import `theme.css`, `style.css`, `app.js` (type="module")
     - All skeleton files must be loaded with absolute paths (e.g. `/skeleton/theme.css`, `/skeleton/language-dropdown.js`, `/skeleton/api-client.js`) and `app.js` must be referenced as `/apps/spirit-clerk/app.js`
     - Add a script tag that loads jsPDF from a pinned CDN version before `app.js`: `<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>`
-    - Page header with language dropdown (rendered by `language-dropdown.js`) and "Home" button linking to `/`
+    - Page header is an empty `<header id="app-header">` filled by `skeleton/nav-menu.js` (menu drawer, Back button, language dropdown on the right); no separate Home button (Home is a drawer link)
     - Placeholder `<main>` containers for each screen (upload, form-fill, summary); `app.js` shows/hides them
-    - _Requirements: R8, R9, R10, R13_
+    - _Requirements: R8, R9, R10, R13, R16_
 
   - [x] 6.3 Create `apps/spirit-clerk/app.js` — Upload screen
     - Import all skeleton modules and `api-client.js`; import `form-utils.js`
@@ -219,9 +231,9 @@ Build the Phantom Voice Kit from the ground up: project scaffolding → Express 
   - [ ] 8.2 Create `apps/ghost-tutor/index.html`
     - Import `theme.css`, `style.css`, `app.js` (type="module")
     - All skeleton files must be loaded with absolute paths (e.g. `/skeleton/theme.css`, `/skeleton/language-dropdown.js`, `/skeleton/api-client.js`) and `app.js` must be referenced as `/apps/ghost-tutor/app.js`
-    - Page header with language dropdown and "Home" button linking to `/`
+    - Page header is an empty `<header id="app-header">` filled by `skeleton/nav-menu.js` (menu drawer, Back button, language dropdown on the right); no separate Home button (Home is a drawer link)
     - Placeholder `<main>` containers for topic-selection and lesson screens; `app.js` shows/hides them
-    - _Requirements: R11, R12, R13_
+    - _Requirements: R11, R12, R13, R16_
 
   - [ ] 8.3 Create `apps/ghost-tutor/app.js` — Topic selection screen
     - Import all skeleton modules, `api-client.js`, and `lesson-utils.js`
@@ -341,17 +353,18 @@ Build the Phantom Voice Kit from the ground up: project scaffolding → Express 
     { "id": 4, "tasks": ["4.1", "4.2", "4.3", "4.4"] },
     { "id": 5, "tasks": ["4.5", "4.6", "4.7", "4.8", "4.9", "4.10", "4.11"] },
     { "id": 6, "tasks": ["5.1"] },
-    { "id": 7, "tasks": ["6.1", "6.2"] },
-    { "id": 8, "tasks": ["6.3"] },
-    { "id": 9, "tasks": ["6.4"] },
-    { "id": 10, "tasks": ["6.5"] },
-    { "id": 11, "tasks": ["8.1", "8.2"] },
-    { "id": 12, "tasks": ["8.3"] },
-    { "id": 13, "tasks": ["8.4"] },
-    { "id": 14, "tasks": ["10.1", "10.2"] },
-    { "id": 15, "tasks": ["11.1", "11.2", "11.3", "11.4"] },
-    { "id": 16, "tasks": ["11.5"] },
-    { "id": 17, "tasks": ["11.6", "11.7", "11.8"] }
+    { "id": 7, "tasks": ["5.2"] },
+    { "id": 8, "tasks": ["6.1", "6.2"] },
+    { "id": 9, "tasks": ["6.3"] },
+    { "id": 10, "tasks": ["6.4"] },
+    { "id": 11, "tasks": ["6.5"] },
+    { "id": 12, "tasks": ["8.1", "8.2"] },
+    { "id": 13, "tasks": ["8.3"] },
+    { "id": 14, "tasks": ["8.4"] },
+    { "id": 15, "tasks": ["10.1", "10.2"] },
+    { "id": 16, "tasks": ["11.1", "11.2", "11.3", "11.4"] },
+    { "id": 17, "tasks": ["11.5"] },
+    { "id": 18, "tasks": ["11.6", "11.7", "11.8"] }
   ]
 }
 ```

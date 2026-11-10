@@ -67,6 +67,7 @@ This ensures `server/`, `.kiro/`, `.env`, `package.json`, and `LICENSE` are neve
 │   ├── language-dropdown.js
 │   ├── dual-display.js
 │   ├── text-fallback.js
+│   ├── nav-menu.js
 │   ├── theme.css
 │   └── api-client.js
 │
@@ -122,9 +123,24 @@ Exposes `renderDualDisplay(containerEl, { heardText, englishMeaning })`. If `hea
 
 Exposes `createTextFallback(containerEl, { onSubmit, onError })`. Renders a `<textarea>` (max 500 chars) and a submit button. Validates on submit: if the trimmed value is empty, calls `onError('empty')` with an inline validation message and does not call `onSubmit`. On a valid, non-whitespace submission, calls `onSubmit(text)`.
 
-### `theme.css`
+### `nav-menu.js`
 
-A stylesheet imported by all pages. Defines CSS custom properties for the Halloween palette (dark purples, oranges, ghost-white), typography (`@font-face` or Google Fonts with a fallback stack), ghost-themed iconography via CSS masks or inline SVG, and a mobile-first responsive baseline ensuring 44×44 px minimum touch targets and no horizontal overflow on widths 320–767 px. Asset load failures are handled by CSS fallbacks (background-color instead of background-image, etc.).
+Shared navigation header (Requirement 16). Exposes `createNavMenu(headerEl, { current, showBack, onBack, getLeaveMessage, onLeave })` and a small helper `createScreenHistory(firstScreen)`.
+
+**Header layout:** `headerEl` becomes a top bar (`.nav-header`) with a left group (hamburger button, then a "← Back" button) and a right slot that holds the language dropdown. `createNavMenu` returns `{ languageEl, setBackVisible(visible), closeMenu() }`; the page passes `languageEl` to `createLanguageDropdown` so the dropdown sits on the right of the bar. `showBack: false` (home screen) hides the Back button.
+
+**Drawer:** A `<nav>` drawer and a dimmed overlay are appended to `document.body`. The drawer slides in from the left (CSS transform) and lists Home (`/`), Spirit Clerk and Ghost Tutor. The link whose id equals `current` (`'home' | 'spirit-clerk' | 'ghost-tutor'`) gets `aria-current="page"` and a highlight class. The hamburger has `aria-controls`, `aria-expanded` (true/false) and an `aria-label` ("Open menu" / "Close menu"). The drawer closes on a link click, an overlay (outside) click, or the Escape key (focus returns to the hamburger). While closed it is `inert` / `visibility: hidden` so it is not reachable by keyboard.
+
+**Screen history:** `createScreenHistory(firstScreen)` returns `{ visit(name), back(), current(), canGoBack() }`. `visit` pushes a screen (or truncates the stack if the screen is already in it, so it never grows in a loop); `back` pops and returns the previous screen name. Each app creates one history, calls `visit` whenever it shows a screen, and passes an `onBack` callback.
+
+**Back behaviour:** `onBack()` is called first. It returns `true` if the app handled it by showing the previous screen. If it returns `false` (or is not provided), the module navigates to `/`. So on an app's first screen Back goes Home.
+
+**Leave guard:** Before any navigation (Back to Home, or a drawer link) the module calls `getLeaveMessage()`. If it returns a string, `window.confirm(message)` is shown and navigation continues only if the user accepts. Spirit Clerk returns "Your answers will be lost. Go back?" while the form-fill screen is active and not finished; the same message is used when Back would leave the form-fill screen for the upload screen.
+
+**Speech:** Every navigation first calls `window.speechSynthesis.cancel()` and the optional `onLeave()` hook (apps use it to stop the microphone). A `pagehide` listener also cancels speech.
+
+### `theme.css`
+A stylesheet imported by all pages. Defines CSS custom properties for the Halloween palette (dark purples, oranges, ghost-white), typography (`@font-face` or Google Fonts with a fallback stack), ghost-themed iconography via CSS masks or inline SVG, styles for the Navigation_Header (`.nav-header`, hamburger, Back button, drawer, overlay), and a mobile-first responsive baseline ensuring 44×44 px minimum touch targets and no horizontal overflow on widths 320–767 px. Asset load failures are handled by CSS fallbacks (background-color instead of background-image, etc.).
 
 ### `api-client.js`
 
@@ -152,6 +168,7 @@ Each function calls the corresponding `POST /api/*` endpoint, enforces a 5-secon
 | LanguageDropdown | `skeleton/language-dropdown.js` | `createLanguageDropdown(el, { onChange }) → void`; `getCurrentLanguage() → { label, bcp47 }`; reads/writes `sessionStorage.chosenLang` |
 | DualDisplay | `skeleton/dual-display.js` | `renderDualDisplay(el, { heardText, englishMeaning }) → void` |
 | TextFallback | `skeleton/text-fallback.js` | `createTextFallback(el, { onSubmit, onError }) → void` |
+| NavMenu | `skeleton/nav-menu.js` | `createNavMenu(headerEl, { current, showBack, onBack, getLeaveMessage, onLeave }) → { languageEl, setBackVisible(v), closeMenu() }`; `createScreenHistory(first) → { visit, back, current, canGoBack }` |
 | APIClient | `skeleton/api-client.js` | `translate()`, `extractFields()`, `lesson()`, `evaluate()` (see Skeleton Modules) |
 
 ### Backend Route Handlers
@@ -168,7 +185,7 @@ Each function calls the corresponding `POST /api/*` endpoint, enforces a 5-secon
 
 | App | Entry Point | Key Components Used |
 |---|---|---|
-| Home Screen | `index.html` | `language-dropdown.js`, `theme.css` |
+| Home Screen | `index.html` | `nav-menu.js`, `language-dropdown.js`, `theme.css` |
 | Spirit Clerk | `apps/spirit-clerk/index.html` + `app.js` | All skeleton modules |
 | Ghost Tutor | `apps/ghost-tutor/index.html` + `app.js` | All skeleton modules |
 
@@ -296,9 +313,9 @@ All Gemini calls set `responseMimeType: 'application/json'` in the generation co
 
 ### Home Screen (`index.html`)
 
-**Imports:** `language-dropdown.js`, `theme.css`
+**Imports:** `nav-menu.js`, `language-dropdown.js`, `theme.css`
 
-**Screen flow:** Single screen. On load, renders the Halloween-themed home screen with the language dropdown (English pre-selected), a "Spirit Clerk" button, and a "Ghost Tutor" button. The selected language is stored in `sessionStorage` under `chosenLang` (BCP-47 code) and `chosenLangLabel`. Clicking "Spirit Clerk" navigates to `apps/spirit-clerk/index.html`; clicking "Ghost Tutor" navigates to `apps/ghost-tutor/index.html`. The screen also shows a small tip with the exact text "For the best voices in Indian languages, open this app in Microsoft Edge." (R13.8).
+**Screen flow:** Single screen. On load, renders the Navigation_Header (menu button visible, Back hidden) with the language dropdown on its right, and the Halloween-themed home screen with the language selection (English pre-selected), a "Spirit Clerk" button, and a "Ghost Tutor" button. The selected language is stored in `sessionStorage` under `chosenLang` (BCP-47 code) and `chosenLangLabel`. Clicking "Spirit Clerk" navigates to `apps/spirit-clerk/index.html`; clicking "Ghost Tutor" navigates to `apps/ghost-tutor/index.html`. The screen also shows a small tip with the exact text "For the best voices in Indian languages, open this app in Microsoft Edge." (R13.8).
 
 **Key interactions:** Language change updates `sessionStorage` immediately. Navigation preserves the selection because both child apps read `sessionStorage` on load.
 
@@ -306,7 +323,7 @@ All Gemini calls set `responseMimeType: 'application/json'` in the generation co
 
 ### Spirit Clerk (`apps/spirit-clerk/`)
 
-**Imports:** `speech-input.js`, `speech-output.js`, `dual-display.js`, `text-fallback.js`, `api-client.js`, `language-dropdown.js`, `theme.css`
+**Imports:** `nav-menu.js`, `speech-input.js`, `speech-output.js`, `dual-display.js`, `text-fallback.js`, `api-client.js`, `language-dropdown.js`, `theme.css`
 
 **Screen flow:**
 
@@ -316,13 +333,13 @@ All Gemini calls set `responseMimeType: 'application/json'` in the generation co
 
 The language dropdown is displayed in the page header. When the user changes the language, the Spirit Clerk re-creates the active `SpeechInput` and `SpeechOutput` instances with the new BCP-47 code (after any in-progress speech completes), satisfying R1.3.
 
-**Home button:** Always visible; navigates back to `index.html`.
+**Navigation:** The page header is the shared Navigation_Header (menu drawer with Home / Spirit Clerk / Ghost Tutor links, Back button, language dropdown on the right); there is no separate Home button. Screens are `upload` -> `form-fill` -> `summary` and are tracked with `createScreenHistory('upload')`. Back on the summary screen returns to the last question of the form-fill screen (answers are kept); Back on the form-fill screen asks "Your answers will be lost. Go back?" and then returns to the upload screen; Back on the upload screen goes to Home. The same confirmation is shown when a drawer link is used during form-fill. Speech and the microphone are stopped on every navigation.
 
 ---
 
 ### Ghost Tutor (`apps/ghost-tutor/`)
 
-**Imports:** `speech-input.js`, `speech-output.js`, `dual-display.js`, `text-fallback.js`, `api-client.js`, `language-dropdown.js`, `theme.css`
+**Imports:** `nav-menu.js`, `speech-input.js`, `speech-output.js`, `dual-display.js`, `text-fallback.js`, `api-client.js`, `language-dropdown.js`, `theme.css`
 
 **Screen flow:**
 
@@ -332,7 +349,7 @@ The language dropdown is displayed in the page header. When the user changes the
 
 The language dropdown is displayed in the page header. When the user changes the language, the Ghost Tutor re-creates the active `SpeechInput` and `SpeechOutput` instances with the new BCP-47 code (after any in-progress speech completes), satisfying R1.3.
 
-**Home button:** Always visible; navigates back to `index.html`.
+**Navigation:** The page header is the shared Navigation_Header (menu drawer with Home / Spirit Clerk / Ghost Tutor links, Back button, language dropdown on the right); there is no separate Home button. Screens are `topic` -> `lesson` and are tracked with `createScreenHistory('topic')`; Back on the lesson screen returns to topic selection, and Back on topic selection goes to Home. Speech is stopped on every navigation.
 
 ---
 

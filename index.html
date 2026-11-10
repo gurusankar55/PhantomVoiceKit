@@ -26,19 +26,17 @@
   </style>
 </head>
 <body>
-  <header class="home-header">
+  <!-- Navigation header (menu, language dropdown) is filled in by nav-menu.js -->
+  <header id="app-header"></header>
+
+  <div class="home-header">
     <!-- Ghost mascot (decorative, so hidden from screen readers) -->
     <div class="home-ghost"><span class="icon-ghost" aria-hidden="true"></span></div>
     <h1>Phantom Voice Kit</h1>
     <p class="home-subtitle">Speak your language. The ghosts will listen.</p>
-  </header>
+  </div>
 
   <main>
-    <!-- The language dropdown is rendered into this container by language-dropdown.js -->
-    <section class="home-section" aria-label="Choose your language">
-      <div id="language-container"></div>
-    </section>
-
     <!-- Navigation to the two apps. Links styled as large buttons. -->
     <nav class="home-section home-choices" aria-label="Choose an app">
       <a class="btn btn--large" href="/apps/spirit-clerk/index.html">
@@ -55,10 +53,18 @@
   </main>
 
   <script type="module">
+    import { createNavMenu } from '/skeleton/nav-menu.js';
     import { createLanguageDropdown } from '/skeleton/language-dropdown.js';
 
-    // Renders the dropdown (English by default) and saves the choice to sessionStorage.
-    createLanguageDropdown(document.getElementById('language-container'));
+    // Build the header (no Back button on the home screen).
+    const nav = createNavMenu(document.getElementById('app-header'), {
+      current: 'home',
+      showBack: false,
+    });
+
+    // Renders the dropdown (English by default) on the right of the header
+    // and saves the choice to sessionStorage.
+    createLanguageDropdown(nav.languageEl);
   </script>
 </body>
 </html>

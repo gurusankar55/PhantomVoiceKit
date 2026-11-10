@@ -1,0 +1,259 @@
+// nav-menu.js
+// Shared navigation header (Requirement 16):
+//   [ ☰ menu ] [ ← Back ]                     [ language dropdown ]
+// plus a slide-in drawer with links to Home, Spirit Clerk and Ghost Tutor.
+//
+// Nothing here touches `document` or `window` when the file is loaded,
+// so createScreenHistory can be imported and tested in plain Node.
+
+// ---------------------------------------------------------------------------
+// Screen history
+// ---------------------------------------------------------------------------
+
+// Keeps track of which in-app screens the user has seen, so Back can return
+// to the previous one.
+export function createScreenHistory(firstScreen) {
+  const stack = [firstScreen];
+
+  return {
+    // Remember that `name` is now showing.
+    visit(name) {
+      const top = stack[stack.length - 1];
+      if (name === top) return; // already showing: nothing to do
+
+      const index = stack.indexOf(name);
+      if (index !== -1) {
+        // Seen before: cut the stack back to it so it never loops.
+        stack.length = index + 1;
+      } else {
+        stack.push(name);
+      }
+    },
+
+    // Remove the current screen and return the previous one (or null).
+    back() {
+      if (stack.length <= 1) return null;
+      stack.pop();
+      return stack[stack.length - 1];
+    },
+
+    // Name of the screen being shown now.
+    current() {
+      return stack[stack.length - 1];
+    },
+
+    // True when there is a previous screen to go back to.
+    canGoBack() {
+      return stack.length > 1;
+    },
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Navigation header
+// ---------------------------------------------------------------------------
+
+// The pages that can appear in the menu.
+const MENU_LINKS = [
+  { id: 'home', label: 'Home', href: '/' },
+  { id: 'spirit-clerk', label: 'Spirit Clerk', href: '/apps/spirit-clerk/index.html' },
+  { id: 'ghost-tutor', label: 'Ghost Tutor', href: '/apps/ghost-tutor/index.html' },
+];
+
+// Stop any speech that is currently playing (safe if unsupported).
+function cancelSpeech() {
+  window.speechSynthesis?.cancel();
+}
+
+export function createNavMenu(
+  headerEl,
+  { current, showBack = true, onBack, getLeaveMessage, onLeave } = {}
+) {
+  // --- Remove any drawer/overlay from an earlier call (avoid duplicates) ---
+  document.querySelectorAll('.nav-drawer, .nav-overlay').forEach((el) => el.remove());
+
+  // --- Header bar ----------------------------------------------------------
+  headerEl.textContent = '';
+  headerEl.classList.add('nav-header');
+
+  const bar = document.createElement('div');
+  bar.className = 'nav-bar';
+
+  const leftGroup = document.createElement('div');
+  leftGroup.className = 'nav-left';
+
+  // Hamburger button with three lines
+  const toggle = document.createElement('button');
+  toggle.type = 'button';
+  toggle.className = 'nav-toggle';
+  toggle.setAttribute('aria-controls', 'nav-drawer');
+  toggle.setAttribute('aria-expanded', 'false');
+  toggle.setAttribute('aria-label', 'Open menu');
+  for (let i = 0; i < 3; i++) {
+    const line = document.createElement('span');
+    line.className = 'nav-toggle-line';
+    toggle.appendChild(line);
+  }
+
+  // Back button
+  const backBtn = document.createElement('button');
+  backBtn.type = 'button';
+  backBtn.className = 'nav-back';
+  backBtn.setAttribute('aria-label', 'Go back');
+  backBtn.textContent = '← Back';
+  backBtn.hidden = !showBack;
+
+  leftGroup.appendChild(toggle);
+  leftGroup.appendChild(backBtn);
+
+  // Right slot: the page passes this to createLanguageDropdown
+  const languageEl = document.createElement('div');
+  languageEl.className = 'nav-lang';
+
+  bar.appendChild(leftGroup);
+  bar.appendChild(languageEl);
+  headerEl.appendChild(bar);
+
+  // --- Drawer and overlay --------------------------------------------------
+  const drawer = document.createElement('nav');
+  drawer.className = 'nav-drawer';
+  drawer.id = 'nav-drawer';
+  drawer.setAttribute('aria-label', 'Main menu');
+  drawer.inert = true; // closed: not reachable by keyboard
+
+  const title = document.createElement('p');
+  title.className = 'nav-drawer-title';
+  title.textContent = 'Phantom Voice Kit';
+  drawer.appendChild(title);
+
+  const links = [];
+  for (const item of MENU_LINKS) {
+    const a = document.createElement('a');
+    a.className = 'nav-link';
+    a.href = item.href;
+
+    const icon = document.createElement('span');
+    icon.className = 'icon-ghost';
+    icon.setAttribute('aria-hidden', 'true');
+
+    const text = document.createElement('span');
+    text.textContent = item.label;
+
+    a.appendChild(icon);
+    a.appendChild(text);
+
+    if (item.id === current) {
+      a.classList.add('is-current');
+      a.setAttribute('aria-current', 'page');
+    }
+
+    a.addEventListener('click', (event) => {
+      event.preventDefault();
+      closeMenu(false);
+      // Already on this page: just close the menu, do not reload.
+      if (item.id === current) return;
+      goTo(item.href);
+    });
+
+    drawer.appendChild(a);
+    links.push(a);
+  }
+
+  const overlay = document.createElement('div');
+  overlay.className = 'nav-overlay';
+
+  document.body.appendChild(drawer);
+  document.body.appendChild(overlay);
+
+  // --- Behaviour -----------------------------------------------------------
+  let isOpen = false;
+
+  function openMenu() {
+    isOpen = true;
+    drawer.inert = false;
+    drawer.classList.add('is-open');
+    overlay.classList.add('is-open');
+    document.body.classList.add('nav-open'); // lightly lock page scroll
+    toggle.setAttribute('aria-expanded', 'true');
+    toggle.setAttribute('aria-label', 'Close menu');
+    links[0]?.focus();
+  }
+
+  // returnFocus: put focus back on the hamburger (used for Escape).
+  function closeMenu(returnFocus = false) {
+    if (!isOpen) return;
+    isOpen = false;
+    drawer.classList.remove('is-open');
+    overlay.classList.remove('is-open');
+    document.body.classList.remove('nav-open');
+    toggle.setAttribute('aria-expanded', 'false');
+    toggle.setAttribute('aria-label', 'Open menu');
+    drawer.inert = true;
+    if (returnFocus) toggle.focus();
+  }
+
+  // Leave the page, unless the app asks for confirmation and the user declines.
+  function goTo(href) {
+    const message = getLeaveMessage?.();
+    if (typeof message === 'string' && message !== '' && !window.confirm(message)) {
+      return;
+    }
+    cancelSpeech();
+    onLeave?.();
+    window.location.href = href;
+  }
+
+  toggle.addEventListener('click', () => {
+    if (isOpen) closeMenu(true);
+    else openMenu();
+  });
+
+  overlay.addEventListener('click', () => closeMenu(false));
+
+  backBtn.addEventListener('click', () => {
+    // The app may handle Back itself (show its previous screen).
+    if (onBack && onBack() === true) {
+      cancelSpeech();
+      return;
+    }
+    goTo('/');
+  });
+
+  // Escape closes the menu; Tab stays inside the drawer while it is open.
+  document.addEventListener('keydown', (event) => {
+    if (!isOpen) return;
+
+    if (event.key === 'Escape') {
+      closeMenu(true);
+      return;
+    }
+
+    if (event.key === 'Tab') {
+      const first = links[0];
+      const last = links[links.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      } else if (!drawer.contains(document.activeElement)) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+  });
+
+  // Stop speech whenever the page is left or hidden.
+  window.addEventListener('pagehide', cancelSpeech);
+
+  return {
+    languageEl,
+    setBackVisible(visible) {
+      backBtn.hidden = !visible;
+    },
+    closeMenu() {
+      closeMenu(false);
+    },
+  };
+}
