@@ -409,6 +409,16 @@
         "executionId": "cb9d9fb0-e46b-46a7-ac85-4b4913f11d6b",
         "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
         "timestamp": 1794323774124
+      },
+      {
+        "executionId": "e77c3706-c099-4a43-9046-76aba16971cd",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794324644277
+      },
+      {
+        "executionId": "e77c3706-c099-4a43-9046-76aba16971cd",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794325126053
       }
     ],
     "6.6 Apply localization to Spirit Clerk": [
@@ -421,6 +431,16 @@
         "executionId": "cb9d9fb0-e46b-46a7-ac85-4b4913f11d6b",
         "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
         "timestamp": 1794323974768
+      },
+      {
+        "executionId": "e77c3706-c099-4a43-9046-76aba16971cd",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794324645164
+      },
+      {
+        "executionId": "e77c3706-c099-4a43-9046-76aba16971cd",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794325127714
       }
     ],
     "4.13 Create `skeleton/locales/*.json` (20 files)": [
@@ -452,6 +472,61 @@
         "executionId": "cb9d9fb0-e46b-46a7-ac85-4b4913f11d6b",
         "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
         "timestamp": 1794324244213
+      }
+    ],
+    "8.1 Create `apps/ghost-tutor/style.css`": [
+      {
+        "executionId": "e77c3706-c099-4a43-9046-76aba16971cd",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794325136279
+      },
+      {
+        "executionId": "e77c3706-c099-4a43-9046-76aba16971cd",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794325700347
+      }
+    ],
+    "8.2 Create `apps/ghost-tutor/index.html`": [
+      {
+        "executionId": "e77c3706-c099-4a43-9046-76aba16971cd",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794325137416
+      },
+      {
+        "executionId": "e77c3706-c099-4a43-9046-76aba16971cd",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794325701258
+      }
+    ],
+    "8.3 Create `apps/ghost-tutor/app.js` — Topic selection screen": [
+      {
+        "executionId": "e77c3706-c099-4a43-9046-76aba16971cd",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794325712173
+      },
+      {
+        "executionId": "e77c3706-c099-4a43-9046-76aba16971cd",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794328447266
+      }
+    ],
+    "8.4 Create `apps/ghost-tutor/app.js` — Lesson screen": [
+      {
+        "executionId": "e77c3706-c099-4a43-9046-76aba16971cd",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794328448047
+      },
+      {
+        "executionId": "e77c3706-c099-4a43-9046-76aba16971cd",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794329017882
+      }
+    ],
+    "8. Implement Ghost Tutor app": [
+      {
+        "executionId": "e77c3706-c099-4a43-9046-76aba16971cd",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794329018630
       }
     ]
   }

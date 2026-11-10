@@ -42,6 +42,7 @@ const screens = {
   summary: document.getElementById('screen-summary'),
 };
 const fileInput = document.getElementById('file-input');
+const fileName = document.getElementById('file-name');
 const uploadConfirm = document.getElementById('upload-confirm');
 const uploadMessage = document.getElementById('upload-message');
 const uploadLoading = document.getElementById('upload-loading');
@@ -212,6 +213,11 @@ function validateFile(file) {
   return '';
 }
 
+// Show the translated "No file chosen" text next to the picker button.
+function showNoFileChosen() {
+  setI18nText(fileName, 'spiritClerk.noFileChosen');
+}
+
 // When the user picks a file: validate it before anything is sent.
 fileInput.addEventListener('change', () => {
   clearUploadMessage();
@@ -219,14 +225,21 @@ fileInput.addEventListener('change', () => {
   uploadConfirm.disabled = true;
 
   const file = fileInput.files && fileInput.files[0];
-  if (!file) return;
+  if (!file) {
+    showNoFileChosen(); // the user cancelled the picker
+    return;
+  }
 
   const problem = validateFile(file);
   if (problem) {
+    showNoFileChosen();
     showUploadMessage(problem);
     return;
   }
 
+  // File names are user data, so they are shown as plain text (not translated).
+  clearI18n(fileName);
+  fileName.textContent = file.name;
   state.selectedFile = file;
   uploadConfirm.disabled = false;
 });

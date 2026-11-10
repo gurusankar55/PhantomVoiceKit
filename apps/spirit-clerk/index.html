@@ -19,7 +19,13 @@
     <section id="screen-upload" class="screen">
       <h2 data-i18n="spiritClerk.uploadHeading">Upload your form</h2>
       <label for="file-input" data-i18n="spiritClerk.fileLabel">Choose a PDF or a photo of your form</label>
-      <input type="file" id="file-input" accept="application/pdf,image/jpeg,image/png,image/webp" />
+      <!-- The real input is visually hidden; the label below acts as our own translated button.
+           The input must come BEFORE the button so the focus style (sibling selector) works. -->
+      <div class="file-picker">
+        <input type="file" id="file-input" class="file-input-hidden" accept="application/pdf,image/jpeg,image/png,image/webp" />
+        <label for="file-input" class="btn btn--secondary file-picker-button" data-i18n="spiritClerk.chooseFile">Choose file</label>
+        <span id="file-name" class="file-name" data-i18n="spiritClerk.noFileChosen" aria-live="polite">No file chosen</span>
+      </div>
       <button id="upload-confirm" type="button" class="btn" disabled data-i18n="spiritClerk.readForm">Read my form</button>
       <p id="upload-message" class="error-message" role="alert" hidden></p>
       <div id="upload-loading" hidden><span class="spinner"></span> <span data-i18n="spiritClerk.reading">Reading your form...</span></div>

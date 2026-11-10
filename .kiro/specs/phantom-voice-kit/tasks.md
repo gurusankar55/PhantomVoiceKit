@@ -253,13 +253,13 @@ Build the Phantom Voice Kit from the ground up: project scaffolding → Express 
 - [x] 7. Checkpoint — verify Spirit Clerk
   - Run the app, upload a sample form, complete a guided fill in at least one non-English language, and download the PDF summary.
 
-- [ ] 8. Implement Ghost Tutor app
-  - [ ] 8.1 Create `apps/ghost-tutor/style.css`
+- [x] 8. Implement Ghost Tutor app
+  - [x] 8.1 Create `apps/ghost-tutor/style.css`
     - Extend `skeleton/theme.css` with Ghost Tutor–specific layout rules
     - Topic selection screen, lesson card, quiz area, feedback area, loading spinner styles
     - _Requirements: R6_
 
-  - [ ] 8.2 Create `apps/ghost-tutor/index.html`
+  - [x] 8.2 Create `apps/ghost-tutor/index.html`
     - Import `theme.css`, `style.css`, `app.js` (type="module")
     - All skeleton files must be loaded with absolute paths (e.g. `/skeleton/theme.css`, `/skeleton/language-dropdown.js`, `/skeleton/api-client.js`) and `app.js` must be referenced as `/apps/ghost-tutor/app.js`
     - Page header is an empty `<header id="app-header">` filled by `skeleton/nav-menu.js` (menu drawer, Back button, language dropdown on the right); no separate Home button (Home is a drawer link)
@@ -267,7 +267,7 @@ Build the Phantom Voice Kit from the ground up: project scaffolding → Express 
     - Mark fixed text with `data-i18n`; Ghost Tutor strings are added to `skeleton/locales/en.json` (the sync hook adds them to the other 19 files); `app.js` awaits `initI18n()`; styles use CSS logical properties
     - _Requirements: R11, R12, R13, R16, R17_
 
-  - [ ] 8.3 Create `apps/ghost-tutor/app.js` — Topic selection screen
+  - [x] 8.3 Create `apps/ghost-tutor/app.js` — Topic selection screen
     - Import all skeleton modules, `api-client.js`, and `lesson-utils.js`
     - Render 5–20 suggested topic buttons plus a free-text input (max 100 chars)
     - Validate non-empty, non-whitespace on submit; show inline error if invalid
@@ -276,7 +276,7 @@ Build the Phantom Voice Kit from the ground up: project scaffolding → Express 
     - On timeout / error: show inline error; preserve topic so user can retry without retyping
     - _Requirements: R11_
 
-  - [ ] 8.4 Create `apps/ghost-tutor/app.js` — Lesson screen
+  - [x] 8.4 Create `apps/ghost-tutor/app.js` — Lesson screen
     - Iterate `segments[0..3]` locally using a `segmentIndex` counter
     - For each segment: speak `segment` text via `speech-output.js`; display transcript within 500 ms of audio start
     - Speak and display `quizQuestion`; open a 30-second answer window

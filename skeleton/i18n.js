@@ -95,6 +95,9 @@ export async function setLocale(bcp47) {
     document.documentElement.lang = currentState.bcp47;
     document.documentElement.dir = dir;
     applyTranslations(document);
+    // Reveal the page (theme.css hides it until this class is set).
+    // This also runs when the locale failed to load and English is used.
+    document.documentElement.classList.add('i18n-ready');
   }
 
   // Tell listeners (copy first so they can unsubscribe while we loop).

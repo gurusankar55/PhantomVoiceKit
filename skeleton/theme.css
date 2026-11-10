@@ -110,6 +110,18 @@ a {
   text-underline-offset: 3px;
 }
 
+/* Content is hidden until the chosen locale file has loaded (i18n.js adds the
+   i18n-ready class), and shown anyway after 1.5 s. Pure CSS, so the page
+   still appears if JavaScript fails. */
+html:not(.i18n-ready) body {
+  visibility: hidden;
+  animation: pvk-reveal 0s linear 1.5s forwards;
+}
+
+@keyframes pvk-reveal {
+  to { visibility: visible; }
+}
+
 /* ---------- 3. Focus outlines (high contrast on dark purple) ---------- */
 :focus-visible {
   outline: 3px solid var(--color-focus);
@@ -278,7 +290,7 @@ textarea {
   padding: var(--space-3);
   background-color: var(--color-surface);
   border: 2px solid var(--color-border);
-  border-left: 6px solid var(--color-orange);
+  border-inline-start: 6px solid var(--color-orange);
   border-radius: var(--radius);
 }
 
@@ -307,11 +319,11 @@ textarea {
 
 /* Modifier classes for the two sections */
 .dual-display__heard {
-  border-left-color: var(--color-orange);
+  border-inline-start-color: var(--color-orange);
 }
 
 .dual-display__english {
-  border-left-color: var(--color-ghost);
+  border-inline-start-color: var(--color-ghost);
 }
 
 /* ---------- 9. Spinner ---------- */
@@ -456,12 +468,22 @@ textarea {
   color: var(--color-ghost);
 }
 
+/* The arrow must be inline-block so it can be transformed.
+   In right-to-left languages it is mirrored to point right. */
+.nav-back-arrow {
+  display: inline-block;
+}
+
+[dir="rtl"] .nav-back-arrow {
+  transform: scaleX(-1);
+}
+
 /* Right slot for the language dropdown; it may shrink on narrow screens */
 .nav-lang {
   flex: 1 1 auto;
   min-width: 0;
-  margin-left: auto;
-  text-align: right;
+  margin-inline-start: auto;
+  text-align: end;
 }
 
 .nav-lang .language-select {
@@ -487,7 +509,7 @@ textarea {
 .nav-drawer {
   position: fixed;
   top: 0;
-  left: 0;
+  inset-inline-start: 0;
   z-index: 70;
   width: min(80vw, 320px);
   height: 100%;
@@ -495,14 +517,20 @@ textarea {
   overflow-y: auto;
   background-color: var(--color-bg-alt);
   background-image: linear-gradient(180deg, var(--color-surface) 0%, var(--color-bg) 100%);
-  border-right: 4px solid var(--color-orange);
+  border-inline-end: 4px solid var(--color-orange);
   transform: translateX(-100%);
   visibility: hidden;
   transition: transform 0.25s ease, visibility 0s linear 0.25s;
 }
 
-.nav-drawer.is-open {
-  transform: translateX(0);
+/* Right-to-left: the drawer sits on the right and slides in from the right */
+[dir="rtl"] .nav-drawer {
+  transform: translateX(100%);
+}
+
+.nav-drawer.is-open,
+[dir="rtl"] .nav-drawer.is-open {
+  transform: none;
   visibility: visible;
   transition: transform 0.25s ease, visibility 0s;
 }
@@ -525,7 +553,7 @@ textarea {
   font-weight: 700;
   color: var(--color-ghost);
   text-decoration: none;
-  border-left: 5px solid transparent;
+  border-inline-start: 5px solid transparent;
   border-radius: var(--radius);
 }
 
@@ -536,7 +564,7 @@ textarea {
 .nav-link.is-current {
   color: #1a0f2e;
   background-color: var(--color-orange);
-  border-left-color: var(--color-ghost);
+  border-inline-start-color: var(--color-ghost);
 }
 
 .nav-link.is-current .icon-ghost {
@@ -546,10 +574,7 @@ textarea {
 /* Dim layer behind the drawer */
 .nav-overlay {
   position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
+  inset: 0;
   z-index: 60;
   background-color: rgba(10, 5, 20, 0.7);
   opacity: 0;

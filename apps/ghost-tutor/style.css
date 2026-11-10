@@ -1,0 +1,321 @@
+/* ==========================================================================
+   Ghost Tutor styles (apps/ghost-tutor/style.css)
+   Extends /skeleton/theme.css - load the theme first, then this file.
+   Only logical CSS properties are used (inline-start/end, margin-inline...)
+   so the layout mirrors automatically in RTL languages (Arabic, Urdu).
+   ========================================================================== */
+
+/* ---------- Page heading ---------- */
+.app-title {
+  text-align: center;
+  margin: var(--space-3) 0;
+  color: var(--color-orange);
+  text-shadow: 0 0 12px var(--color-border);
+}
+
+/* ---------- Layout: the app and its screens ---------- */
+#app {
+  width: 100%;
+  max-width: 100%;
+  margin-inline: auto;
+}
+
+.screen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+  max-width: 100%;
+  padding: var(--space-3);
+  background-color: var(--color-bg-alt);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+/* Children should never push the screen wider than the viewport */
+.screen > * {
+  min-width: 0;
+  max-width: 100%;
+  margin-block: 0;
+}
+
+/* ---------- Shared message lines (collapse when empty) ---------- */
+#topic-message,
+#mic-message,
+#quiz-message {
+  min-height: 1.5em;
+  font-weight: 700;
+  color: var(--color-error-text);
+}
+
+#topic-message:empty,
+#mic-message:empty,
+#quiz-message:empty {
+  min-height: 0;
+}
+
+/* ---------- Loading blocks (centered spinner + text) ---------- */
+.loading,
+#topic-loading,
+#lesson-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-3);
+  text-align: center;
+  color: var(--color-ghost-dim);
+}
+
+/* ---------- Topic screen ---------- */
+.topic-hint {
+  margin: 0;
+  color: var(--color-ghost-dim);
+}
+
+/* Suggestion chips wrap onto several lines on narrow screens */
+.topic-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.topic-chip {
+  flex: 0 1 auto;
+  min-width: var(--touch-min);
+  min-height: var(--touch-min);
+  max-width: 100%;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  /* Long topic names wrap instead of overflowing */
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: center;
+  color: var(--color-ghost);
+  background-color: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: 999px;
+}
+
+.topic-chip:hover {
+  color: var(--color-ghost);
+  background-color: var(--color-border);
+}
+
+/* Selected chip is highlighted orange */
+.topic-chip.is-selected,
+.topic-chip.is-selected:hover {
+  color: #1a0f2e;
+  background-color: var(--color-orange);
+  border-color: var(--color-orange-light);
+}
+
+#topic-input {
+  width: 100%;
+}
+
+#topic-start {
+  width: 100%;
+}
+
+/* ---------- Lesson screen ---------- */
+#lesson-progress {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-align: center;
+  color: var(--color-orange-light);
+}
+
+/* The lesson text card: surface background, orange edge at the start side */
+.lesson-card {
+  padding: var(--space-3);
+  background-color: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-inline-start: 6px solid var(--color-orange);
+  border-radius: var(--radius);
+}
+
+.lesson-card__heading {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: start;
+  color: var(--color-orange-light);
+}
+
+/* Large, readable lesson text */
+#segment-text {
+  margin: 0;
+  font-size: 1.25rem;
+  line-height: 1.6;
+  text-align: start;
+  color: var(--color-ghost);
+}
+
+#lesson-audio-note {
+  margin: 0;
+  font-size: 0.95rem;
+  font-style: italic;
+  text-align: center;
+  color: var(--color-ghost-dim);
+}
+
+/* ---------- Quiz area ---------- */
+.quiz-area {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.quiz-area > * {
+  min-width: 0;
+  max-width: 100%;
+  margin-block: 0;
+}
+
+.quiz-heading {
+  font-size: 1.25rem;
+  text-align: center;
+}
+
+#quiz-question {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: center;
+  color: var(--color-ghost);
+}
+
+/* Big round-ish microphone button (same look as Spirit Clerk) */
+#mic-button {
+  align-self: center;
+  width: 7rem;
+  height: 7rem;
+  min-width: var(--touch-min);
+  min-height: var(--touch-min);
+  padding: 0;
+  font-size: 1.1rem;
+  border-radius: 40%;
+  border-width: 3px;
+  box-shadow: 0 0 0 4px var(--color-surface);
+}
+
+#mic-message,
+#quiz-message {
+  text-align: center;
+}
+
+/* Listening state: orange glow that pulses */
+#mic-button.listening,
+.listening {
+  color: var(--color-ghost);
+  background-color: var(--color-orange-dark);
+  border-color: var(--color-orange-light);
+  box-shadow: 0 0 0 4px var(--color-orange-light);
+  animation: gt-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes gt-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 4px var(--color-orange-light), 0 0 0 4px rgba(255, 122, 26, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 0 4px var(--color-orange-light), 0 0 0 16px rgba(255, 122, 26, 0);
+  }
+}
+
+#text-fallback-container,
+#dual-display-container {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* ---------- Feedback area (ghost-white edge) ---------- */
+.feedback-area {
+  padding: var(--space-3);
+  background-color: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-inline-start: 6px solid var(--color-ghost);
+  border-radius: var(--radius);
+}
+
+#feedback-text {
+  margin: 0;
+  font-size: 1.15rem;
+  line-height: 1.5;
+  text-align: start;
+  color: var(--color-ghost);
+}
+
+/* ---------- Lesson complete card ---------- */
+.complete-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-3);
+  text-align: center;
+  background-color: var(--color-surface);
+  border: 3px solid var(--color-orange);
+  border-radius: var(--radius);
+  box-shadow: 0 0 16px var(--color-border);
+}
+
+.complete-area .icon-ghost {
+  width: 4rem;
+  height: 4rem;
+}
+
+#complete-text {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--color-ghost);
+}
+
+#new-topic {
+  width: 100%;
+}
+
+/* ---------- Tablet and up ---------- */
+@media (min-width: 768px) {
+  .screen {
+    padding: var(--space-4);
+  }
+
+  #quiz-question {
+    font-size: 1.75rem;
+  }
+
+  #segment-text {
+    font-size: 1.35rem;
+  }
+
+  #topic-start,
+  #new-topic {
+    width: auto;
+    align-self: flex-start;
+    min-width: 12rem;
+  }
+
+  #new-topic {
+    align-self: center;
+  }
+}
+
+/* ---------- Reduced motion: no pulsing ---------- */
+@media (prefers-reduced-motion: reduce) {
+  #mic-button.listening,
+  .listening {
+    animation: none;
+  }
+}

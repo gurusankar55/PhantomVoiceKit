@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title data-i18n="ghostTutor.pageTitle">Ghost Tutor</title>
+  <!-- Shared theme and app styles (absolute paths, per project rules) -->
+  <link rel="stylesheet" href="/skeleton/theme.css" />
+  <link rel="stylesheet" href="/apps/ghost-tutor/style.css" />
+</head>
+<body>
+  <!-- Shared navigation header (menu, Back, language) is built by skeleton/nav-menu.js -->
+  <header id="app-header"></header>
+
+  <main id="app">
+    <h1 class="app-title" data-i18n="ghostTutor.title">Ghost Tutor</h1>
+
+    <!-- Screen 1: pick a topic -->
+    <section id="screen-topic" class="screen">
+      <h2 data-i18n="ghostTutor.topicHeading">Pick a topic</h2>
+      <p class="topic-hint" data-i18n="ghostTutor.topicHint">Tap a topic or type your own.</p>
+      <!-- Suggestion buttons are added by app.js -->
+      <div id="topic-suggestions" class="topic-grid" role="group" data-i18n-attr="aria-label:ghostTutor.suggestionsLabel" aria-label="Suggested topics"></div>
+
+      <label for="topic-input" data-i18n="ghostTutor.topicLabel">Or type a topic</label>
+      <input type="text" id="topic-input" maxlength="100" autocomplete="off" data-i18n-attr="placeholder:ghostTutor.topicPlaceholder" placeholder="For example: the moon" />
+      <button id="topic-start" type="button" class="btn" data-i18n="ghostTutor.start">Start lesson</button>
+      <p id="topic-message" class="error-message" role="alert" hidden></p>
+      <div id="topic-loading" class="loading" hidden><span class="spinner"></span> <span data-i18n="ghostTutor.loadingLesson">Preparing your lesson...</span></div>
+    </section>
+
+    <!-- Screen 2: listen to a segment, answer the quiz, hear feedback -->
+    <section id="screen-lesson" class="screen" hidden>
+      <p id="lesson-progress"></p>
+      <div id="lesson-loading" class="loading" hidden><span class="spinner"></span> <span data-i18n="ghostTutor.pleaseWait">Please wait...</span></div>
+
+      <article id="lesson-card" class="lesson-card">
+        <h2 class="lesson-card__heading" data-i18n="ghostTutor.lessonHeading">Listen</h2>
+        <p id="segment-text"></p>
+      </article>
+      <p id="lesson-audio-note" hidden></p>
+
+      <div id="quiz-area" class="quiz-area" hidden>
+        <h3 class="quiz-heading" data-i18n="ghostTutor.quizHeading">Quiz question</h3>
+        <p id="quiz-question"></p>
+        <button id="mic-button" type="button" class="btn" data-i18n="ghostTutor.speak">Speak</button>
+        <p id="mic-message" hidden></p>
+        <!-- Typed-answer fallback is rendered here by app.js -->
+        <div id="text-fallback-container"></div>
+        <!-- Shows the answer in the user's language and in English -->
+        <div id="dual-display-container" hidden></div>
+        <p id="quiz-message" role="alert" hidden></p>
+      </div>
+
+      <div id="feedback-area" class="feedback-area" hidden>
+        <h3 data-i18n="ghostTutor.feedbackHeading">Feedback</h3>
+        <p id="feedback-text"></p>
+      </div>
+
+      <div id="complete-area" class="complete-area" hidden>
+        <span class="icon-ghost" aria-hidden="true"></span>
+        <h3 data-i18n="ghostTutor.completeHeading">Well done!</h3>
+        <p id="complete-text" data-i18n="ghostTutor.complete">You finished this topic.</p>
+        <button id="new-topic" type="button" class="btn" data-i18n="ghostTutor.newTopic">Pick another topic</button>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="/apps/ghost-tutor/app.js"></script>
+</body>
+</html>
