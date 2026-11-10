@@ -1,4 +1,4 @@
-/* ==========================================================================
+﻿/* ==========================================================================
    Spirit Clerk styles (apps/spirit-clerk/style.css)
    Extends /skeleton/theme.css - load the theme first, then this file.
    Only layout rules live here; colors/sizes come from the theme's variables.
@@ -102,7 +102,7 @@
   text-align: center;
   color: var(--color-ghost);
   background-color: var(--color-surface);
-  border-left: 6px solid var(--color-orange);
+  border-inline-start: 6px solid var(--color-orange);
   border-radius: var(--radius);
 }
 
@@ -189,7 +189,7 @@
   padding: var(--space-3);
   background-color: var(--color-surface);
   border: 2px solid var(--color-border);
-  border-left: 6px solid var(--color-orange);
+  border-inline-start: 6px solid var(--color-orange);
   border-radius: var(--radius);
 }
 
@@ -208,7 +208,7 @@
 
 /* Skipped fields look dimmer so they stand apart */
 .summary-item--skipped {
-  border-left-color: var(--color-border);
+  border-inline-start-color: var(--color-border);
   opacity: 0.8;
 }
 

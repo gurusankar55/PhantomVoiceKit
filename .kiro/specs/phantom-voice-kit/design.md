@@ -68,6 +68,10 @@ This ensures `server/`, `.kiro/`, `.env`, `package.json`, and `LICENSE` are neve
 │   ├── dual-display.js
 │   ├── text-fallback.js
 │   ├── nav-menu.js
+│   ├── i18n.js
+│   ├── locales/
+│   │   ├── en.json
+│   │   └── ta.json, hi.json, ... (20 files, one per language code)
 │   ├── theme.css
 │   └── api-client.js
 │
@@ -113,7 +117,7 @@ Wraps `window.speechSynthesis`. Exposes `createSpeechOutput({ lang })` which ret
 
 ### `language-dropdown.js`
 
-Exposes `createLanguageDropdown(containerEl, { onChange })`. On initialisation, reads `chosenLang` from `sessionStorage` and pre-selects that language; falls back to English (`en-US`) if `sessionStorage` has no value. Renders a `<select>` element populated with the 12 supported languages. On change, updates `sessionStorage` (`chosenLang` and `chosenLangLabel`) and calls `onChange({ label, bcp47 })`. Also exports `getCurrentLanguage()` to read the active selection from anywhere.
+Exposes `createLanguageDropdown(containerEl, { onChange })`. On initialisation, reads `chosenLang` from `sessionStorage` and pre-selects that language; falls back to English (`en-US`) if `sessionStorage` has no value. Renders a `<select>` element populated with the 20 supported languages. Each option shows the language's own name in its own script followed by the English name, e.g. `தமிழ் (Tamil)`. It also calls `setLocale(bcp47)` from `i18n.js` so the UI language changes immediately. On change, updates `sessionStorage` (`chosenLang` and `chosenLangLabel`) and calls `onChange({ label, bcp47 })`. Also exports `getCurrentLanguage()` to read the active selection from anywhere.
 
 ### `dual-display.js`
 
@@ -139,8 +143,26 @@ Shared navigation header (Requirement 16). Exposes `createNavMenu(headerEl, { cu
 
 **Speech:** Every navigation first calls `window.speechSynthesis.cancel()` and the optional `onLeave()` hook (apps use it to stop the microphone). A `pagehide` listener also cancels speech.
 
-### `theme.css`
-A stylesheet imported by all pages. Defines CSS custom properties for the Halloween palette (dark purples, oranges, ghost-white), typography (`@font-face` or Google Fonts with a fallback stack), ghost-themed iconography via CSS masks or inline SVG, styles for the Navigation_Header (`.nav-header`, hamburger, Back button, drawer, overlay), and a mobile-first responsive baseline ensuring 44×44 px minimum touch targets and no horizontal overflow on widths 320–767 px. Asset load failures are handled by CSS fallbacks (background-color instead of background-image, etc.).
+### `i18n.js` and `locales/*.json`
+
+Localization (Requirement 17). All fixed UI strings live in `skeleton/locales/<code>.json`, a flat `{ "key.name": "text" }` object where `<code>` is the part of the BCP-47 code before the dash (`en`, `ta`, `hi`, `zh`, `pt`, ...). `en.json` is the source of truth; the other 19 files have exactly the same keys.
+
+`i18n.js` exports:
+
+- `initI18n()` - async; loads English (the fallback) and the language in `sessionStorage.chosenLang`, sets `<html lang dir>`, and calls `applyTranslations(document)`. Pages `await` it before building their UI.
+- `setLocale(bcp47)` - async; loads (and caches) the file, makes it current, updates `lang` and `dir` (`rtl` for `ar` and `ur`), re-applies translations to the whole document, then notifies listeners.
+- `onLocaleChange(callback)` - lets an app re-render text it built from code.
+- `t(key, params)` - returns the text for the current language, falling back to English, then to the key itself. `{name}` placeholders are replaced from `params`.
+- `applyTranslations(root)` - translates every element under `root` with `data-i18n="key"` (sets `textContent`) and `data-i18n-attr="aria-label:key;placeholder:key"` (sets attributes). `data-i18n-params` holds optional JSON params.
+- `setI18nText(el, key, params)` / `setI18nAttr(el, attr, key)` - helpers used by code that creates text at run time. They write the `data-*` attributes first, so the text is re-translated automatically when the language changes (no re-render code needed for messages and labels).
+
+**Direction:** `ar` and `ur` set `dir="rtl"`. CSS uses logical properties (`margin-inline-start`, `padding-inline`, `border-inline-start`, `inset-inline-start`, `text-align: start/end`), and the Navigation_Header drawer uses `[dir="rtl"]` to slide in from the right.
+
+**PDF:** The Spirit Clerk PDF is not localized; its title and placeholders stay English ("Form:", "(skipped)", "(translation unavailable)").
+
+**Keeping files in sync:** A Kiro hook (`.kiro/hooks/sync-locales.kiro.hook`) runs when `en.json` is saved and asks the agent to add new or changed keys to the other 19 files, remove deleted keys, and never rename keys. A unit test (task 11.9) checks that all files have the same keys as `en.json` and no empty values.
+
+### `theme.css`A stylesheet imported by all pages. Defines CSS custom properties for the Halloween palette (dark purples, oranges, ghost-white), typography (`@font-face` or Google Fonts with a fallback stack), ghost-themed iconography via CSS masks or inline SVG, styles for the Navigation_Header (`.nav-header`, hamburger, Back button, drawer, overlay), and a mobile-first responsive baseline ensuring 44×44 px minimum touch targets and no horizontal overflow on widths 320–767 px. Asset load failures are handled by CSS fallbacks (background-color instead of background-image, etc.).
 
 ### `api-client.js`
 
@@ -168,6 +190,7 @@ Each function calls the corresponding `POST /api/*` endpoint, enforces a 5-secon
 | LanguageDropdown | `skeleton/language-dropdown.js` | `createLanguageDropdown(el, { onChange }) → void`; `getCurrentLanguage() → { label, bcp47 }`; reads/writes `sessionStorage.chosenLang` |
 | DualDisplay | `skeleton/dual-display.js` | `renderDualDisplay(el, { heardText, englishMeaning }) → void` |
 | TextFallback | `skeleton/text-fallback.js` | `createTextFallback(el, { onSubmit, onError }) → void` |
+| I18n | `skeleton/i18n.js` | `initI18n()`, `setLocale(bcp47)`, `onLocaleChange(cb)`, `t(key, params)`, `applyTranslations(root)`, `setI18nText(el, key, params)`, `setI18nAttr(el, attr, key)` |
 | NavMenu | `skeleton/nav-menu.js` | `createNavMenu(headerEl, { current, showBack, onBack, getLeaveMessage, onLeave }) → { languageEl, setBackVisible(v), closeMenu() }`; `createScreenHistory(first) → { visit, back, current, canGoBack }` |
 | APIClient | `skeleton/api-client.js` | `translate()`, `extractFields()`, `lesson()`, `evaluate()` (see Skeleton Modules) |
 
@@ -313,7 +336,7 @@ All Gemini calls set `responseMimeType: 'application/json'` in the generation co
 
 ### Home Screen (`index.html`)
 
-**Imports:** `nav-menu.js`, `language-dropdown.js`, `theme.css`
+**Imports:** `i18n.js`, `nav-menu.js`, `language-dropdown.js`, `theme.css`
 
 **Screen flow:** Single screen. On load, renders the Navigation_Header (menu button visible, Back hidden) with the language dropdown on its right, and the Halloween-themed home screen with the language selection (English pre-selected), a "Spirit Clerk" button, and a "Ghost Tutor" button. The selected language is stored in `sessionStorage` under `chosenLang` (BCP-47 code) and `chosenLangLabel`. Clicking "Spirit Clerk" navigates to `apps/spirit-clerk/index.html`; clicking "Ghost Tutor" navigates to `apps/ghost-tutor/index.html`. The screen also shows a small tip with the exact text "For the best voices in Indian languages, open this app in Microsoft Edge." (R13.8).
 
@@ -371,7 +394,16 @@ The language dropdown is displayed in the page header. When the user changes the
 | Spanish | `es-ES` |
 | French | `fr-FR` |
 | Arabic | `ar-SA` |
+| Portuguese (Brazil) | `pt-BR` |
+| Russian | `ru-RU` |
+| Bengali | `bn-IN` |
+| Urdu | `ur-PK` |
+| Indonesian | `id-ID` |
+| German | `de-DE` |
+| Vietnamese | `vi-VN` |
+| Turkish | `tr-TR` |
 
+The dropdown shows each language by its native name followed by the English name, e.g. `தமிழ் (Tamil)`, `हिन्दी (Hindi)`, `中文 (Chinese)`. The `label` stored in `sessionStorage.chosenLangLabel` and passed to `translate()` stays the English name (e.g. `Hindi`).
 ### SpeechRecognition Language Setting
 
 `SpeechRecognition.lang` is set to the BCP-47 code before each `start()` call. This is done inside `speech-input.js` using the `lang` parameter passed at construction time. When the user changes the Chosen_Language mid-session, the current `SpeechInput` instance is stopped and a new one is created with the updated BCP-47 code after any in-progress `speechSynthesis` utterance ends (detected via the `onEnd` callback of `speech-output.js`).

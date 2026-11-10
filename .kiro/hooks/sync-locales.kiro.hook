@@ -1,0 +1,14 @@
+{
+  "enabled": true,
+  "name": "Sync locale files",
+  "description": "When skeleton/locales/en.json is saved, update the other 19 locale files to match its keys.",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": ["skeleton/locales/en.json"]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "skeleton/locales/en.json was just saved. Keep the other 19 locale files in sync with it. Follow these steps:\n1. Read skeleton/locales/en.json (the source of truth) and each of the other 19 files in skeleton/locales/: ta.json, hi.json, te.json, kn.json, ml.json, ko.json, zh.json, ja.json, es.json, fr.json, ar.json, pt.json, ru.json, bn.json, ur.json, id.json, de.json, vi.json, tr.json. Use git (git diff, or git show HEAD:skeleton/locales/en.json) to find keys whose English value changed. If git is not available, treat only the missing keys as new.\n2. For every key that is new in en.json or whose English value changed, add or replace the value in every other locale file. Use a natural, simple translation in that file's language: short everyday words, polite register, written for people with low literacy.\n3. Remove keys that no longer exist in en.json from every other locale file.\n4. Never rename keys or change key names. Never edit en.json. Leave the value of every unchanged key untouched.\n5. Keep placeholders such as {n}, {total} and {count} exactly as they are. Keep \"Phantom Voice Kit\", \"Spirit Clerk\", \"Ghost Tutor\", \"PDF\" and \"Microsoft Edge\" written exactly as they appear in the existing files.\n6. Keep the same key order as en.json. Each file must be a flat JSON object with 2-space indent, saved as UTF-8 without BOM, with no empty values.\n7. Validate: every file must be valid JSON with exactly the same keys as en.json and no empty values. Run npm test if tests/unit/locales.test.js exists, otherwise do a quick node check. Then report which keys were added, changed and removed."
+  }
+}

@@ -11,6 +11,7 @@ Phantom Voice Kit is a reusable skeleton for voice-first web applications with a
 
 ## Glossary
 
+- **Locale_File**: A JSON file in `skeleton/locales/` (one per supported language, named by the language code, e.g. `ta.json`) that maps UI string keys to translated text.
 - **Navigation_Header**: The shared top header bar rendered by the skeleton on every page, containing the menu button, the Back button, and the language dropdown.
 - **System**: The Phantom Voice Kit application, including both Spirit Clerk and Ghost Tutor apps and the shared skeleton.
 - **Skeleton**: The shared template and infrastructure used by both Spirit Clerk and Ghost Tutor.
@@ -42,7 +43,7 @@ Phantom Voice Kit is a reusable skeleton for voice-first web applications with a
 
 #### Acceptance Criteria
 
-1. WHEN the application loads, THE Skeleton SHALL display a language dropdown containing at minimum: Tamil, Hindi, Korean, Chinese (Simplified), and English, with English pre-selected as the default.
+1. WHEN the application loads, THE Skeleton SHALL display a language dropdown containing these 20 languages: English, Tamil, Hindi, Telugu, Kannada, Malayalam, Korean, Chinese (Simplified), Japanese, Spanish, French, Arabic, Portuguese (Brazil), Russian, Bengali, Urdu, Indonesian, German, Vietnamese, and Turkish, with English pre-selected as the default.
 2. WHEN the user selects a language from the dropdown, THE Skeleton SHALL apply the Chosen_Language to all subsequent Speech_Input and Speech_Output in that session and reflect the active selection visibly in the dropdown.
 3. WHEN the user changes the Chosen_Language mid-session, THE Skeleton SHALL update Speech_Input and Speech_Output to the new Chosen_Language after any in-progress Speech_Output has completed.
 
@@ -266,3 +267,23 @@ Phantom Voice Kit is a reusable skeleton for voice-first web applications with a
 9. WHEN the user tries to leave the Spirit Clerk form-fill screen before all fields are processed (by the Back button or by a drawer link), THE System SHALL ask for confirmation with the text "Your answers will be lost. Go back?" and SHALL leave the screen only if the user confirms.
 10. WHEN the user navigates away from a page or screen using the Navigation_Header, THE System SHALL stop any Speech_Output in progress.
 11. THE Navigation_Header SHALL apply the Halloween theme defined in Requirement 6, SHALL make every control at least 44×44 px, and SHALL not cause horizontal overflow on viewport widths from 320 px to 767 px.
+
+---
+
+### Requirement 17: Localization
+
+**User Story:** As a user who cannot read English, I want every button, label, and message in the app to appear in my chosen language, so that I can use the app without understanding English.
+
+#### Acceptance Criteria
+
+1. THE language dropdown SHALL list each of the 20 supported languages by its own name in its own script followed by the English name in parentheses, for example "தமிழ் (Tamil)", "हिन्दी (Hindi)", and "中文 (Chinese)".
+2. THE System SHALL store every fixed UI string used on the home screen, the Navigation_Header, and Spirit Clerk (titles, buttons, labels, placeholders, tips, aria-labels, confirmation dialogs, error messages, and status messages) in Locale_Files, with `skeleton/locales/en.json` as the source of truth and one Locale_File for each of the other 19 languages.
+3. THE skeleton SHALL provide an i18n module that exposes `t(key)`, loads `/skeleton/locales/<code>.json` on demand, caches each loaded file, and falls back to the English text for any key that is missing in the chosen language.
+4. THE i18n module SHALL translate elements marked with `data-i18n` attributes (text, and attributes such as `aria-label` and `placeholder`) when `applyTranslations(root)` is called.
+5. WHEN the user changes the Chosen_Language, THE System SHALL update all visible text, aria-labels, placeholders, and dialog messages to that language immediately, without reloading the page.
+6. WHEN a page loads, THE System SHALL display the UI in the language stored in `sessionStorage.chosenLang`, or in English if none is stored.
+7. THE System SHALL set the `lang` attribute of the `<html>` element to the Chosen_Language code, and SHALL set `dir="rtl"` for Arabic and Urdu and `dir="ltr"` for all other languages.
+8. WHILE the layout direction is right-to-left, THE System SHALL mirror the layout using CSS logical properties, and THE Navigation_Header drawer SHALL slide in from the right.
+9. THE text of the PDF summary SHALL always be in English, regardless of the Chosen_Language, and form labels, answers, and AI-generated text SHALL NOT be treated as UI strings.
+10. EVERY Locale_File SHALL contain exactly the same keys as `en.json` and SHALL contain no empty values.
+11. WHEN `skeleton/locales/en.json` is saved, THE System SHALL run a Kiro agent hook that adds new or changed keys to the other 19 Locale_Files with natural translations, removes keys that no longer exist in `en.json`, and never renames keys.

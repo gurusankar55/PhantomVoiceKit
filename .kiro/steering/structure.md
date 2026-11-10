@@ -1,4 +1,4 @@
-﻿---
+---
 inclusion: always
 ---
 
@@ -15,6 +15,9 @@ inclusion: always
 |   |-- dual-display.js
 |   |-- text-fallback.js
 |   |-- text-fallback-utils.js <- pure: validateText(value)
+|   |-- nav-menu.js
+|   |-- i18n.js                <- t(key), setLocale, applyTranslations
+|   |-- locales/               <- en.json + 19 other <code>.json files (same keys)
 |   |-- theme.css
 |   +-- api-client.js
 |-- apps/

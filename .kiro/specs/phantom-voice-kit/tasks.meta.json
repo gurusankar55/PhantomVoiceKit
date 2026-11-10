@@ -375,6 +375,83 @@
         "executionId": "0ddd8ff4-0ce1-4759-844e-27e69b71e859",
         "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
         "timestamp": 1794307783871
+      },
+      {
+        "executionId": "cb9d9fb0-e46b-46a7-ac85-4b4913f11d6b",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794323360783
+      },
+      {
+        "executionId": "cb9d9fb0-e46b-46a7-ac85-4b4913f11d6b",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794323458896
+      }
+    ],
+    "4.12 Create `skeleton/i18n.js`": [
+      {
+        "executionId": "cb9d9fb0-e46b-46a7-ac85-4b4913f11d6b",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794323470352
+      },
+      {
+        "executionId": "cb9d9fb0-e46b-46a7-ac85-4b4913f11d6b",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794323597893
+      }
+    ],
+    "5.3 Apply localization to the Home Screen and nav menu": [
+      {
+        "executionId": "cb9d9fb0-e46b-46a7-ac85-4b4913f11d6b",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794323598692
+      },
+      {
+        "executionId": "cb9d9fb0-e46b-46a7-ac85-4b4913f11d6b",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794323774124
+      }
+    ],
+    "6.6 Apply localization to Spirit Clerk": [
+      {
+        "executionId": "cb9d9fb0-e46b-46a7-ac85-4b4913f11d6b",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794323775018
+      },
+      {
+        "executionId": "cb9d9fb0-e46b-46a7-ac85-4b4913f11d6b",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794323974768
+      }
+    ],
+    "4.13 Create `skeleton/locales/*.json` (20 files)": [
+      {
+        "executionId": "cb9d9fb0-e46b-46a7-ac85-4b4913f11d6b",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794323975703
+      },
+      {
+        "executionId": "cb9d9fb0-e46b-46a7-ac85-4b4913f11d6b",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794324244823
+      }
+    ],
+    "12.1 Create `.kiro/hooks/sync-locales.kiro.hook`": [
+      {
+        "executionId": "cb9d9fb0-e46b-46a7-ac85-4b4913f11d6b",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794323976264
+      },
+      {
+        "executionId": "cb9d9fb0-e46b-46a7-ac85-4b4913f11d6b",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794324243506
+      }
+    ],
+    "12. Add the localization Kiro hook": [
+      {
+        "executionId": "cb9d9fb0-e46b-46a7-ac85-4b4913f11d6b",
+        "chatSessionId": "sess_d63d0f7b-8b3b-4bb2-9a2b-1a994a52f8ab",
+        "timestamp": 1794324244213
       }
     ]
   }

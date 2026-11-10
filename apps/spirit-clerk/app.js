@@ -1,4 +1,4 @@
-// Spirit Clerk - app.js
+﻿// Spirit Clerk - app.js
 // Task 6.3: the Upload screen.
 // Tasks 6.4 (form fill) and 6.5 (summary) will extend this file.
 
@@ -11,6 +11,10 @@ import { extractFields, translate } from '/skeleton/api-client.js';
 import { nextRedoOrSkip, nextSilenceOrSkip, pdfFilename, cleanLabel } from '/apps/spirit-clerk/form-utils.js';
 import { cleanAnswer } from '/skeleton/text-fallback-utils.js';
 import { createNavMenu, createScreenHistory } from '/skeleton/nav-menu.js';
+import { initI18n, t, setI18nText, clearI18n } from '/skeleton/i18n.js';
+
+// Load the translations BEFORE the nav and language dropdown are created.
+await initI18n();
 
 // ---------- Constants ----------
 
@@ -108,11 +112,9 @@ function onLanguageChanged() {
 
 // ---------- Navigation header (menu, Back, language) ----------
 
-const LEAVE_MESSAGE = 'Your answers will be lost. Go back?';
-
 // Ask before leaving only while the user is answering questions.
 function getLeaveMessage() {
-  return screenHistory.current() === 'fill' && fillActive ? LEAVE_MESSAGE : null;
+  return screenHistory.current() === 'fill' && fillActive ? t('spiritClerk.leaveConfirm') : null;
 }
 
 // Called when the user really leaves the page: stop speech and microphone.
@@ -125,7 +127,7 @@ function handleBack() {
   if (!screenHistory.canGoBack()) return false;
 
   if (screenHistory.current() === 'fill' && fillActive) {
-    if (!window.confirm(LEAVE_MESSAGE)) return true; // stay, but handled
+    if (!window.confirm(t('spiritClerk.leaveConfirm'))) return true; // stay, but handled
     // Leave the fill screen cleanly.
     askId += 1;
     stopEverything();
@@ -175,37 +177,37 @@ state.language = getCurrentLanguage();
 // ---------- Upload screen ----------
 
 // Show an inline message under the upload controls.
-function showUploadMessage(text) {
-  uploadMessage.textContent = text;
+function showUploadMessage(key) {
+  setI18nText(uploadMessage, key);
   uploadMessage.hidden = false;
 }
 
 function clearUploadMessage() {
-  uploadMessage.textContent = '';
+  clearI18n(uploadMessage);
   uploadMessage.hidden = true;
 }
 
-// Turn a server/client error code into friendly text.
+// Turn a server/client error code into a translation key.
 function friendlyError(code) {
   if (code === 'timeout') {
-    return 'Reading the form took too long. Please try again.';
+    return 'spiritClerk.errTimeout';
   }
   if (code === 'busy') {
-    return 'The service is busy right now. Please wait a moment and try again.';
+    return 'spiritClerk.errBusy';
   }
   if (code === 'network_error') {
-    return 'Could not reach the server. Check your connection and try again.';
+    return 'spiritClerk.errNetwork';
   }
-  return 'Something went wrong while reading your form. Please try again.';
+  return 'spiritClerk.errGeneric';
 }
 
-// Returns an error message for a bad file, or '' if the file is fine.
+// Returns an error message key for a bad file, or '' if the file is fine.
 function validateFile(file) {
   if (!ALLOWED_TYPES.includes(file.type)) {
-    return 'Please choose a PDF, JPEG, PNG or WEBP file.';
+    return 'spiritClerk.errFileType';
   }
   if (file.size > MAX_FILE_BYTES) {
-    return 'That file is too large. Please choose a file of 10 MB or less.';
+    return 'spiritClerk.errFileSize';
   }
   return '';
 }
@@ -269,7 +271,7 @@ uploadConfirm.addEventListener('click', async () => {
     }
 
     if (!Array.isArray(result.fields) || result.fields.length === 0) {
-      showUploadMessage('We could not find any fields in that file. Please try again with a clearer file.');
+      showUploadMessage('spiritClerk.errNoFields');
       return;
     }
 
@@ -287,7 +289,7 @@ uploadConfirm.addEventListener('click', async () => {
     state.formName = makeFormName(file.name);
     startFormFill();
   } catch (err) {
-    showUploadMessage('Could not read that file. Please choose it again.');
+    showUploadMessage('spiritClerk.errReadFile');
   } finally {
     // Always hide the spinner; keep the file so the user can retry.
     uploadLoading.hidden = true;
@@ -300,13 +302,13 @@ uploadConfirm.addEventListener('click', async () => {
 // ---------- Form-fill screen (task 6.4) ----------
 
 // Show / clear the short status message on the fill screen.
-function showFillMessage(text) {
-  fillMessage.textContent = text;
+function showFillMessage(key) {
+  setI18nText(fillMessage, key);
   fillMessage.hidden = false;
 }
 
 function clearFillMessage() {
-  fillMessage.textContent = '';
+  clearI18n(fillMessage);
   fillMessage.hidden = true;
 }
 
@@ -314,7 +316,7 @@ function clearFillMessage() {
 function setListening(isListening) {
   micListening = isListening;
   micButton.classList.toggle('listening', isListening);
-  micButton.textContent = isListening ? 'Stop' : 'Speak';
+  setI18nText(micButton, isListening ? 'spiritClerk.stop' : 'spiritClerk.speak');
   micButton.setAttribute('aria-pressed', String(isListening));
 }
 
@@ -349,11 +351,11 @@ function createSpeechEngines() {
 
   if (!created.supported) {
     micButton.hidden = true;
-    micMessage.textContent = 'Voice input is not available in this browser.';
+    setI18nText(micMessage, 'spiritClerk.voiceUnavailable');
     micMessage.hidden = false;
   } else {
     micButton.hidden = false;
-    micMessage.textContent = '';
+    clearI18n(micMessage);
     micMessage.hidden = true;
   }
 }
@@ -401,7 +403,7 @@ function askCurrentQuestion(notice) {
   fillLoading.hidden = true;
   confirmControls.hidden = true;
   renderDualDisplay(dualDisplayContainer, { heardText: '', englishMeaning: '' });
-  fillAudioNote.textContent = '';
+  clearI18n(fillAudioNote);
   fillAudioNote.hidden = true;
   clearFillMessage();
   const typedBox = textFallbackContainer.querySelector('textarea');
@@ -409,7 +411,10 @@ function askCurrentQuestion(notice) {
 
   // The question text is always visible, even without audio.
   // (Starts as the original text; replaced below if we translate it.)
-  fillProgress.textContent = `Question ${state.currentIndex + 1} of ${state.fields.length}`;
+  setI18nText(fillProgress, 'spiritClerk.progress', {
+    n: state.currentIndex + 1,
+    total: state.fields.length,
+  });
   fillQuestion.textContent = field.question;
   if (notice) showFillMessage(notice);
 
@@ -424,7 +429,7 @@ function askCurrentQuestion(notice) {
 
   // Show the "audio unavailable" note.
   function showAudioNote() {
-    fillAudioNote.textContent = 'Audio is not available, so please read the question.';
+    setI18nText(fillAudioNote, 'spiritClerk.audioUnavailable');
     fillAudioNote.hidden = false;
   }
 
@@ -513,10 +518,10 @@ function handleVoiceError(info) {
   } else if (info.fallbackOnly) {
     voiceDisabled = true;
     micButton.hidden = true;
-    micMessage.textContent = 'Voice input is not working. Please type your answer below.';
+    setI18nText(micMessage, 'spiritClerk.voiceNotWorking');
     micMessage.hidden = false;
   } else {
-    showFillMessage('Please try again.');
+    showFillMessage('spiritClerk.tryAgain');
   }
 }
 
@@ -524,10 +529,10 @@ function handleVoiceError(info) {
 function handleSilence() {
   if (nextSilenceOrSkip(silenceCount) === 'reask') {
     silenceCount += 1;
-    askCurrentQuestion('I did not hear anything. Let me ask again.');
+    askCurrentQuestion('spiritClerk.didNotHear');
   } else {
     storeAnswer('', '', true);
-    advance('No answer heard. Skipping this question.');
+    advance('spiritClerk.noAnswerSkip');
   }
 }
 
@@ -601,7 +606,7 @@ redoButton.addEventListener('click', () => {
     askCurrentQuestion(); // clears the display and asks again
   } else {
     storeAnswer('', '', true);
-    advance('Too many tries. Skipping this question.');
+    advance('spiritClerk.tooManyTries');
   }
 });
 
@@ -615,15 +620,17 @@ const summaryMessage = document.getElementById('summary-message');
 
 let summaryListenerAttached = false; // the Download click listener is added once
 
-// The text to show/print for an answer: English meaning, else what was heard.
+// The text to show for an answer: English meaning, else what was heard.
 function answerText(answer) {
-  if (answer.skipped) return '(skipped)';
+  if (answer.skipped) return null; // the caller shows the translated '(skipped)'
   return answer.englishMeaning || answer.heardText || '';
 }
 
-// The text to print in the PDF. Only English text goes in (the default PDF font
+// The PDF always stays in English (Requirement 17.9), so these strings are
+// NOT translated. Only English text goes in (the default PDF font
 // cannot draw other scripts), so a missing translation is reported as unavailable.
 function pdfAnswerText(answer) {
+  // PDF stays English on purpose (Requirement 17.9): do not translate these.
   if (answer.skipped) return '(skipped)';
   return answer.englishMeaning || '(translation unavailable)';
 }
@@ -633,9 +640,10 @@ async function showSummary() {
   stopEverything();
   showScreen('summary');
 
-  summaryMessage.textContent = '';
+  clearI18n(summaryMessage);
   summaryMessage.hidden = true;
   summaryList.textContent = '';
+  clearI18n(summarySkipped);
   summarySkipped.hidden = true;
 
   // Attach the Download button listener only once.
@@ -675,7 +683,12 @@ async function showSummary() {
     label.textContent = cleanLabel(field.label);
     const value = document.createElement('span');
     value.className = 'summary-answer';
-    value.textContent = answerText(answer);
+    const shown = answerText(answer);
+    if (shown === null) {
+      setI18nText(value, 'spiritClerk.skippedAnswer');
+    } else {
+      value.textContent = shown;
+    }
     li.append(label, value);
     if (answer.skipped) {
       li.classList.add('summary-item--skipped');
@@ -685,15 +698,18 @@ async function showSummary() {
   });
 
   if (skippedCount > 0) {
-    summarySkipped.textContent =
-      skippedCount === 1 ? '1 field was skipped.' : `${skippedCount} fields were skipped.`;
+    if (skippedCount === 1) {
+      setI18nText(summarySkipped, 'spiritClerk.skippedOne');
+    } else {
+      setI18nText(summarySkipped, 'spiritClerk.skippedMany', { count: skippedCount });
+    }
     summarySkipped.hidden = false;
   }
 }
 
 // Build and download the PDF summary.
 function downloadPdf() {
-  summaryMessage.textContent = '';
+  clearI18n(summaryMessage);
   summaryMessage.hidden = true;
   try {
     if (!window.jspdf || !window.jspdf.jsPDF) {
@@ -708,6 +724,7 @@ function downloadPdf() {
     let y = margin;
 
     doc.setFontSize(16);
+    // The PDF stays English on purpose (Requirement 17.9): "Form: " is a literal.
     doc.text(`Form: ${state.formName}`, margin, y);
     y += 12;
 
@@ -729,7 +746,7 @@ function downloadPdf() {
 
     doc.save(pdfFilename(state.formName, new Date()));
   } catch (err) {
-    summaryMessage.textContent = 'Sorry, the PDF could not be created. Your summary is still here.';
+    setI18nText(summaryMessage, 'spiritClerk.pdfError');
     summaryMessage.hidden = false;
   }
 }

@@ -3,6 +3,7 @@
 // Usage: createTextFallback(containerEl, { onSubmit, onError })
 
 import { validateText, cleanAnswer } from './text-fallback-utils.js';
+import { setI18nText, setI18nAttr, clearI18n } from './i18n.js';
 
 // Counter so each textarea gets a unique id (needed to link the label to it)
 let fallbackCounter = 0;
@@ -23,7 +24,7 @@ export function createTextFallback(containerEl, { onSubmit, onError } = {}) {
   // Accessible label for the textarea
   const label = document.createElement('label');
   label.htmlFor = textareaId;
-  label.textContent = 'Type your answer';
+  setI18nText(label, 'textFallback.label');
   label.className = 'text-fallback-label';
 
   // The text box itself (max 500 characters)
@@ -32,6 +33,7 @@ export function createTextFallback(containerEl, { onSubmit, onError } = {}) {
   textarea.className = 'text-fallback-input';
   textarea.maxLength = 500;
   textarea.rows = 3;
+  setI18nAttr(textarea, 'placeholder', 'textFallback.placeholder');
   textarea.setAttribute('aria-describedby', messageId);
 
   // Inline validation message (hidden until needed)
@@ -45,7 +47,7 @@ export function createTextFallback(containerEl, { onSubmit, onError } = {}) {
   const button = document.createElement('button');
   button.type = 'button';
   button.className = 'text-fallback-submit';
-  button.textContent = 'Submit';
+  setI18nText(button, 'textFallback.submit');
 
   containerEl.append(label, textarea, message, button);
 
@@ -56,14 +58,14 @@ export function createTextFallback(containerEl, { onSubmit, onError } = {}) {
     const result = validateText(value);
 
     if (result === 'empty') {
-      message.textContent = 'Please type something before submitting.';
+      setI18nText(message, 'textFallback.empty'); // stays translated while shown
       message.hidden = false;
       if (typeof onError === 'function') onError('empty');
       return;
     }
 
     // Valid: clear any old message and hand the text to the app
-    message.textContent = '';
+    clearI18n(message);
     message.hidden = true;
     if (typeof onSubmit === 'function') onSubmit(value);
   }

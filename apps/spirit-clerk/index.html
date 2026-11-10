@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Spirit Clerk</title>
+  <title data-i18n="spiritClerk.pageTitle">Spirit Clerk</title>
   <!-- Shared theme and app styles (absolute paths, per project rules) -->
   <link rel="stylesheet" href="/skeleton/theme.css" />
   <link rel="stylesheet" href="/apps/spirit-clerk/style.css" />
@@ -13,16 +13,16 @@
   <header id="app-header"></header>
 
   <main id="app">
-    <h1 class="app-title">Spirit Clerk</h1>
+    <h1 class="app-title" data-i18n="spiritClerk.title">Spirit Clerk</h1>
 
     <!-- Screen 1: upload a form -->
     <section id="screen-upload" class="screen">
-      <h2>Upload your form</h2>
-      <label for="file-input">Choose a PDF or a photo of your form</label>
+      <h2 data-i18n="spiritClerk.uploadHeading">Upload your form</h2>
+      <label for="file-input" data-i18n="spiritClerk.fileLabel">Choose a PDF or a photo of your form</label>
       <input type="file" id="file-input" accept="application/pdf,image/jpeg,image/png,image/webp" />
-      <button id="upload-confirm" type="button" class="btn" disabled>Read my form</button>
+      <button id="upload-confirm" type="button" class="btn" disabled data-i18n="spiritClerk.readForm">Read my form</button>
       <p id="upload-message" class="error-message" role="alert" hidden></p>
-      <div id="upload-loading" hidden><span class="spinner"></span> <span>Reading your form...</span></div>
+      <div id="upload-loading" hidden><span class="spinner"></span> <span data-i18n="spiritClerk.reading">Reading your form...</span></div>
     </section>
 
     <!-- Screen 2: answer each question -->
@@ -31,7 +31,7 @@
       <h2 id="fill-question"></h2>
       <p id="fill-audio-note" hidden></p>
 
-      <button id="mic-button" type="button" class="btn">Speak</button>
+      <button id="mic-button" type="button" class="btn" data-i18n="spiritClerk.speak">Speak</button>
       <p id="mic-message" hidden></p>
 
       <!-- Typed-answer fallback is rendered here by app.js -->
@@ -41,21 +41,21 @@
       <div id="dual-display-container" hidden></div>
 
       <div id="confirm-controls" hidden>
-        <button id="confirm-button" type="button" class="btn">Confirm</button>
-        <button id="redo-button" type="button" class="btn btn--secondary">Redo</button>
+        <button id="confirm-button" type="button" class="btn" data-i18n="spiritClerk.confirm">Confirm</button>
+        <button id="redo-button" type="button" class="btn btn--secondary" data-i18n="spiritClerk.redo">Redo</button>
       </div>
 
       <p id="fill-message" role="alert" hidden></p>
-      <div id="fill-loading" hidden><span class="spinner"></span> <span>Please wait...</span></div>
+      <div id="fill-loading" hidden><span class="spinner"></span> <span data-i18n="spiritClerk.pleaseWait">Please wait...</span></div>
     </section>
 
     <!-- Screen 3: summary and PDF download -->
     <section id="screen-summary" class="screen" hidden>
-      <h2>Your filled form</h2>
-      <div id="summary-loading" hidden><span class="spinner"></span> <span>Preparing your summary...</span></div>
+      <h2 data-i18n="spiritClerk.summaryHeading">Your filled form</h2>
+      <div id="summary-loading" hidden><span class="spinner"></span> <span data-i18n="spiritClerk.preparing">Preparing your summary...</span></div>
       <ul id="summary-list"></ul>
       <p id="summary-skipped" hidden></p>
-      <button id="download-pdf" type="button" class="btn">Download PDF</button>
+      <button id="download-pdf" type="button" class="btn" data-i18n="spiritClerk.downloadPdf">Download PDF</button>
       <p id="summary-message" class="error-message" role="alert" hidden></p>
     </section>
 

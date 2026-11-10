@@ -6,6 +6,8 @@
 // Nothing here touches `document` or `window` when the file is loaded,
 // so createScreenHistory can be imported and tested in plain Node.
 
+import { setI18nText, setI18nAttr } from './i18n.js';
+
 // ---------------------------------------------------------------------------
 // Screen history
 // ---------------------------------------------------------------------------
@@ -55,9 +57,9 @@ export function createScreenHistory(firstScreen) {
 
 // The pages that can appear in the menu.
 const MENU_LINKS = [
-  { id: 'home', label: 'Home', href: '/' },
-  { id: 'spirit-clerk', label: 'Spirit Clerk', href: '/apps/spirit-clerk/index.html' },
-  { id: 'ghost-tutor', label: 'Ghost Tutor', href: '/apps/ghost-tutor/index.html' },
+  { id: 'home', labelKey: 'nav.home', href: '/' },
+  { id: 'spirit-clerk', labelKey: 'nav.spiritClerk', href: '/apps/spirit-clerk/index.html' },
+  { id: 'ghost-tutor', labelKey: 'nav.ghostTutor', href: '/apps/ghost-tutor/index.html' },
 ];
 
 // Stop any speech that is currently playing (safe if unsupported).
@@ -88,7 +90,7 @@ export function createNavMenu(
   toggle.className = 'nav-toggle';
   toggle.setAttribute('aria-controls', 'nav-drawer');
   toggle.setAttribute('aria-expanded', 'false');
-  toggle.setAttribute('aria-label', 'Open menu');
+  setI18nAttr(toggle, 'aria-label', 'nav.openMenu');
   for (let i = 0; i < 3; i++) {
     const line = document.createElement('span');
     line.className = 'nav-toggle-line';
@@ -99,8 +101,15 @@ export function createNavMenu(
   const backBtn = document.createElement('button');
   backBtn.type = 'button';
   backBtn.className = 'nav-back';
-  backBtn.setAttribute('aria-label', 'Go back');
-  backBtn.textContent = '← Back';
+  setI18nAttr(backBtn, 'aria-label', 'nav.backLabel');
+  // The arrow is separate so CSS can flip it in right-to-left languages.
+  const backArrow = document.createElement('span');
+  backArrow.className = 'nav-back-arrow';
+  backArrow.setAttribute('aria-hidden', 'true');
+  backArrow.textContent = '←';
+  const backText = document.createElement('span');
+  setI18nText(backText, 'nav.back');
+  backBtn.append(backArrow, backText);
   backBtn.hidden = !showBack;
 
   leftGroup.appendChild(toggle);
@@ -118,12 +127,12 @@ export function createNavMenu(
   const drawer = document.createElement('nav');
   drawer.className = 'nav-drawer';
   drawer.id = 'nav-drawer';
-  drawer.setAttribute('aria-label', 'Main menu');
+  setI18nAttr(drawer, 'aria-label', 'nav.mainMenu');
   drawer.inert = true; // closed: not reachable by keyboard
 
   const title = document.createElement('p');
   title.className = 'nav-drawer-title';
-  title.textContent = 'Phantom Voice Kit';
+  setI18nText(title, 'nav.drawerTitle');
   drawer.appendChild(title);
 
   const links = [];
@@ -137,7 +146,7 @@ export function createNavMenu(
     icon.setAttribute('aria-hidden', 'true');
 
     const text = document.createElement('span');
-    text.textContent = item.label;
+    setI18nText(text, item.labelKey);
 
     a.appendChild(icon);
     a.appendChild(text);
@@ -175,7 +184,7 @@ export function createNavMenu(
     overlay.classList.add('is-open');
     document.body.classList.add('nav-open'); // lightly lock page scroll
     toggle.setAttribute('aria-expanded', 'true');
-    toggle.setAttribute('aria-label', 'Close menu');
+    setI18nAttr(toggle, 'aria-label', 'nav.closeMenu');
     links[0]?.focus();
   }
 
@@ -187,7 +196,7 @@ export function createNavMenu(
     overlay.classList.remove('is-open');
     document.body.classList.remove('nav-open');
     toggle.setAttribute('aria-expanded', 'false');
-    toggle.setAttribute('aria-label', 'Open menu');
+    setI18nAttr(toggle, 'aria-label', 'nav.openMenu');
     drawer.inert = true;
     if (returnFocus) toggle.focus();
   }

@@ -1,4 +1,4 @@
-﻿---
+---
 inclusion: always
 ---
 
@@ -12,7 +12,7 @@ Phantom Voice Kit is a reusable skeleton for voice-first web apps entered in the
 - **Ghost Tutor** (`/apps/ghost-tutor`) — user picks a topic; a voice tutor explains in 4 short segments, asks a quiz question after each, and gives spoken feedback.
 
 ## Who it is for
-People who cannot easily read or type English forms — speakers of Tamil, Hindi, Telugu, Kannada, Malayalam, Korean, Chinese, Japanese, Spanish, French, Arabic, or English. Every interaction can be voice-only; a text fallback is always available.
+People who cannot easily read or type English forms — speakers of Tamil, Hindi, Telugu, Kannada, Malayalam, Korean, Chinese, Japanese, Spanish, French, Arabic, Portuguese, Russian, Bengali, Urdu, Indonesian, German, Vietnamese, Turkish, or English. The whole UI is translated into all 20 languages (Arabic and Urdu are right-to-left). Every interaction can be voice-only; a text fallback is always available.
 
 ## Theme
 Spooky ghost / Halloween UI. Dark purples, oranges, ghost-white. Large touch-friendly buttons. Mobile-first (320 px–767 px). Ghost mascot encouraged.

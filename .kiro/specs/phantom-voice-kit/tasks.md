@@ -120,10 +120,12 @@ Build the Phantom Voice Kit from the ground up: project scaffolding → Express 
   - [x] 4.7 Create `skeleton/language-dropdown.js`
     - Export `createLanguageDropdown(containerEl, { onChange })` and `getCurrentLanguage()`
     - On init: read `sessionStorage.chosenLang`; fall back to `en-US`
-    - Render a `<select>` populated with the 12 supported languages (label + bcp47)
+    - Render a `<select>` populated with the 20 supported languages (English label + bcp47 + native name); each option text is `<native name> (<English name>)`, e.g. `தமிழ் (Tamil)`, `हिन्दी (Hindi)`, `中文 (Chinese)`
+    - Languages: English, Tamil, Hindi, Telugu, Kannada, Malayalam, Korean, Chinese (zh-CN), Japanese, Spanish, French, Arabic (ar-SA), Portuguese (pt-BR), Russian (ru-RU), Bengali (bn-IN), Urdu (ur-PK), Indonesian (id-ID), German (de-DE), Vietnamese (vi-VN), Turkish (tr-TR)
     - On change: write `sessionStorage.chosenLang` and `sessionStorage.chosenLangLabel`; call `onChange({ label, bcp47 })`
+    - On change also call `setLocale(bcp47)` from `./i18n.js` (see task 4.12); the `label` passed to `onChange` and stored in `chosenLangLabel` stays the English name
     - `getCurrentLanguage()` reads from the active select or `sessionStorage`
-    - _Requirements: R1, R13_
+    - _Requirements: R1, R13, R17_
 
   - [x] 4.8 Create `skeleton/dual-display.js`
     - Export `renderDualDisplay(containerEl, { heardText, englishMeaning })`
@@ -155,6 +157,21 @@ Build the Phantom Voice Kit from the ground up: project scaffolding → Express 
     - Never include any API key in requests
     - _Requirements: R7, R2, R11, R12_
 
+  - [x] 4.12 Create `skeleton/i18n.js`
+    - Export `initI18n()`, `setLocale(bcp47)`, `onLocaleChange(callback)`, `t(key, params)`, `applyTranslations(root)`, `setI18nText(el, key, params)`, `setI18nAttr(el, attr, key)`
+    - Loader: `fetch('/skeleton/locales/<code>.json')` with `<code>` = `bcp47.split('-')[0]`; cache every loaded file in a `Map`; English is always loaded and is the fallback for any missing key (then the key itself)
+    - `t(key, params)` replaces `{name}` placeholders with values from `params`
+    - `applyTranslations(root)` translates `data-i18n` (text), `data-i18n-attr="aria-label:key;placeholder:key"` (attributes) and optional `data-i18n-params` (JSON)
+    - `setLocale` updates `<html lang>` (language code) and `dir` (`rtl` for `ar` and `ur`, otherwise `ltr`), re-applies translations to the whole document and notifies `onLocaleChange` listeners, with no page reload
+    - Importing the module in Node must not touch `document` or `window` at load time
+    - _Requirements: R17_
+
+  - [x] 4.13 Create `skeleton/locales/*.json` (20 files)
+    - `en.json` is a flat key/value object with every fixed UI string used on the Home Screen, nav menu, text fallback, dual display, language dropdown and Spirit Clerk (titles, buttons, labels, placeholders, tips, aria-labels, confirmation dialogs, error and status messages)
+    - Create `ta, hi, te, kn, ml, ko, zh, ja, es, fr, ar, pt, ru, bn, ur, id, de, vi, tr` `.json` with natural, simple translations and exactly the same keys as `en.json`
+    - No empty values; placeholders such as `{n}` kept unchanged
+    - _Requirements: R17_
+
 - [x] 5. Create Home Screen
   - [x] 5.1 Create `index.html`
     - Import `skeleton/language-dropdown.js` and `skeleton/theme.css`
@@ -176,6 +193,13 @@ Build the Phantom Voice Kit from the ground up: project scaffolding → Express 
     - Add navigation styles to `skeleton/theme.css` (spooky theme, 44×44 px touch targets, no horizontal overflow at 320–767 px, `prefers-reduced-motion` respected)
     - Update `index.html` to use the header (`showBack: false`, `current: 'home'`) with the language dropdown rendered into `languageEl`
     - _Requirements: R16, R13, R6_
+
+  - [x] 5.3 Apply localization to the Home Screen and nav menu
+    - `index.html` awaits `initI18n()` before building the header and marks all fixed text with `data-i18n` / `data-i18n-attr` (title, subtitle, app buttons and hints, Edge tip, page `<title>`)
+    - `skeleton/nav-menu.js` labels (drawer title, link names, "Back", hamburger aria-labels) come from `t()` through `data-i18n` attributes so they update on language change; the toggle aria-label switches between two keys
+    - `skeleton/language-dropdown.js`, `skeleton/text-fallback.js`, `skeleton/dual-display.js` labels, placeholder, buttons, validation and note text use i18n keys
+    - `skeleton/theme.css` and `index.html` styles use CSS logical properties instead of left/right; the drawer slides in from the right when `[dir="rtl"]`
+    - _Requirements: R17, R16, R13_
 
 - [x] 6. Implement Spirit Clerk app
   - [x] 6.1 Create `apps/spirit-clerk/style.css`
@@ -219,6 +243,13 @@ Build the Phantom Voice Kit from the ground up: project scaffolding → Express 
     - On PDF error: show inline error message; retain summary on screen
     - _Requirements: R10_
 
+  - [x] 6.6 Apply localization to Spirit Clerk
+    - `apps/spirit-clerk/index.html` uses `data-i18n` on all fixed text and `app.js` awaits `initI18n()` before building the nav
+    - `app.js`: every message, status, button text (Speak/Stop), progress (`Question {n} of {total}`), error text and the confirmation dialog uses `t()` / `setI18nText` and updates immediately when the language changes (including a message already on screen)
+    - `style.css` uses CSS logical properties so the layout mirrors in right-to-left languages
+    - The PDF stays in English (title, `(skipped)`, `(translation unavailable)` are not localized)
+    - _Requirements: R17, R9, R10_
+
 - [x] 7. Checkpoint — verify Spirit Clerk
   - Run the app, upload a sample form, complete a guided fill in at least one non-English language, and download the PDF summary.
 
@@ -233,7 +264,8 @@ Build the Phantom Voice Kit from the ground up: project scaffolding → Express 
     - All skeleton files must be loaded with absolute paths (e.g. `/skeleton/theme.css`, `/skeleton/language-dropdown.js`, `/skeleton/api-client.js`) and `app.js` must be referenced as `/apps/ghost-tutor/app.js`
     - Page header is an empty `<header id="app-header">` filled by `skeleton/nav-menu.js` (menu drawer, Back button, language dropdown on the right); no separate Home button (Home is a drawer link)
     - Placeholder `<main>` containers for topic-selection and lesson screens; `app.js` shows/hides them
-    - _Requirements: R11, R12, R13, R16_
+    - Mark fixed text with `data-i18n`; Ghost Tutor strings are added to `skeleton/locales/en.json` (the sync hook adds them to the other 19 files); `app.js` awaits `initI18n()`; styles use CSS logical properties
+    - _Requirements: R11, R12, R13, R16, R17_
 
   - [ ] 8.3 Create `apps/ghost-tutor/app.js` — Topic selection screen
     - Import all skeleton modules, `api-client.js`, and `lesson-utils.js`
@@ -310,6 +342,14 @@ Build the Phantom Voice Kit from the ground up: project scaffolding → Express 
     - For each route, test: HTTP 400 on empty / missing required input; HTTP 504 when fake throws `{ code: 'timeout' }`; HTTP 502 when fake throws `{ code: 'gemini_error', message }`; HTTP 429 when fake throws `{ code: 'rate_limit' }`; response body never contains the value of `GEMINI_API_KEY`
     - _Requirements: R7_
 
+  - [ ] 11.9 Create `tests/unit/locales.test.js`
+    - Read every `skeleton/locales/*.json` with `fs` and `JSON.parse` (no network)
+    - Test exactly 20 files exist (en, ta, hi, te, kn, ml, ko, zh, ja, es, fr, ar, pt, ru, bn, ur, id, de, vi, tr)
+    - Test every locale file has exactly the same set of keys as `en.json` (report missing and extra keys by name)
+    - Test no value is empty or whitespace-only and every value is a string
+    - Test placeholders such as `{n}` in an English value also appear in the translated value
+    - _Requirements: R17_
+
   - [ ]* 11.6 Write property test for translation non-empty preservation
     - `// Feature: phantom-voice-kit, Property 1: Translation non-empty preservation`
     - Use fast-check to generate arbitrary non-empty, non-whitespace strings as `text` and arbitrary valid `targetLang` strings
@@ -332,6 +372,12 @@ Build the Phantom Voice Kit from the ground up: project scaffolding → Express 
     - **Property 3: Text Fallback whitespace rejection**
     - **Validates: Requirements R5.3, R11.3**
 
+- [x] 12. Add the localization Kiro hook
+  - [x] 12.1 Create `.kiro/hooks/sync-locales.kiro.hook`
+    - Trigger `fileEdited` on `skeleton/locales/en.json`, action `askAgent`
+    - Prompt: add new or changed keys to the other 19 locale files with natural, simple translations; remove keys that no longer exist in `en.json`; never change key names; keep `{placeholders}`; leave unchanged keys untouched; validate that every file is valid JSON with the same keys as `en.json`
+    - _Requirements: R17_
+
 ## Notes
 
 - Tasks marked with `*` are optional and can be skipped for a faster MVP.
@@ -352,19 +398,24 @@ Build the Phantom Voice Kit from the ground up: project scaffolding → Express 
     { "id": 3, "tasks": ["2.3", "2.4", "2.5", "2.6"] },
     { "id": 4, "tasks": ["4.1", "4.2", "4.3", "4.4"] },
     { "id": 5, "tasks": ["4.5", "4.6", "4.7", "4.8", "4.9", "4.10", "4.11"] },
-    { "id": 6, "tasks": ["5.1"] },
-    { "id": 7, "tasks": ["5.2"] },
-    { "id": 8, "tasks": ["6.1", "6.2"] },
-    { "id": 9, "tasks": ["6.3"] },
-    { "id": 10, "tasks": ["6.4"] },
-    { "id": 11, "tasks": ["6.5"] },
-    { "id": 12, "tasks": ["8.1", "8.2"] },
-    { "id": 13, "tasks": ["8.3"] },
-    { "id": 14, "tasks": ["8.4"] },
-    { "id": 15, "tasks": ["10.1", "10.2"] },
-    { "id": 16, "tasks": ["11.1", "11.2", "11.3", "11.4"] },
-    { "id": 17, "tasks": ["11.5"] },
-    { "id": 18, "tasks": ["11.6", "11.7", "11.8"] }
+    { "id": 6, "tasks": ["4.12"] },
+    { "id": 7, "tasks": ["4.13"] },
+    { "id": 8, "tasks": ["5.1"] },
+    { "id": 9, "tasks": ["5.2"] },
+    { "id": 10, "tasks": ["5.3"] },
+    { "id": 11, "tasks": ["6.1", "6.2"] },
+    { "id": 12, "tasks": ["6.3"] },
+    { "id": 13, "tasks": ["6.4"] },
+    { "id": 14, "tasks": ["6.5"] },
+    { "id": 15, "tasks": ["6.6"] },
+    { "id": 16, "tasks": ["8.1", "8.2"] },
+    { "id": 17, "tasks": ["8.3"] },
+    { "id": 18, "tasks": ["8.4"] },
+    { "id": 19, "tasks": ["10.1", "10.2"] },
+    { "id": 20, "tasks": ["11.1", "11.2", "11.3", "11.4"] },
+    { "id": 21, "tasks": ["11.5", "11.9"] },
+    { "id": 22, "tasks": ["11.6", "11.7", "11.8"] },
+    { "id": 23, "tasks": ["12.1"] }
   ]
 }
 ```
