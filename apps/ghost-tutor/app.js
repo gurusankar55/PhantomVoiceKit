@@ -10,7 +10,7 @@ import { createTextFallback } from '/skeleton/text-fallback.js';
 import { lesson, translate, evaluate } from '/skeleton/api-client.js';
 import { createNavMenu, createScreenHistory } from '/skeleton/nav-menu.js';
 import { initI18n, t, setI18nText, clearI18n } from '/skeleton/i18n.js';
-import { computeHasMore } from '/apps/ghost-tutor/lesson-utils.js';
+import { computeHasMore, canLearnMore, coveredTitles } from '/apps/ghost-tutor/lesson-utils.js';
 import { matchCommand, parseWords } from '/skeleton/voice-commands.js';
 import { createRetryCounter, LISTEN_DELAY_MS } from '/skeleton/voice-retry.js';
 
@@ -25,6 +25,7 @@ const state = {
   segments: [],                   // [{ segment, quizQuestion }] x 4
   lessonLang: null,               // { label, bcp47 } the lesson was generated in
   segmentIndex: 0,                // which segment we are on (used by task 8.4)
+  round: 1,                       // which round of the topic (4 new parts each, max 5)
 };
 
 // Speech objects for the lesson screen (created by task 8.4).
@@ -192,6 +193,22 @@ function isValidLesson(data) {
   );
 }
 
+// Turn the server reply into segment objects. `texts` caches each text per language
+// (the original is stored right away). Used for the first lesson and for later rounds.
+function makeSegments(data, lang) {
+  return data.segments.map((s) => ({
+    title: typeof s.title === 'string' ? s.title.trim() : '', // short name, sent back when asking for deeper parts
+    segment: s.segment,
+    quizQuestion: s.quizQuestion,
+    texts: {
+      segment: { [lang.bcp47]: s.segment },
+      quizQuestion: { [lang.bcp47]: s.quizQuestion },
+    },
+    feedbackTexts: {},    // feedback per language (filled after evaluate)
+    feedbackSource: null, // { text, bcp47 } the feedback as first received
+  }));
+}
+
 // Show or hide the loading spinner and lock / unlock the controls.
 function setTopicBusy(busy) {
   topicLoading.hidden = !busy;
@@ -225,16 +242,8 @@ async function submitTopic() {
     } else {
       state.topic = topic;
       // `texts` caches each text per language (the original is stored right away).
-      state.segments = data.segments.map((s) => ({
-        segment: s.segment,
-        quizQuestion: s.quizQuestion,
-        texts: {
-          segment: { [requestLang.bcp47]: s.segment },
-          quizQuestion: { [requestLang.bcp47]: s.quizQuestion },
-        },
-        feedbackTexts: {},   // feedback per language (filled after evaluate)
-        feedbackSource: null, // { text, bcp47 } the feedback as first received
-      }));
+      state.segments = makeSegments(data, requestLang);
+      state.round = 1; // first round of this topic
       state.lessonLang = requestLang;
       state.segmentIndex = 0;
       startLesson();
@@ -460,6 +469,12 @@ const completeArea = document.getElementById('complete-area');
 const completeText = document.getElementById('complete-text');
 const scoreText = document.getElementById('score-text');
 const nextButton = document.getElementById('next-button');
+const nextPrompt = document.getElementById('next-prompt');
+const skipButton = document.getElementById('skip-button');
+const learnMorePrompt = document.getElementById('learn-more-prompt');
+const learnMoreButton = document.getElementById('learn-more');
+const completeMessage = document.getElementById('complete-message');
+const completeListeningIndicator = document.getElementById('complete-listening-indicator');
 const listeningIndicator = document.getElementById('listening-indicator');
 const notUnderstood = createRetryCounter(); // quiz "I did not understand" retries (max 2)
 const newTopicButton = document.getElementById('new-topic');
@@ -518,7 +533,9 @@ function setListening(isListening) {
   micButton.classList.toggle('listening', isListening);
   setI18nText(micButton, isListening ? 'ghostTutor.stop' : 'ghostTutor.speak');
   micButton.setAttribute('aria-pressed', String(isListening));
-  listeningIndicator.hidden = !isListening; // clear "Listening..." sign
+  // One clear "Listening..." sign: on the end screen it sits in the end card.
+  listeningIndicator.hidden = !isListening || phase === 'complete';
+  completeListeningIndicator.hidden = !isListening || phase !== 'complete';
 }
 
 // Empty the answer area (dual display, messages, typed box).
@@ -534,6 +551,9 @@ function resetLessonScreen() {
   quizArea.hidden = true;
   feedbackArea.hidden = true;
   completeArea.hidden = true;
+  skipButton.hidden = true;
+  clearI18n(completeMessage);
+  completeMessage.hidden = true;
   clearAnswerArea();
   clearAudioNote();
 }
@@ -686,7 +706,7 @@ async function playSegment() {
   resetLessonScreen();
 
   const item = state.segments[state.segmentIndex];
-  setI18nText(lessonProgress, 'ghostTutor.progress', { n: state.segmentIndex + 1, total: 4 });
+  setI18nText(lessonProgress, 'ghostTutor.progress', { n: state.segmentIndex + 1, total: state.segments.length });
   segmentText.textContent = item.segment; // visible while a translation loads
 
   const result = await getText(item, 'segment');
@@ -713,6 +733,7 @@ async function askQuiz(notice, isRepeat) {
   phase = 'asking';
   autoListenTried = false;
   notUnderstood.reset();
+  skipButton.hidden = true;
 
   const item = state.segments[state.segmentIndex];
   clearAudioNote();
@@ -771,7 +792,11 @@ micButton.addEventListener('click', () => {
 function handleVoiceResult(text) {
   if (!micListening) return; // we already stopped listening: stale result
   if (phase === 'feedback') {
-    handleNextCommand(text); // after the feedback only "yes" (go on) is understood
+    handleNextCommand(text); // after the feedback: "next" / "yes" goes on
+    return;
+  }
+  if (phase === 'complete') {
+    handleCompleteCommand(text); // on the end screen: "yes" = learn more, "no" = new topic
     return;
   }
   if (typeof text !== 'string' || text.trim() === '') {
@@ -784,10 +809,14 @@ function handleVoiceResult(text) {
 // The microphone reported a problem (silence, unclear speech or a mic error).
 function handleVoiceError(info) {
   if (!info) return;
-  if (phase === 'feedback') {
-    // Listening for "yes" ended. The Next button still works.
-    setListening(false);
-    if (info.fallbackOnly) voiceDisabled = true;
+  if (phase === 'feedback' || phase === 'complete') {
+    // The buttons always keep working.
+    if (info.fallbackOnly) {
+      setListening(false);
+      voiceDisabled = true;
+      return;
+    }
+    handleStepNotUnderstood();
     return;
   }
   if (phase !== 'asking') return;
@@ -797,6 +826,7 @@ function handleVoiceError(info) {
     setListening(false);
     voiceDisabled = true;
     micButton.hidden = true;
+    skipButton.hidden = false; // voice is off: the learner may still skip
     setI18nText(micMessage, 'ghostTutor.voiceNotWorking');
     micMessage.hidden = false;
     return;
@@ -804,14 +834,18 @@ function handleVoiceError(info) {
   handleNotUnderstood();
 }
 
-// Nothing was heard, or it was unclear, or the mic failed once.
+// Nothing was heard, or it was unclear, or the mic failed once (quiz answer).
 // Say and show "I did not understand. Please say it once more." and listen
-// again by itself, at most 2 times. After that listening stops and the
-// mic button and the type box stay ready.
+// again by itself, at most 2 times. After that listening stops and the Skip
+// button appears; the mic button and the type box stay ready too.
 function handleNotUnderstood() {
   setListening(false);
   if (speechInput && speechInput.supported) speechInput.stop();
-  if (phase !== 'asking' || !notUnderstood.next()) return; // both retries used: stop here
+  if (phase !== 'asking') return;
+  if (!notUnderstood.next()) {
+    skipButton.hidden = false; // both retries used: the learner may skip this question
+    return;
+  }
 
   const myId = askId;
   showQuizMessage('common.notUnderstood');
@@ -819,6 +853,31 @@ function handleNotUnderstood() {
     // Open the microphone only after the spoken message has finished.
     setTimeout(() => {
       if (myId !== askId || phase !== 'asking' || micListening || voiceDisabled) return;
+      if (!speechInput || !speechInput.supported) return;
+      setListening(true);
+      speechInput.start();
+    }, LISTEN_DELAY_MS);
+  });
+}
+
+// Same retry flow for the "next part?" step and the end-screen question.
+function handleStepNotUnderstood() {
+  setListening(false);
+  if (speechInput && speechInput.supported) speechInput.stop();
+  if ((phase !== 'feedback' && phase !== 'complete') || !notUnderstood.next()) return; // buttons keep working
+
+  const myId = askId;
+  const stepPhase = phase;
+  if (stepPhase === 'feedback') {
+    showQuizMessage('common.notUnderstood');
+  } else {
+    setI18nText(completeMessage, 'common.notUnderstood');
+    completeMessage.hidden = false;
+  }
+  speakThen(t('common.notUnderstood'), myId, () => {
+    // Open the microphone only after the spoken message has finished.
+    setTimeout(() => {
+      if (myId !== askId || phase !== stepPhase || micListening || voiceDisabled) return;
       if (!speechInput || !speechInput.supported) return;
       setListening(true);
       speechInput.start();
@@ -872,6 +931,12 @@ async function handleAnswer(text) {
   }
   if (myId !== askId) return;
 
+  applyEvaluation(item, evalResult, requestLang, true);
+}
+
+// Use the server reply: remember the feedback and play it.
+// canScore is false for a skipped question (never counted as correct).
+function applyEvaluation(item, evalResult, requestLang, canScore) {
   const feedback =
     evalResult && !evalResult.error && typeof evalResult.feedback === 'string'
       ? evalResult.feedback.trim()
@@ -883,12 +948,43 @@ async function handleAnswer(text) {
     return;
   }
 
-  if (evalResult.correct === true) score += 1; // counted once: handleAnswer runs once per question
+  if (canScore && evalResult.correct === true) score += 1; // counted once per question
   item.feedbackSource = { text: feedback, bcp47: requestLang.bcp47 };
   item.feedbackTexts = { [requestLang.bcp47]: feedback };
   feedbackNoticeKey = '';
   playFeedback();
 }
+
+// Skip button: show and speak the correct answer with a short explanation.
+async function handleSkip() {
+  if (phase !== 'asking') return;
+  askId += 1;
+  const myId = askId;
+  const item = state.segments[state.segmentIndex];
+  const requestLang = state.language;
+  phase = 'evaluating';
+  stopEverything();
+  clearQuizMessage();
+  skipButton.hidden = true;
+
+  showLoading();
+  let evalResult = null;
+  try {
+    evalResult = await evaluate({
+      topic: state.topic,
+      question: currentQuestion,
+      skipped: true,
+      lang: requestLang.bcp47,
+    });
+  } finally {
+    hideLoading();
+  }
+  if (myId !== askId) return;
+
+  applyEvaluation(item, evalResult, requestLang, false);
+}
+
+skipButton.addEventListener('click', handleSkip);
 
 // ----- Feedback -----
 
@@ -898,6 +994,8 @@ async function playFeedback() {
   const myId = askId;
   stopEverything();
   phase = 'feedback';
+  notUnderstood.reset();
+  nextPrompt.hidden = true;
   clearAudioNote();
 
   const item = state.segments[state.segmentIndex];
@@ -916,10 +1014,18 @@ async function playFeedback() {
   // After the feedback is spoken we also listen once for a spoken "yes".
   if (!result.ok) {
     showAudioNote();
-    listenForNext(myId);
+    askNextByVoice(myId);
     return;
   }
-  speakThen(result.text, myId, () => listenForNext(myId));
+  speakThen(result.text, myId, () => askNextByVoice(myId));
+}
+
+// Show and speak "Shall we go to the next part? Say next or yes.", then listen.
+function askNextByVoice(myId) {
+  if (myId !== askId || phase !== 'feedback') return;
+  setI18nText(nextPrompt, 'ghostTutor.nextPrompt');
+  nextPrompt.hidden = false;
+  speakThen(t('ghostTutor.nextPrompt'), myId, () => listenForNext(myId));
 }
 
 // Open the microphone once, to hear "yes" (= Next) after the feedback.
@@ -933,15 +1039,20 @@ function listenForNext(myId) {
   }, LISTEN_DELAY_MS);
 }
 
-// A spoken "yes" (in the chosen language) moves on, like the Next button.
+// A spoken "next" or "yes" (in the chosen language) moves on, like the Next button.
 function handleNextCommand(text) {
-  setListening(false);
   const command = matchCommand(text, {
-    yes: parseWords(t('voice.yesWords')),
+    yes: [...parseWords(t('voice.yesWords')), ...parseWords(t('voice.nextWords'))],
     redo: parseWords(t('voice.redoWords')),
   });
-  if (command === 'yes') nextSegment();
-  // Anything else: the Next button keeps waiting.
+  if (command === 'yes') {
+    setListening(false);
+    nextSegment();
+  } else if (command === 'redo') {
+    setListening(false); // "no": stay here; the Next button keeps waiting
+  } else {
+    handleStepNotUnderstood(); // unclear: say it once more (max 2 times)
+  }
 }
 
 nextButton.addEventListener('click', () => {
@@ -963,7 +1074,7 @@ function nextSegment(notice) {
   feedbackArea.hidden = true;
   clearI18n(feedbackText);
 
-  if (computeHasMore(state.segmentIndex)) {
+  if (computeHasMore(state.segmentIndex, state.segments.length)) {
     state.segmentIndex += 1;
     playSegment();
   } else {
@@ -976,20 +1087,106 @@ function playComplete() {
   const myId = askId;
   stopEverything();
   phase = 'complete';
+  notUnderstood.reset();
   resetLessonScreen();
 
-  const total = state.segments.length;
+  const total = state.segments.length; // parts of ALL rounds; the score adds up too
+  const more = canLearnMore(state.round);
   setI18nText(completeText, 'ghostTutor.complete');
   setI18nText(scoreText, 'ghostTutor.score', { score, total });
+  if (more) {
+    setI18nText(learnMorePrompt, 'ghostTutor.learnMorePrompt', { topic: state.topic });
+  } else {
+    setI18nText(learnMorePrompt, 'ghostTutor.maxRounds'); // 5 rounds done: suggest a new topic
+  }
+  learnMoreButton.hidden = !more;
+  learnMoreButton.disabled = false;
   completeArea.hidden = false;
-  speakThen(t('ghostTutor.score', { score, total }) + ' ' + t('ghostTutor.complete'), myId, () => {});
+
+  const question = more ? t('ghostTutor.learnMorePrompt', { topic: state.topic }) : t('ghostTutor.maxRounds');
+  const spoken = t('ghostTutor.score', { score, total }) + ' ' + t('ghostTutor.complete') + ' ' + question;
+  speakThen(spoken, myId, () => {
+    if (more) listenForLearnMore(myId);
+  });
 }
 
-newTopicButton.addEventListener('click', () => {
+// Open the microphone once, to hear "yes" (learn more) or "no" (new topic).
+function listenForLearnMore(myId) {
+  // Wait a moment so the microphone does not hear the end of our own voice.
+  setTimeout(() => {
+    if (myId !== askId || phase !== 'complete' || micListening || voiceDisabled) return;
+    if (!speechInput || !speechInput.supported) return;
+    setListening(true);
+    speechInput.start();
+  }, LISTEN_DELAY_MS);
+}
+
+// A spoken answer on the end screen.
+function handleCompleteCommand(text) {
+  const command = matchCommand(text, {
+    yes: parseWords(t('voice.yesWords')),
+    redo: parseWords(t('voice.redoWords')),
+  });
+  if (command === 'yes') {
+    setListening(false);
+    learnMore();
+  } else if (command === 'redo') {
+    setListening(false);
+    chooseAnotherTopic(); // "no"
+  } else {
+    handleStepNotUnderstood();
+  }
+}
+
+// Learn more: 4 new parts that go deeper. The titles of the parts already
+// taught are sent so nothing is repeated. The part counter and the score continue.
+async function learnMore() {
+  if (phase !== 'complete' || !canLearnMore(state.round)) return;
+  askId += 1;
+  const myId = askId;
+  stopEverything();
+  clearI18n(completeMessage);
+  completeMessage.hidden = true;
+  learnMoreButton.disabled = true; // no double requests; "Choose another topic" keeps working
+  const requestLang = state.language;
+
+  showLoading();
+  let data = null;
+  try {
+    data = await lesson({
+      topic: state.topic,
+      lang: requestLang.bcp47,
+      covered: coveredTitles(state.segments),
+    });
+  } finally {
+    hideLoading();
+  }
+  if (myId !== askId) return; // the learner left or changed language meanwhile
+  learnMoreButton.disabled = false;
+
+  if (!data || data.error || !isValidLesson(data)) {
+    setI18nText(completeMessage, data && data.error ? friendlyError(data.error) : 'ghostTutor.errGeneric');
+    completeMessage.hidden = false;
+    return; // the buttons stay: try again or choose another topic
+  }
+
+  const firstNewPart = state.segments.length;
+  state.segments = state.segments.concat(makeSegments(data, requestLang));
+  state.round += 1;
+  state.segmentIndex = firstNewPart; // "Part 5 of 8"
+  playSegment();
+}
+
+learnMoreButton.addEventListener('click', learnMore);
+
+// Back to topic selection (button, or a spoken "no").
+function chooseAnotherTopic() {
   leaveLesson();
   showScreen('topic');
   topicInput.focus();
-});
+}
+
+newTopicButton.addEventListener('click', chooseAnotherTopic);
 
 // ----- Language change -----
 

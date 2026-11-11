@@ -23,6 +23,11 @@
   "ghostTutor.loadingLesson": "మీ పాఠాన్ని సిద్ధం చేస్తున్నాం...",
   "ghostTutor.newTopic": "మరో అంశాన్ని ఎంచుకోండి",
   "ghostTutor.next": "తదుపరి",
+  "ghostTutor.nextPrompt": "తదుపరి భాగానికి వెళ్దామా? తదుపరి లేదా అవును అని చెప్పండి.",
+  "ghostTutor.skip": "దాటవేయి",
+  "ghostTutor.learnMore": "మరింత నేర్చుకోండి",
+  "ghostTutor.learnMorePrompt": "{topic} గురించి ఇంకా నేర్చుకోవాలనుకుంటున్నారా? అవును లేదా లేదు అని చెప్పండి.",
+  "ghostTutor.maxRounds": "మీరు ఈ అంశం గురించి చాలా నేర్చుకున్నారు! దయచేసి కొత్త అంశాన్ని ఎంచుకోండి.",
   "ghostTutor.noAnswerNext": "సమాధానం వినిపించలేదు. తర్వాతికి వెళ్దాం.",
   "ghostTutor.pageTitle": "మాట్లాడి నేర్చుకోండి · Ghost Tutor",
   "ghostTutor.pleaseWait": "దయచేసి వేచి ఉండండి...",
@@ -124,5 +129,6 @@
   "textFallback.placeholder": "ఇక్కడ టైప్ చేయండి...",
   "textFallback.submit": "పంపండి",
   "voice.redoWords": "మళ్ళీ|మళ్లీ|కాదు|లేదు|మరల|వద్దు",
+  "voice.nextWords": "తదుపరి|తర్వాత|ముందుకు|అవును|సరే|next|yes",
   "voice.yesWords": "అవును|సరే|ఓకే|కరెక్ట్|అవునండి|ఔను|సరి"
 }

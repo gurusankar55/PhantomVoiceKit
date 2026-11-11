@@ -23,6 +23,11 @@
   "ghostTutor.loadingLesson": "നിങ്ങളുടെ പാഠം ഒരുക്കുന്നു...",
   "ghostTutor.newTopic": "മറ്റൊരു വിഷയം തിരഞ്ഞെടുക്കുക",
   "ghostTutor.next": "അടുത്തത്",
+  "ghostTutor.nextPrompt": "അടുത്ത ഭാഗത്തിലേക്ക് പോകാമോ? അടുത്തത് അല്ലെങ്കിൽ അതെ എന്ന് പറയൂ.",
+  "ghostTutor.skip": "ഒഴിവാക്കുക",
+  "ghostTutor.learnMore": "കൂടുതൽ പഠിക്കുക",
+  "ghostTutor.learnMorePrompt": "{topic} നെക്കുറിച്ച് കൂടുതൽ പഠിക്കണോ? അതെ അല്ലെങ്കിൽ ഇല്ല എന്ന് പറയൂ.",
+  "ghostTutor.maxRounds": "ഈ വിഷയത്തെക്കുറിച്ച് നിങ്ങൾ ധാരാളം പഠിച്ചു! ദയവായി പുതിയ വിഷയം തിരഞ്ഞെടുക്കൂ.",
   "ghostTutor.noAnswerNext": "ഉത്തരം കേട്ടില്ല. നമുക്ക് മുന്നോട്ട് പോകാം.",
   "ghostTutor.pageTitle": "സംസാരിച്ച് പഠിക്കുക · Ghost Tutor",
   "ghostTutor.pleaseWait": "ദയവായി കാത്തിരിക്കുക...",
@@ -124,5 +129,6 @@
   "textFallback.placeholder": "ഇവിടെ ടൈപ്പ് ചെയ്യുക...",
   "textFallback.submit": "സമർപ്പിക്കുക",
   "voice.redoWords": "വീണ്ടും|ഇല്ല|അല്ല|തെറ്റ്|വീണ്ടും പറയൂ",
+  "voice.nextWords": "അടുത്തത്|അടുത്തതു|പോകാം|അതെ|ശരി|next|yes",
   "voice.yesWords": "അതെ|ശരി|ഓക്കേ|ഉവ്വ്|ഓകെ|ശരിയാണ്"
 }

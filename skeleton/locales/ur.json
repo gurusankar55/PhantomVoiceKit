@@ -23,6 +23,11 @@
   "ghostTutor.loadingLesson": "آپ کا سبق تیار ہو رہا ہے...",
   "ghostTutor.newTopic": "دوسرا موضوع چنیں",
   "ghostTutor.next": "اگلا",
+  "ghostTutor.nextPrompt": "کیا ہم اگلے حصے پر چلیں؟ اگلا یا ہاں کہیں۔",
+  "ghostTutor.skip": "چھوڑیں",
+  "ghostTutor.learnMore": "مزید سیکھیں",
+  "ghostTutor.learnMorePrompt": "کیا آپ {topic} کے بارے میں مزید سیکھنا چاہتے ہیں؟ ہاں یا نہیں کہیں۔",
+  "ghostTutor.maxRounds": "آپ نے اس موضوع پر بہت کچھ سیکھ لیا ہے! براہِ کرم نیا موضوع چنیں۔",
   "ghostTutor.noAnswerNext": "کوئی جواب سنائی نہیں دیا۔ آگے بڑھتے ہیں۔",
   "ghostTutor.pageTitle": "بول کر سیکھیں · Ghost Tutor",
   "ghostTutor.pleaseWait": "براہ کرم انتظار کریں...",
@@ -124,5 +129,6 @@
   "textFallback.placeholder": "یہاں لکھیں...",
   "textFallback.submit": "بھیجیں",
   "voice.redoWords": "دوبارہ|نہیں|پھر سے|غلط|پھر|دوبارہ کہیں",
+  "voice.nextWords": "اگلا|آگے|چلیں|ہاں|جی|ٹھیک|next|yes",
   "voice.yesWords": "ہاں|جی|ٹھیک|اوکے|درست|جی ہاں|بالکل|ہاں جی"
 }

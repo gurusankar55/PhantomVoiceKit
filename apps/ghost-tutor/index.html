@@ -63,11 +63,15 @@
         <!-- Shows the answer in the user's language and in English -->
         <div id="dual-display-container" hidden></div>
         <p id="quiz-message" role="alert" hidden></p>
+        <!-- Shown only after the voice answer was not understood twice -->
+        <button id="skip-button" type="button" class="btn btn--secondary" data-i18n="ghostTutor.skip" hidden>Skip</button>
       </div>
 
       <div id="feedback-area" class="feedback-area" hidden>
         <h3 data-i18n="ghostTutor.feedbackHeading">Feedback</h3>
         <p id="feedback-text"></p>
+        <!-- "Shall we go to the next part? Say next or yes." -->
+        <p id="next-prompt" hidden></p>
         <!-- Always available, so the user is never stuck on a question -->
         <button id="next-button" type="button" class="btn" data-i18n="ghostTutor.next">Next</button>
       </div>
@@ -77,6 +81,10 @@
         <h3 data-i18n="ghostTutor.completeHeading">Well done!</h3>
         <p id="complete-text" data-i18n="ghostTutor.complete">You finished this topic.</p>
         <p id="score-text"></p>
+        <p id="learn-more-prompt"></p>
+        <p id="complete-listening-indicator" class="listening-indicator" role="status" hidden><span class="listening-dot" aria-hidden="true"></span><span data-i18n="common.listening">Listening... please speak now.</span></p>
+        <p id="complete-message" class="error-message" role="alert" hidden></p>
+        <button id="learn-more" type="button" class="btn" data-i18n="ghostTutor.learnMore">Learn more</button>
         <button id="new-topic" type="button" class="btn" data-i18n="ghostTutor.newTopic">Pick another topic</button>
       </div>
     </section>

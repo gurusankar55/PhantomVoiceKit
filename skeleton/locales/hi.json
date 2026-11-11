@@ -23,6 +23,11 @@
   "ghostTutor.loadingLesson": "आपका पाठ तैयार हो रहा है...",
   "ghostTutor.newTopic": "दूसरा विषय चुनें",
   "ghostTutor.next": "आगे",
+  "ghostTutor.nextPrompt": "क्या हम अगले भाग पर चलें? आगे या हाँ कहें।",
+  "ghostTutor.skip": "छोड़ें",
+  "ghostTutor.learnMore": "और सीखें",
+  "ghostTutor.learnMorePrompt": "क्या आप {topic} के बारे में और सीखना चाहते हैं? हाँ या नहीं कहें।",
+  "ghostTutor.maxRounds": "आपने इस विषय पर बहुत कुछ सीख लिया है! कृपया नया विषय चुनें।",
   "ghostTutor.noAnswerNext": "कोई उत्तर नहीं सुना। आगे चलते हैं।",
   "ghostTutor.pageTitle": "बोलकर सीखें · Ghost Tutor",
   "ghostTutor.pleaseWait": "कृपया रुकें...",
@@ -124,5 +129,6 @@
   "textFallback.placeholder": "यहाँ लिखें...",
   "textFallback.submit": "भेजें",
   "voice.redoWords": "फिर से|नहीं|दोबारा|गलत|फिर|फिर से कहें|no",
+  "voice.nextWords": "आगे|अगला|चलिए|आगे बढ़ो|हाँ|हां|ठीक है|next|yes",
   "voice.yesWords": "हाँ|हां|ठीक है|ओके|सही|जी|जी हाँ|हाँ जी|yes"
 }

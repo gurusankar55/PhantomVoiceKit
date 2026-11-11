@@ -351,8 +351,27 @@
   color: var(--color-orange-light);
 }
 
-#new-topic {
+#new-topic,
+#learn-more,
+#skip-button {
   width: 100%;
+}
+
+/* Spoken questions that are also shown on screen */
+#next-prompt,
+#learn-more-prompt {
+  margin: 0;
+  font-size: 1.1rem;
+  font-style: italic;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  color: var(--color-orange-light);
+}
+
+#complete-message {
+  margin: 0;
+  font-weight: 700;
+  color: var(--color-error-text);
 }
 
 /* ---------- Tablet and up ---------- */
@@ -383,6 +402,12 @@
 
   #new-topic {
     align-self: center;
+  }
+
+  #learn-more {
+    width: auto;
+    align-self: center;
+    min-width: 12rem;
   }
 }
 

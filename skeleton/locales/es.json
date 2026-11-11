@@ -23,6 +23,11 @@
   "ghostTutor.loadingLesson": "Preparando su lección...",
   "ghostTutor.newTopic": "Elegir otro tema",
   "ghostTutor.next": "Siguiente",
+  "ghostTutor.nextPrompt": "¿Pasamos a la siguiente parte? Di siguiente o sí.",
+  "ghostTutor.skip": "Omitir",
+  "ghostTutor.learnMore": "Aprender más",
+  "ghostTutor.learnMorePrompt": "¿Quieres aprender más sobre {topic}? Di sí o no.",
+  "ghostTutor.maxRounds": "¡Has aprendido mucho sobre este tema! Elige un tema nuevo.",
   "ghostTutor.noAnswerNext": "No escuché respuesta. Sigamos.",
   "ghostTutor.pageTitle": "Aprende hablando · Ghost Tutor",
   "ghostTutor.pleaseWait": "Por favor espere...",
@@ -124,5 +129,6 @@
   "textFallback.placeholder": "Escriba aquí...",
   "textFallback.submit": "Enviar",
   "voice.redoWords": "otra vez|no|repetir|de nuevo|otra|repite|repítelo",
+  "voice.nextWords": "siguiente|continuar|adelante|sí|si|vale|next|yes",
   "voice.yesWords": "sí|si|vale|correcto|ok|claro|bien"
 }

@@ -23,6 +23,11 @@
   "ghostTutor.loadingLesson": "نجهّز درسك...",
   "ghostTutor.newTopic": "اختر موضوعًا آخر",
   "ghostTutor.next": "التالي",
+  "ghostTutor.nextPrompt": "هل ننتقل إلى الجزء التالي؟ قل التالي أو نعم.",
+  "ghostTutor.skip": "تخطَّ",
+  "ghostTutor.learnMore": "تعلّم المزيد",
+  "ghostTutor.learnMorePrompt": "هل تريد أن تتعلم المزيد عن {topic}؟ قل نعم أو لا.",
+  "ghostTutor.maxRounds": "لقد تعلمت الكثير عن هذا الموضوع! يرجى اختيار موضوع جديد.",
   "ghostTutor.noAnswerNext": "لم أسمع إجابة. لنتابع.",
   "ghostTutor.pageTitle": "تعلّم بالتحدث · Ghost Tutor",
   "ghostTutor.pleaseWait": "من فضلك انتظر...",
@@ -124,5 +129,6 @@
   "textFallback.placeholder": "اكتب هنا...",
   "textFallback.submit": "إرسال",
   "voice.redoWords": "مرة أخرى|لا|أعد|إعادة|خطأ|كرر|مرة ثانية",
+  "voice.nextWords": "التالي|التالى|التالية|نعم|أجل|تمام|next|yes",
   "voice.yesWords": "نعم|أجل|تمام|موافق|صح|أيوه|ايوه|اه"
 }

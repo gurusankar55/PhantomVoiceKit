@@ -23,6 +23,11 @@
   "ghostTutor.loadingLesson": "Ihre Lektion wird vorbereitet...",
   "ghostTutor.newTopic": "Anderes Thema wählen",
   "ghostTutor.next": "Weiter",
+  "ghostTutor.nextPrompt": "Gehen wir zum nächsten Teil? Sagen Sie weiter oder ja.",
+  "ghostTutor.skip": "Überspringen",
+  "ghostTutor.learnMore": "Mehr lernen",
+  "ghostTutor.learnMorePrompt": "Möchten Sie mehr über {topic} lernen? Sagen Sie ja oder nein.",
+  "ghostTutor.maxRounds": "Sie haben viel über dieses Thema gelernt! Bitte wählen Sie ein neues Thema.",
   "ghostTutor.noAnswerNext": "Keine Antwort gehört. Machen wir weiter.",
   "ghostTutor.pageTitle": "Per Sprache lernen · Ghost Tutor",
   "ghostTutor.pleaseWait": "Bitte warten...",
@@ -124,5 +129,6 @@
   "textFallback.placeholder": "Hier tippen...",
   "textFallback.submit": "Absenden",
   "voice.redoWords": "nochmal|nein|wiederholen|falsch|noch einmal|noch mal",
+  "voice.nextWords": "weiter|nächste|nächster|ja|ok|okay|next|yes",
   "voice.yesWords": "ja|ok|okay|richtig|stimmt|jawohl|genau|klar"
 }

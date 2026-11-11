@@ -23,6 +23,11 @@
   "ghostTutor.loadingLesson": "Dersiniz hazırlanıyor...",
   "ghostTutor.newTopic": "Başka bir konu seçin",
   "ghostTutor.next": "Sonraki",
+  "ghostTutor.nextPrompt": "Sonraki bölüme geçelim mi? Sonraki ya da evet deyin.",
+  "ghostTutor.skip": "Atla",
+  "ghostTutor.learnMore": "Daha fazla öğren",
+  "ghostTutor.learnMorePrompt": "{topic} hakkında daha fazla öğrenmek ister misiniz? Evet ya da hayır deyin.",
+  "ghostTutor.maxRounds": "Bu konuda çok şey öğrendiniz! Lütfen yeni bir konu seçin.",
   "ghostTutor.noAnswerNext": "Cevap duyulmadı. Devam edelim.",
   "ghostTutor.pageTitle": "Konuşarak öğren · Ghost Tutor",
   "ghostTutor.pleaseWait": "Lütfen bekleyin...",
@@ -124,5 +129,6 @@
   "textFallback.placeholder": "Buraya yazın...",
   "textFallback.submit": "Gönder",
   "voice.redoWords": "tekrar|hayır|yok|yanlış|bir daha|tekrar et",
+  "voice.nextWords": "sonraki|devam|ileri|evet|tamam|next|yes",
   "voice.yesWords": "evet|tamam|ok|doğru|olur|aynen|peki"
 }

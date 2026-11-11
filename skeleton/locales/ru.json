@@ -23,6 +23,11 @@
   "ghostTutor.loadingLesson": "Готовим ваш урок...",
   "ghostTutor.newTopic": "Выбрать другую тему",
   "ghostTutor.next": "Далее",
+  "ghostTutor.nextPrompt": "Перейдём к следующей части? Скажите «далее» или «да».",
+  "ghostTutor.skip": "Пропустить",
+  "ghostTutor.learnMore": "Узнать больше",
+  "ghostTutor.learnMorePrompt": "Хотите узнать больше о теме «{topic}»? Скажите «да» или «нет».",
+  "ghostTutor.maxRounds": "Вы многое узнали по этой теме! Выберите новую тему.",
   "ghostTutor.noAnswerNext": "Ответа не слышно. Идём дальше.",
   "ghostTutor.pageTitle": "Учитесь голосом · Ghost Tutor",
   "ghostTutor.pleaseWait": "Подождите, пожалуйста...",
@@ -124,5 +129,6 @@
   "textFallback.placeholder": "Пишите здесь...",
   "textFallback.submit": "Отправить",
   "voice.redoWords": "снова|нет|ещё раз|еще раз|неверно|повторите|заново",
+  "voice.nextWords": "далее|дальше|следующий|да|ок|хорошо|next|yes",
   "voice.yesWords": "да|ок|хорошо|верно|правильно|ага|конечно|ладно"
 }

@@ -258,3 +258,68 @@ describe('POST /api/evaluate correct flag', () => {
     assert.match(seen.prompt, /"correct": boolean/);
   });
 });
+
+// ---- Deeper rounds and Skip (Ghost Tutor) ----
+describe('POST /api/lesson covered titles', () => {
+  const path = '/api/lesson';
+
+  test('titles of taught parts are put in the prompt and a title is passed through', async () => {
+    let seen;
+    const segments = [1, 2, 3, 4].map((n) => ({ title: 'T' + n, segment: 'S' + n, quizQuestion: 'Q' + n + '?' }));
+    const app = makeApp(path, createLessonRouter(async (args) => { seen = args; return { segments }; }));
+    const res = await request(app).post(path).send({ topic: 'Moon', lang: 'en-US', covered: ['Phases of the moon', '  Tides ', '', 5, null] });
+    assert.equal(res.status, 200);
+    assert.equal(res.body.segments[0].title, 'T1');
+    assert.match(seen.prompt, /Phases of the moon/);
+    assert.match(seen.prompt, /Tides/);
+    assert.match(seen.prompt, /Do NOT repeat/);
+    assert.match(seen.prompt, /"title"/);
+  });
+
+  test('without covered titles the prompt does not talk about repeating', async () => {
+    let seen;
+    const segments = [1, 2, 3, 4].map((n) => ({ segment: 'S' + n, quizQuestion: 'Q' + n + '?' }));
+    const app = makeApp(path, createLessonRouter(async (args) => { seen = args; return { segments }; }));
+    for (const body of [{ topic: 'Moon' }, { topic: 'Moon', covered: 'nope' }, { topic: 'Moon', covered: [] }]) {
+      const res = await request(app).post(path).send(body);
+      assert.equal(res.status, 200);
+      assert.doesNotMatch(seen.prompt, /Do NOT repeat/);
+    }
+  });
+
+  test('at most 40 covered titles, each cut to 200 characters', async () => {
+    let seen;
+    const segments = [1, 2, 3, 4].map((n) => ({ segment: 'S' + n, quizQuestion: 'Q' + n + '?' }));
+    const app = makeApp(path, createLessonRouter(async (args) => { seen = args; return { segments }; }));
+    const covered = Array.from({ length: 60 }, (_, i) => 'title' + i);
+    covered[0] = 'y'.repeat(500);
+    await request(app).post(path).send({ topic: 'Moon', covered });
+    assert.ok(!seen.prompt.includes('title40'));
+    assert.ok(seen.prompt.includes('title39'));
+    assert.ok(!seen.prompt.includes('y'.repeat(201)));
+  });
+});
+
+describe('POST /api/evaluate skipped', () => {
+  const path = '/api/evaluate';
+
+  test('skipped:true needs no answer, is never correct and asks for the right answer', async () => {
+    let seen;
+    const app = makeApp(path, createEvaluateRouter(async (args) => { seen = args; return { correct: true, feedback: 'It is 4 because 2+2=4.' }; }));
+    const res = await request(app).post(path).send({ topic: 'Math', question: '2+2?', lang: 'ta-IN', skipped: true });
+    assert.equal(res.status, 200);
+    assert.equal(res.body.correct, false);
+    assert.equal(res.body.feedback, 'It is 4 because 2+2=4.');
+    assert.match(seen.prompt, /skipped/);
+    assert.match(seen.prompt, /correct answer/);
+    assert.ok(seen.prompt.includes('ta-IN'));
+  });
+
+  test('without skipped an empty answer is still rejected', async () => {
+    const app = makeApp(path, createEvaluateRouter(async () => ({ correct: true, feedback: 'x' })));
+    for (const body of [{ topic: 'Math', question: 'Q' }, { topic: 'Math', question: 'Q', answer: '  ', skipped: 'yes' }]) {
+      const res = await request(app).post(path).send(body);
+      assert.equal(res.status, 400);
+    }
+  });
+});

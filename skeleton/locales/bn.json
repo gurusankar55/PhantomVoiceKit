@@ -23,6 +23,11 @@
   "ghostTutor.loadingLesson": "আপনার পাঠ তৈরি হচ্ছে...",
   "ghostTutor.newTopic": "অন্য বিষয় বেছে নিন",
   "ghostTutor.next": "পরবর্তী",
+  "ghostTutor.nextPrompt": "আমরা কি পরের অংশে যাব? পরবর্তী বা হ্যাঁ বলুন।",
+  "ghostTutor.skip": "এড়িয়ে যান",
+  "ghostTutor.learnMore": "আরও শিখুন",
+  "ghostTutor.learnMorePrompt": "আপনি কি {topic} সম্পর্কে আরও শিখতে চান? হ্যাঁ বা না বলুন।",
+  "ghostTutor.maxRounds": "আপনি এই বিষয়ে অনেক কিছু শিখেছেন! অনুগ্রহ করে নতুন বিষয় বেছে নিন।",
   "ghostTutor.noAnswerNext": "কোনো উত্তর শোনা যায়নি। চলুন এগিয়ে যাই।",
   "ghostTutor.pageTitle": "কথা বলে শিখুন · Ghost Tutor",
   "ghostTutor.pleaseWait": "দয়া করে অপেক্ষা করুন...",
@@ -124,5 +129,6 @@
   "textFallback.placeholder": "এখানে লিখুন...",
   "textFallback.submit": "জমা দিন",
   "voice.redoWords": "আবার|না|নাহ|ভুল|আবার বলুন|পুনরায়",
+  "voice.nextWords": "পরবর্তী|পরের|এগিয়ে চলুন|হ্যাঁ|ঠিক আছে|next|yes",
   "voice.yesWords": "হ্যাঁ|ঠিক আছে|ওকে|ঠিক|সঠিক|জি|হ্যা"
 }

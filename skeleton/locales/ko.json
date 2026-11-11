@@ -23,6 +23,11 @@
   "ghostTutor.loadingLesson": "수업을 준비하고 있습니다...",
   "ghostTutor.newTopic": "다른 주제 고르기",
   "ghostTutor.next": "다음",
+  "ghostTutor.nextPrompt": "다음 부분으로 갈까요? 다음 또는 예라고 말씀해 주세요.",
+  "ghostTutor.skip": "건너뛰기",
+  "ghostTutor.learnMore": "더 배우기",
+  "ghostTutor.learnMorePrompt": "{topic}에 대해 더 배우고 싶으세요? 예 또는 아니요라고 말씀해 주세요.",
+  "ghostTutor.maxRounds": "이 주제를 많이 배우셨어요! 새로운 주제를 선택해 주세요.",
   "ghostTutor.noAnswerNext": "답이 들리지 않았습니다. 다음으로 갈게요.",
   "ghostTutor.pageTitle": "말로 배우기 · Ghost Tutor",
   "ghostTutor.pleaseWait": "잠시만 기다려 주세요...",
@@ -124,5 +129,6 @@
   "textFallback.placeholder": "여기에 입력하세요...",
   "textFallback.submit": "보내기",
   "voice.redoWords": "다시|아니요|아니|틀려요|다시 말해|아니에요|노",
+  "voice.nextWords": "다음|다음으로|계속|네|예|응|next|yes",
   "voice.yesWords": "네|예|응|맞아요|확인|그래|좋아요|맞아|예스"
 }

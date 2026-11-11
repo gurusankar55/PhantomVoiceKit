@@ -23,6 +23,11 @@
   "ghostTutor.loadingLesson": "正在准备您的课程...",
   "ghostTutor.newTopic": "选择其他主题",
   "ghostTutor.next": "下一步",
+  "ghostTutor.nextPrompt": "我们进入下一部分吗？请说“下一个”或“是”。",
+  "ghostTutor.skip": "跳过",
+  "ghostTutor.learnMore": "继续学习",
+  "ghostTutor.learnMorePrompt": "你想进一步了解{topic}吗？请说“是”或“不”。",
+  "ghostTutor.maxRounds": "你已经学到很多关于这个主题的知识了！请选择一个新主题。",
   "ghostTutor.noAnswerNext": "没有听到回答。我们继续吧。",
   "ghostTutor.pageTitle": "用语音学习 · Ghost Tutor",
   "ghostTutor.pleaseWait": "请稍等...",
@@ -124,5 +129,6 @@
   "textFallback.placeholder": "在这里输入...",
   "textFallback.submit": "提交",
   "voice.redoWords": "重来|不|不对|再来|重新|再说一遍|再说一次|错了",
+  "voice.nextWords": "下一个|下一步|继续|是|好|next|yes",
   "voice.yesWords": "是|对|好|好的|确认|嗯|没错"
 }

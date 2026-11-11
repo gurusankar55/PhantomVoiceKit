@@ -8,7 +8,7 @@ export function createLessonRouter(callGemini) {
 
   // Mounted at /api/lesson, so the path here is just '/'
   router.post('/', async (req, res) => {
-    const { topic, lang } = req.body || {};
+    const { topic, lang, covered: rawCovered } = req.body || {};
 
     // Reject missing, non-string, empty or whitespace-only topics (no Gemini call)
     if (typeof topic !== 'string' || topic.trim() === '') {
@@ -16,15 +16,31 @@ export function createLessonRouter(callGemini) {
     }
 
     const cleanTopic = topic.trim();
+    // Titles of the parts the learner already studied, so they are not repeated.
+    const covered = Array.isArray(rawCovered)
+      ? rawCovered
+          .filter((c) => typeof c === 'string' && c.trim() !== '')
+          .slice(0, 40)
+          .map((c) => c.trim().slice(0, 200))
+      : [];
     // Fall back to English if no language was sent
     const language = typeof lang === 'string' && lang.trim() !== '' ? lang.trim() : 'en-US';
 
+    const alreadyTaught =
+      covered.length > 0
+        ? 'The learner has ALREADY studied these parts: ' +
+          covered.map((c) => '"' + c + '"').join('; ') +
+          '. Go deeper into new details. Do NOT repeat or re-explain any of them. '
+        : '';
+
     const prompt =
-      `You are a friendly tutor. Generate a complete lesson on the topic "${cleanTopic}" ` +
-      `as exactly 4 short segments. Each segment has a spoken explanation ("segment") ` +
-      `and a follow-up quiz question ("quizQuestion"), both written in the language ${language}. ` +
-      `Reply with JSON only: { "segments": [ { "segment": "...", "quizQuestion": "..." } ] } ` +
-      `with exactly 4 items.`;
+      'You are a friendly tutor. Generate a complete lesson on the topic "' + cleanTopic + '" ' +
+      'as exactly 4 short segments. Each segment has a spoken explanation ("segment"), ' +
+      'a very short title of at most 6 words ("title") ' +
+      'and a follow-up quiz question ("quizQuestion"), all written in the language ' + language + '. ' +
+      alreadyTaught +
+      'Reply with JSON only: { "segments": [ { "title": "...", "segment": "...", "quizQuestion": "..." } ] } ' +
+      'with exactly 4 items.';
 
     try {
       const result = await callGemini({ prompt });

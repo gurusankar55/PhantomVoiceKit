@@ -23,6 +23,11 @@
   "ghostTutor.loadingLesson": "Đang chuẩn bị bài học của bạn...",
   "ghostTutor.newTopic": "Chọn chủ đề khác",
   "ghostTutor.next": "Tiếp theo",
+  "ghostTutor.nextPrompt": "Chúng ta sang phần tiếp theo nhé? Hãy nói tiếp theo hoặc có.",
+  "ghostTutor.skip": "Bỏ qua",
+  "ghostTutor.learnMore": "Học thêm",
+  "ghostTutor.learnMorePrompt": "Bạn có muốn học thêm về {topic} không? Hãy nói có hoặc không.",
+  "ghostTutor.maxRounds": "Bạn đã học được rất nhiều về chủ đề này! Hãy chọn một chủ đề mới.",
   "ghostTutor.noAnswerNext": "Không nghe thấy câu trả lời. Mình đi tiếp nhé.",
   "ghostTutor.pageTitle": "Học bằng giọng nói · Ghost Tutor",
   "ghostTutor.pleaseWait": "Vui lòng chờ...",
@@ -124,5 +129,6 @@
   "textFallback.placeholder": "Gõ ở đây...",
   "textFallback.submit": "Gửi",
   "voice.redoWords": "lại|không|làm lại|sai|nói lại",
+  "voice.nextWords": "tiếp theo|tiếp|tiếp tục|có|vâng|ok|next|yes",
   "voice.yesWords": "vâng|có|ok|đúng|được|vâng ạ|dạ|ừ"
 }

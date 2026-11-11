@@ -23,6 +23,11 @@
   "ghostTutor.loadingLesson": "ನಿಮ್ಮ ಪಾಠ ಸಿದ್ಧಪಡಿಸುತ್ತಿದ್ದೇವೆ...",
   "ghostTutor.newTopic": "ಇನ್ನೊಂದು ವಿಷಯ ಆಯ್ಕೆಮಾಡಿ",
   "ghostTutor.next": "ಮುಂದೆ",
+  "ghostTutor.nextPrompt": "ಮುಂದಿನ ಭಾಗಕ್ಕೆ ಹೋಗೋಣವೇ? ಮುಂದೆ ಅಥವಾ ಹೌದು ಎಂದು ಹೇಳಿ.",
+  "ghostTutor.skip": "ಬಿಟ್ಟುಬಿಡಿ",
+  "ghostTutor.learnMore": "ಇನ್ನಷ್ಟು ಕಲಿಯಿರಿ",
+  "ghostTutor.learnMorePrompt": "{topic} ಬಗ್ಗೆ ಇನ್ನಷ್ಟು ಕಲಿಯಲು ಬಯಸುವಿರಾ? ಹೌದು ಅಥವಾ ಇಲ್ಲ ಎಂದು ಹೇಳಿ.",
+  "ghostTutor.maxRounds": "ನೀವು ಈ ವಿಷಯದ ಬಗ್ಗೆ ತುಂಬಾ ಕಲಿತಿದ್ದೀರಿ! ದಯವಿಟ್ಟು ಹೊಸ ವಿಷಯವನ್ನು ಆರಿಸಿ.",
   "ghostTutor.noAnswerNext": "ಉತ್ತರ ಕೇಳಿಸಲಿಲ್ಲ. ಮುಂದುವರಿಯೋಣ.",
   "ghostTutor.pageTitle": "ಮಾತನಾಡಿ ಕಲಿಯಿರಿ · Ghost Tutor",
   "ghostTutor.pleaseWait": "ದಯವಿಟ್ಟು ಕಾಯಿರಿ...",
@@ -124,5 +129,6 @@
   "textFallback.placeholder": "ಇಲ್ಲಿ ಟೈಪ್ ಮಾಡಿ...",
   "textFallback.submit": "ಕಳುಹಿಸಿ",
   "voice.redoWords": "ಮತ್ತೆ|ಇಲ್ಲ|ಬೇಡ|ತಪ್ಪು|ಮತ್ತೊಮ್ಮೆ",
+  "voice.nextWords": "ಮುಂದೆ|ಮುಂದಿನದು|ಹೋಗೋಣ|ಹೌದು|ಸರಿ|next|yes",
   "voice.yesWords": "ಹೌದು|ಸರಿ|ಓಕೆ|ಒಪ್ಪಿಗೆ|ಹೂಂ|ಆಯಿತು"
 }

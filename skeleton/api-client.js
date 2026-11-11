@@ -75,11 +75,15 @@ export function extractFields({ fileBase64, mimeType, lang }) {
 }
 
 // Get a short lesson (segments + quiz questions) for a topic.
-export function lesson({ topic, lang }) {
-  return postJson('/api/lesson', { topic, lang }, TIMEOUT_LESSON_MS);
+// covered (optional): titles of parts already taught, so new parts go deeper.
+export function lesson({ topic, lang, covered }) {
+  const body = Array.isArray(covered) && covered.length > 0 ? { topic, lang, covered } : { topic, lang };
+  return postJson('/api/lesson', body, TIMEOUT_LESSON_MS);
 }
 
 // Evaluate the learner's answer to a quiz question.
-export function evaluate({ topic, question, answer, lang }) {
-  return postJson('/api/evaluate', { topic, question, answer, lang }, TIMEOUT_EVALUATE_MS);
+// skipped: true asks for the correct answer and a short explanation (no answer to check).
+export function evaluate({ topic, question, answer, lang, skipped = false }) {
+  const body = skipped ? { topic, question, answer: '', lang, skipped: true } : { topic, question, answer, lang };
+  return postJson('/api/evaluate', body, TIMEOUT_EVALUATE_MS);
 }

@@ -23,6 +23,11 @@
   "ghostTutor.loadingLesson": "Préparation de votre leçon...",
   "ghostTutor.newTopic": "Choisir un autre sujet",
   "ghostTutor.next": "Suivant",
+  "ghostTutor.nextPrompt": "Passons-nous à la partie suivante ? Dites suivant ou oui.",
+  "ghostTutor.skip": "Passer",
+  "ghostTutor.learnMore": "En savoir plus",
+  "ghostTutor.learnMorePrompt": "Voulez-vous en apprendre davantage sur {topic} ? Dites oui ou non.",
+  "ghostTutor.maxRounds": "Vous avez beaucoup appris sur ce sujet ! Choisissez un nouveau sujet.",
   "ghostTutor.noAnswerNext": "Aucune réponse entendue. Continuons.",
   "ghostTutor.pageTitle": "Apprenez en parlant · Ghost Tutor",
   "ghostTutor.pleaseWait": "Veuillez patienter...",
@@ -124,5 +129,6 @@
   "textFallback.placeholder": "Écrivez ici...",
   "textFallback.submit": "Envoyer",
   "voice.redoWords": "encore|non|recommencer|répéter|encore une fois|répète",
+  "voice.nextWords": "suivant|continuer|oui|d'accord|ok|next|yes",
   "voice.yesWords": "oui|d'accord|ok|correct|exact|ouais|bien"
 }

@@ -23,6 +23,11 @@
   "ghostTutor.loadingLesson": "Menyiapkan pelajaran Anda...",
   "ghostTutor.newTopic": "Pilih topik lain",
   "ghostTutor.next": "Berikutnya",
+  "ghostTutor.nextPrompt": "Mau lanjut ke bagian berikutnya? Katakan berikutnya atau ya.",
+  "ghostTutor.skip": "Lewati",
+  "ghostTutor.learnMore": "Belajar lagi",
+  "ghostTutor.learnMorePrompt": "Apakah Anda ingin belajar lebih banyak tentang {topic}? Katakan ya atau tidak.",
+  "ghostTutor.maxRounds": "Anda sudah belajar banyak tentang topik ini! Silakan pilih topik baru.",
   "ghostTutor.noAnswerNext": "Tidak ada jawaban. Mari lanjut.",
   "ghostTutor.pageTitle": "Belajar dengan berbicara · Ghost Tutor",
   "ghostTutor.pleaseWait": "Silakan tunggu...",
@@ -124,5 +129,6 @@
   "textFallback.placeholder": "Ketik di sini...",
   "textFallback.submit": "Kirim",
   "voice.redoWords": "lagi|tidak|ulang|salah|sekali lagi|coba lagi",
+  "voice.nextWords": "berikutnya|lanjut|selanjutnya|ya|oke|next|yes",
   "voice.yesWords": "ya|ok|oke|benar|betul|iya|baik"
 }

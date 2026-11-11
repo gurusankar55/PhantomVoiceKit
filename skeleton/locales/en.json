@@ -23,6 +23,11 @@
   "ghostTutor.loadingLesson": "Preparing your lesson...",
   "ghostTutor.newTopic": "Pick another topic",
   "ghostTutor.next": "Next",
+  "ghostTutor.nextPrompt": "Shall we go to the next part? Say next or yes.",
+  "ghostTutor.skip": "Skip",
+  "ghostTutor.learnMore": "Learn more",
+  "ghostTutor.learnMorePrompt": "Do you want to learn more about {topic}? Say yes or no.",
+  "ghostTutor.maxRounds": "You have learned a lot about this topic! Please choose a new topic.",
   "ghostTutor.noAnswerNext": "No answer heard. Let's go on.",
   "ghostTutor.pageTitle": "Learn by speaking · Ghost Tutor",
   "ghostTutor.pleaseWait": "Please wait...",
@@ -124,5 +129,6 @@
   "textFallback.placeholder": "Type here...",
   "textFallback.submit": "Submit",
   "voice.redoWords": "again|no|redo|repeat|wrong|nope|try again|once more|say again",
+  "voice.nextWords": "next|yes|ok|continue",
   "voice.yesWords": "yes|ok|okay|correct|right|yeah|yep|sure"
 }

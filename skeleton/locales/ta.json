@@ -23,6 +23,11 @@
   "ghostTutor.loadingLesson": "உங்கள் பாடத்தைத் தயார் செய்கிறோம்...",
   "ghostTutor.newTopic": "வேறு தலைப்பைத் தேர்ந்தெடுங்கள்",
   "ghostTutor.next": "அடுத்தது",
+  "ghostTutor.nextPrompt": "அடுத்த பகுதிக்குப் போகலாமா? அடுத்தது அல்லது ஆம் என்று சொல்லுங்கள்.",
+  "ghostTutor.skip": "தவிர்",
+  "ghostTutor.learnMore": "மேலும் கற்க",
+  "ghostTutor.learnMorePrompt": "{topic} பற்றி இன்னும் கற்க விரும்புகிறீர்களா? ஆம் அல்லது இல்லை என்று சொல்லுங்கள்.",
+  "ghostTutor.maxRounds": "இந்தத் தலைப்பில் நிறைய கற்றுக்கொண்டீர்கள்! புதிய தலைப்பைத் தேர்ந்தெடுங்கள்.",
   "ghostTutor.noAnswerNext": "பதில் கேட்கவில்லை. அடுத்ததுக்குப் போவோம்.",
   "ghostTutor.pageTitle": "பேசிக் கற்றுக்கொள் · Ghost Tutor",
   "ghostTutor.pleaseWait": "தயவுசெய்து காத்திருங்கள்...",
@@ -124,5 +129,6 @@
   "textFallback.placeholder": "இங்கே தட்டச்சு செய்யுங்கள்...",
   "textFallback.submit": "சமர்ப்பி",
   "voice.redoWords": "மறுபடி|இல்லை|திரும்ப|மீண்டும்|no",
+  "voice.nextWords": "அடுத்து|அடுத்தது|போகலாம்|ஆம்|சரி|next|yes",
   "voice.yesWords": "சரி|ஆமாம்|ஓகே|ஆம்|ஆமா|ok|yes"
 }

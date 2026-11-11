@@ -23,6 +23,11 @@
   "ghostTutor.loadingLesson": "レッスンを準備しています...",
   "ghostTutor.newTopic": "別のトピックを選ぶ",
   "ghostTutor.next": "次へ",
+  "ghostTutor.nextPrompt": "次のパートに進みますか？「次」か「はい」と言ってください。",
+  "ghostTutor.skip": "スキップ",
+  "ghostTutor.learnMore": "もっと学ぶ",
+  "ghostTutor.learnMorePrompt": "{topic}についてもっと学びますか？「はい」か「いいえ」と言ってください。",
+  "ghostTutor.maxRounds": "このトピックをたくさん学びました！新しいトピックを選んでください。",
   "ghostTutor.noAnswerNext": "答えが聞こえませんでした。次へ進みましょう。",
   "ghostTutor.pageTitle": "話して学ぶ · Ghost Tutor",
   "ghostTutor.pleaseWait": "お待ちください...",
@@ -124,5 +129,6 @@
   "textFallback.placeholder": "ここに入力...",
   "textFallback.submit": "送信",
   "voice.redoWords": "もう一度|いいえ|違う|やり直し|もう1回|もう一回|だめ|ノー",
+  "voice.nextWords": "次|次へ|続けて|進む|はい|ok|next|yes",
   "voice.yesWords": "はい|うん|オッケー|ok|合ってる|ええ|そう|オーケー"
 }
