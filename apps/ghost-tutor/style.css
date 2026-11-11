@@ -411,6 +411,61 @@
   }
 }
 
+/* ---------- Continue where you stopped ---------- */
+.resume-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background-color: var(--color-surface);
+  border: 2px solid var(--color-orange);
+  border-radius: var(--radius);
+}
+
+.resume-card[hidden] {
+  display: none;
+}
+
+#resume-text {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  color: var(--color-ghost);
+}
+
+.resume-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.resume-buttons .btn {
+  flex: 1 1 10rem;
+}
+
+/* ---------- Pause and resume ---------- */
+.pause-button {
+  align-self: center;
+  min-width: 9rem;
+}
+
+#paused-note {
+  margin: 0;
+  font-weight: 700;
+  text-align: center;
+  color: var(--color-orange-light);
+}
+
+/* A paused lesson looks dimmed; only the Resume button stays active. */
+.screen.is-paused .lesson-card,
+.screen.is-paused .quiz-area,
+.screen.is-paused .feedback-area,
+.screen.is-paused .complete-area {
+  opacity: 0.5;
+}
+
 /* ---------- Reduced motion: no pulsing ---------- */
 @media (prefers-reduced-motion: reduce) {
   #mic-button.listening,

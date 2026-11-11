@@ -12,6 +12,7 @@ import { createNavMenu, createScreenHistory } from '/skeleton/nav-menu.js';
 import { initI18n, t, setI18nText, clearI18n } from '/skeleton/i18n.js';
 import { computeHasMore, canLearnMore, coveredTitles } from '/apps/ghost-tutor/lesson-utils.js';
 import { matchCommand, parseWords } from '/skeleton/voice-commands.js';
+import { buildProgress, parseProgress, restoreSegments, PROGRESS_KEY } from '/apps/ghost-tutor/progress-utils.js';
 import { createRetryCounter, LISTEN_DELAY_MS } from '/skeleton/voice-retry.js';
 
 // Load the translations BEFORE the nav and language dropdown are created.
@@ -47,6 +48,10 @@ const topicMic = document.getElementById('topic-mic');
 const topicMicText = topicMic.querySelector('[data-i18n]'); // the "Speak" / "Stop" label
 const topicConfirm = document.getElementById('topic-confirm');
 const topicListeningIndicator = document.getElementById('topic-listening-indicator');
+const resumeCard = document.getElementById('resume-card');
+const resumeText = document.getElementById('resume-text');
+const resumeContinue = document.getElementById('resume-continue');
+const resumeNew = document.getElementById('resume-new');
 
 // ---------- Screen helper ----------
 
@@ -198,6 +203,7 @@ function isValidLesson(data) {
 function makeSegments(data, lang) {
   return data.segments.map((s) => ({
     title: typeof s.title === 'string' ? s.title.trim() : '', // short name, sent back when asking for deeper parts
+    lang: lang.bcp47, // language the original texts are written in (saved with the progress)
     segment: s.segment,
     quizQuestion: s.quizQuestion,
     texts: {
@@ -244,6 +250,9 @@ async function submitTopic() {
       // `texts` caches each text per language (the original is stored right away).
       state.segments = makeSegments(data, requestLang);
       state.round = 1; // first round of this topic
+      clearProgress(); // a new topic replaces any saved progress
+      savedProgress = null;
+      hideResumeCard();
       state.lessonLang = requestLang;
       state.segmentIndex = 0;
       startLesson();
@@ -364,6 +373,20 @@ function handleTopicResult(text) {
     setSelectedChip('');
     clearTopicMessage();
     askTopicConfirmation(topic);
+  } else if (topicMode === 'resume') {
+    const command = matchCommand(text, {
+      yes: parseWords(t('voice.yesWords')),
+      redo: parseWords(t('voice.redoWords')),
+    });
+    if (command === null) {
+      handleTopicNotUnderstood(); // say it once more (max 2 times)
+      return;
+    }
+    setTopicListening(false);
+    topicMode = '';
+    clearTopicMessage();
+    if (command === 'yes') continueSaved();
+    // "no": stay here; the Continue and Start new buttons keep waiting
   } else if (topicMode === 'command') {
     const command = matchCommand(text, {
       yes: parseWords(t('voice.yesWords')),
@@ -469,6 +492,8 @@ const completeArea = document.getElementById('complete-area');
 const completeText = document.getElementById('complete-text');
 const scoreText = document.getElementById('score-text');
 const nextButton = document.getElementById('next-button');
+const pauseButton = document.getElementById('pause-button');
+const pausedNote = document.getElementById('paused-note');
 const nextPrompt = document.getElementById('next-prompt');
 const skipButton = document.getElementById('skip-button');
 const learnMorePrompt = document.getElementById('learn-more-prompt');
@@ -656,16 +681,19 @@ function getFeedbackText(item) {
 
 // ----- Starting and leaving -----
 
-function startLesson() {
+function startLesson(resume = false) {
   cancelTopicVoice(); // topic speech and microphone end when the lesson starts
   showScreen('lesson');
 
   askId += 1;
   stopEverything();
   state.language = getCurrentLanguage();
-  state.segmentIndex = 0;
+  if (!resume) {
+    state.segmentIndex = 0;
+    score = 0;
+  }
   silenceCount = 0;
-  score = 0;
+  resetPause();
   feedbackNoticeKey = '';
   feedbackArea.hidden = true;
   completeArea.hidden = true;
@@ -687,6 +715,8 @@ function leaveLesson() {
   askId += 1;
   stopEverything();
   phase = 'idle';
+  resetPause();
+  pauseButton.hidden = true;
   feedbackNoticeKey = '';
   lessonLoading.hidden = true;
   resetLessonScreen();
@@ -704,6 +734,9 @@ async function playSegment() {
   silenceCount = 0;
   feedbackNoticeKey = '';
   resetLessonScreen();
+  partStartScore = score; // the score before this part: what is saved
+  pauseButton.hidden = false;
+  saveProgress();
 
   const item = state.segments[state.segmentIndex];
   setI18nText(lessonProgress, 'ghostTutor.progress', { n: state.segmentIndex + 1, total: state.segments.length });
@@ -887,7 +920,7 @@ function handleStepNotUnderstood() {
 
 // An answer (voice or typed) arrived for the current quiz question.
 async function handleAnswer(text) {
-  if (phase !== 'asking') return; // ignore late or duplicate answers
+  if (paused || phase !== 'asking') return; // ignore late or duplicate answers
   const heardText = String(text || '').trim();
   if (heardText === '') return;
 
@@ -957,7 +990,7 @@ function applyEvaluation(item, evalResult, requestLang, canScore) {
 
 // Skip button: show and speak the correct answer with a short explanation.
 async function handleSkip() {
-  if (phase !== 'asking') return;
+  if (paused || phase !== 'asking') return;
   askId += 1;
   const myId = askId;
   const item = state.segments[state.segmentIndex];
@@ -1060,6 +1093,61 @@ nextButton.addEventListener('click', () => {
   nextSegment();
 });
 
+// ----- Pause and resume -----
+
+let paused = false;          // true while the lesson is frozen
+let pausedPhase = 'idle';    // the step that was running when Pause was pressed
+let partStartScore = 0;      // the score when the current part began
+
+// Show or hide the paused look. inert freezes the answer area, the buttons, the
+// microphone button and the type box; only the Resume button keeps working.
+function setPausedUi(on) {
+  screens.lesson.classList.toggle('is-paused', on);
+  quizArea.inert = on;
+  feedbackArea.inert = on;
+  completeArea.inert = on;
+  setI18nText(pauseButton, on ? 'ghostTutor.resume' : 'ghostTutor.pause');
+  pauseButton.setAttribute('aria-pressed', String(on));
+  pausedNote.hidden = !on;
+}
+
+// Forget any pause (used when a lesson starts or is left).
+function resetPause() {
+  paused = false;
+  pausedPhase = 'idle';
+  setPausedUi(false);
+}
+
+function pauseLesson() {
+  if (paused || phase === 'idle' || phase === 'complete') return;
+  paused = true;
+  pausedPhase = phase;
+  askId += 1; // every timer, speech callback and server reply of this step is now stale
+  stopEverything(); // stops speech and the microphone at once
+  loadingCount = 0;
+  lessonLoading.hidden = true;
+  setPausedUi(true);
+}
+
+// Resume repeats the current part (or the current quiz question) from its start.
+function resumeLesson() {
+  if (!paused) return;
+  const wasPhase = pausedPhase;
+  resetPause();
+  if (wasPhase === 'segment') {
+    playSegment();
+  } else if (wasPhase === 'feedback') {
+    playFeedback();
+  } else {
+    askQuiz(); // asking, translating or evaluating: ask the question again
+  }
+}
+
+pauseButton.addEventListener('click', () => {
+  if (paused) resumeLesson();
+  else pauseLesson();
+});
+
 // ----- Next segment / completion -----
 
 // `notice` (optional) is a translation key shown and spoken before moving on.
@@ -1089,6 +1177,8 @@ function playComplete() {
   phase = 'complete';
   notUnderstood.reset();
   resetLessonScreen();
+  pauseButton.hidden = true;
+  clearProgress(); // the topic is finished
 
   const total = state.segments.length; // parts of ALL rounds; the score adds up too
   const more = canLearnMore(state.round);
@@ -1203,6 +1293,8 @@ function onLanguageChanged() {
   askId += 1;
   createSpeechEngines();
 
+  if (paused) return; // stays paused; Resume continues in the new language
+
   if (phase === 'segment') {
     playSegment();
   } else if (phase === 'asking' || phase === 'translating' || phase === 'evaluating') {
@@ -1226,4 +1318,109 @@ async function refreshSegmentText() {
   if (phase === 'idle' || item !== state.segments[state.segmentIndex]) return;
   if (state.language.bcp47 !== wanted) return;
   segmentText.textContent = result.text;
+}
+
+// ---------- Saved progress (localStorage) ----------
+
+let savedProgress = null; // progress found when Ghost Tutor opened (or null)
+
+// Save where the learner is. localStorage can be missing, blocked or full: any
+// error is ignored and the lesson simply is not saved.
+function saveProgress() {
+  try {
+    const data = buildProgress({
+      topic: state.topic,
+      language: state.lessonLang || state.language,
+      segments: state.segments,
+      segmentIndex: state.segmentIndex,
+      score: partStartScore,
+      round: state.round,
+    });
+    localStorage.setItem(PROGRESS_KEY, JSON.stringify(data));
+  } catch (err) {
+    // not saved
+  }
+}
+
+function loadProgress() {
+  try {
+    return parseProgress(localStorage.getItem(PROGRESS_KEY));
+  } catch (err) {
+    return null;
+  }
+}
+
+function clearProgress() {
+  try {
+    localStorage.removeItem(PROGRESS_KEY);
+  } catch (err) {
+    // nothing to do
+  }
+}
+
+// ---------- Continue where you stopped ----------
+
+function showResumeCard(progress) {
+  setI18nText(resumeText, 'ghostTutor.resumePrompt', { topic: progress.topic, n: progress.segmentIndex + 1 });
+  resumeCard.hidden = false;
+}
+
+function hideResumeCard() {
+  clearI18n(resumeText);
+  resumeCard.hidden = true;
+}
+
+// Speak "Continue <topic> from part N? Say yes to continue.", then listen once for "yes".
+function askResume(progress) {
+  topicRetries.reset();
+  topicToken += 1;
+  const myToken = topicToken;
+  let done = false;
+  function listenAfterQuestion() {
+    if (done) return;
+    done = true;
+    if (myToken !== topicToken) return; // cancelled meanwhile
+    // Open the microphone only after our own voice has fully stopped.
+    setTimeout(() => {
+      if (myToken !== topicToken) return;
+      listenOnTopicScreen('resume');
+    }, LISTEN_DELAY_MS);
+  }
+  const question = t('ghostTutor.resumePrompt', { topic: progress.topic, n: progress.segmentIndex + 1 });
+  topicSpeechOutput.speak(question, { onEnd: listenAfterQuestion, onError: listenAfterQuestion });
+}
+
+// Continue (button or a spoken "yes"): the current part starts again from its beginning.
+function continueSaved() {
+  const saved = savedProgress;
+  if (!saved) return;
+  cancelTopicVoice();
+  hideResumeCard();
+  savedProgress = null;
+
+  state.topic = saved.topic;
+  state.segments = restoreSegments(saved.segments);
+  state.lessonLang = saved.language;
+  state.round = saved.round;
+  state.segmentIndex = saved.segmentIndex;
+  score = saved.score;
+  startLesson(true);
+}
+
+// Start new: forget the saved lesson.
+function startNewInstead() {
+  cancelTopicVoice();
+  clearProgress();
+  savedProgress = null;
+  hideResumeCard();
+}
+
+resumeContinue.addEventListener('click', continueSaved);
+resumeNew.addEventListener('click', startNewInstead);
+
+// When Ghost Tutor opens and progress was saved: ask on screen and by voice.
+savedProgress = loadProgress();
+if (savedProgress) {
+  showResumeCard(savedProgress);
+  askResume(savedProgress);
 }

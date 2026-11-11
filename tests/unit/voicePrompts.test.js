@@ -173,3 +173,20 @@ describe('voice.nextWords and the "next part?" / "learn more?" prompts', () => {
     for (const w of ['next', 'yes', 'ok', 'continue']) assert.ok(words.includes(w), w);
   });
 });
+
+// ---- "Continue <topic> from part N?" (Ghost Tutor saved progress) ----
+describe('ghostTutor.resumePrompt', () => {
+  for (const code of codes) {
+    test(code, () => {
+      const data = load(code);
+      const prompt = data['ghostTutor.resumePrompt'];
+      assert.ok(prompt.includes('{topic}'), '{topic} missing');
+      assert.ok(prompt.includes('{n}'), '{n} missing');
+      // The yes word named in the prompt continues the lesson.
+      const yesWord = PROMPT_WORDS[code].yes;
+      assert.ok(normalize(prompt).includes(normalize(yesWord)), 'yes word not in resumePrompt');
+      const words = { yes: parseWords(data['voice.yesWords']), redo: parseWords(data['voice.redoWords']) };
+      assert.equal(matchCommand(yesWord, words), 'yes');
+    });
+  }
+});

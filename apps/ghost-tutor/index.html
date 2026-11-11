@@ -18,6 +18,14 @@
     <!-- Screen 1: pick a topic -->
     <section id="screen-topic" class="screen">
       <h2 data-i18n="ghostTutor.topicHeading">Pick a topic</h2>
+      <!-- Shown only when saved progress exists: "Continue <topic> from part N?" -->
+      <div id="resume-card" class="resume-card" hidden>
+        <p id="resume-text"></p>
+        <div class="resume-buttons">
+          <button id="resume-continue" type="button" class="btn" data-i18n="ghostTutor.resumeContinue">Continue</button>
+          <button id="resume-new" type="button" class="btn btn--secondary" data-i18n="ghostTutor.resumeNew">Start new</button>
+        </div>
+      </div>
       <h3 class="how-it-works-title" data-i18n="howItWorks.title">How it works</h3>
       <ol class="how-it-works">
         <li class="how-it-works__step"><span class="how-it-works__num" aria-hidden="true">1</span><span data-i18n="ghostTutor.step1">Say or pick a topic.</span></li>
@@ -44,6 +52,8 @@
     <!-- Screen 2: listen to a segment, answer the quiz, hear feedback -->
     <section id="screen-lesson" class="screen" hidden>
       <p id="lesson-progress"></p>
+      <button id="pause-button" type="button" class="btn btn--secondary pause-button" aria-pressed="false" data-i18n="ghostTutor.pause" hidden>Pause</button>
+      <p id="paused-note" role="status" hidden data-i18n="ghostTutor.pausedNote">Paused. Press Resume to continue.</p>
       <div id="lesson-loading" class="loading" hidden><span class="spinner"></span> <span data-i18n="common.working">Working... this can take up to a minute. Please wait.</span></div>
 
       <article id="lesson-card" class="lesson-card">
