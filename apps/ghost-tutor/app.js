@@ -10,7 +10,7 @@ import { createTextFallback } from '/skeleton/text-fallback.js';
 import { lesson, translate, evaluate } from '/skeleton/api-client.js';
 import { createNavMenu, createScreenHistory } from '/skeleton/nav-menu.js';
 import { initI18n, t, setI18nText, clearI18n } from '/skeleton/i18n.js';
-import { computeHasMore, canLearnMore, coveredTitles } from '/apps/ghost-tutor/lesson-utils.js';
+import { computeHasMore, canLearnMore, coveredTitles, isPauseVisible } from '/apps/ghost-tutor/lesson-utils.js';
 import { matchCommand, parseWords } from '/skeleton/voice-commands.js';
 import { buildProgress, parseProgress, restoreSegments, PROGRESS_KEY } from '/apps/ghost-tutor/progress-utils.js';
 import { createRetryCounter, LISTEN_DELAY_MS } from '/skeleton/voice-retry.js';
@@ -59,11 +59,15 @@ const resumeNew = document.getElementById('resume-new');
 const screenHistory = createScreenHistory('topic');
 
 // Show one screen ('topic' | 'lesson') and hide the other.
+let currentScreen = 'topic'; // the screen that is shown ('topic' | 'lesson')
+
 function showScreen(name) {
   screenHistory.visit(name); // remember it so Back can return here
+  currentScreen = name;
   for (const [key, el] of Object.entries(screens)) {
     el.hidden = key !== name;
   }
+  updatePauseButton();
   // Back on the topic screen: make fresh speech engines in the current language.
   if (name === 'topic') createTopicEngines();
 }
@@ -507,6 +511,28 @@ const newTopicButton = document.getElementById('new-topic');
 // Lesson flow state
 // phase: 'idle' | 'segment' | 'asking' | 'translating' | 'evaluating' | 'feedback' | 'complete'
 let phase = 'idle';
+
+// Change the lesson step. The Pause button is updated on EVERY change, so it can
+// never be left hidden by one step forgetting to show it.
+function setPhase(next) {
+  phase = next;
+  updatePauseButton();
+}
+
+// Show the Pause button on the lesson screen during the whole lesson; hide it on
+// the topic screen and the end screen (see isPauseVisible in lesson-utils.js).
+function updatePauseButton() {
+  pauseButton.hidden = !isPauseVisible(currentScreen, phase);
+}
+
+// Keep the sticky "Part N of M" bar just under the sticky navigation header.
+function updateNavOffset() {
+  const header = document.getElementById('app-header');
+  const height = header ? header.offsetHeight : 0;
+  document.documentElement.style.setProperty('--nav-offset', height + 'px');
+}
+updateNavOffset();
+window.addEventListener('resize', updateNavOffset);
 let askId = 0;                 // changes on every step; used to ignore stale callbacks
 let silenceCount = 0;          // silences used for the current quiz question
 let repeatTried = false;       // "please say it again" used for this question
@@ -714,9 +740,8 @@ function startLesson(resume = false) {
 function leaveLesson() {
   askId += 1;
   stopEverything();
-  phase = 'idle';
+  setPhase('idle');
   resetPause();
-  pauseButton.hidden = true;
   feedbackNoticeKey = '';
   lessonLoading.hidden = true;
   resetLessonScreen();
@@ -730,12 +755,11 @@ async function playSegment() {
   askId += 1;
   const myId = askId;
   stopEverything();
-  phase = 'segment';
+  setPhase('segment');
   silenceCount = 0;
   feedbackNoticeKey = '';
   resetLessonScreen();
   partStartScore = score; // the score before this part: what is saved
-  pauseButton.hidden = false;
   saveProgress();
 
   const item = state.segments[state.segmentIndex];
@@ -763,7 +787,7 @@ async function askQuiz(notice, isRepeat) {
   askId += 1;
   const myId = askId;
   stopEverything();
-  phase = 'asking';
+  setPhase('asking');
   autoListenTried = false;
   notUnderstood.reset();
   skipButton.hidden = true;
@@ -928,7 +952,7 @@ async function handleAnswer(text) {
   const myId = askId;
   const item = state.segments[state.segmentIndex];
   const requestLang = state.language;
-  phase = 'translating';
+  setPhase('translating');
   stopEverything();
   clearQuizMessage();
 
@@ -949,7 +973,7 @@ async function handleAnswer(text) {
   renderDualDisplay(dualDisplayContainer, { heardText, englishMeaning });
 
   // Ask the server to check the answer.
-  phase = 'evaluating';
+  setPhase('evaluating');
   showLoading();
   let evalResult = null;
   try {
@@ -995,7 +1019,7 @@ async function handleSkip() {
   const myId = askId;
   const item = state.segments[state.segmentIndex];
   const requestLang = state.language;
-  phase = 'evaluating';
+  setPhase('evaluating');
   stopEverything();
   clearQuizMessage();
   skipButton.hidden = true;
@@ -1026,7 +1050,7 @@ async function playFeedback() {
   askId += 1;
   const myId = askId;
   stopEverything();
-  phase = 'feedback';
+  setPhase('feedback');
   notUnderstood.reset();
   nextPrompt.hidden = true;
   clearAudioNote();
@@ -1174,10 +1198,9 @@ function playComplete() {
   askId += 1;
   const myId = askId;
   stopEverything();
-  phase = 'complete';
+  setPhase('complete');
   notUnderstood.reset();
   resetLessonScreen();
-  pauseButton.hidden = true;
   clearProgress(); // the topic is finished
 
   const total = state.segments.length; // parts of ALL rounds; the score adds up too

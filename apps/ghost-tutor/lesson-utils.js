@@ -40,3 +40,16 @@ export function coveredTitles(segments) {
   }
   return titles;
 }
+
+/**
+ * Should the Pause button be visible?
+ * Visible on the lesson screen during the whole lesson (a part being spoken, the
+ * quiz question, listening, checking the answer, feedback, and while paused).
+ * Hidden on the topic screen and on the end screen.
+ * @param {'topic'|'lesson'} screen - the screen that is shown
+ * @param {string} phase - 'idle' | 'segment' | 'asking' | 'translating' | 'evaluating' | 'feedback' | 'complete'
+ * @returns {boolean}
+ */
+export function isPauseVisible(screen, phase) {
+  return screen === 'lesson' && phase !== 'complete';
+}

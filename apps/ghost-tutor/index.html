@@ -51,8 +51,13 @@
 
     <!-- Screen 2: listen to a segment, answer the quiz, hear feedback -->
     <section id="screen-lesson" class="screen" hidden>
-      <p id="lesson-progress"></p>
-      <button id="pause-button" type="button" class="btn btn--secondary pause-button" aria-pressed="false" data-i18n="ghostTutor.pause" hidden>Pause</button>
+      <!-- Sticky bar: the "Part N of M" counter and the Pause / Resume button.
+           The button has NO hidden attribute: it is visible whenever the lesson
+           screen is visible. app.js hides it only on the end screen (isPauseVisible). -->
+      <div id="lesson-bar" class="lesson-bar">
+        <p id="lesson-progress"></p>
+        <button id="pause-button" type="button" class="btn pause-button" aria-pressed="false" data-i18n="ghostTutor.pause">Pause</button>
+      </div>
       <p id="paused-note" role="status" hidden data-i18n="ghostTutor.pausedNote">Paused. Press Resume to continue.</p>
       <div id="lesson-loading" class="loading" hidden><span class="spinner"></span> <span data-i18n="common.working">Working... this can take up to a minute. Please wait.</span></div>
 
