@@ -157,7 +157,7 @@
       stroke-linejoin: round;
     }
 
-    /* ---------- The two app cards ---------- */
+    /* ---------- The three app cards ---------- */
     .app-grid { display: grid; grid-template-columns: 1fr; gap: var(--space-4); }
     .app-card {
       display: flex;
@@ -212,6 +212,9 @@
       .who-grid { grid-template-columns: repeat(3, 1fr); }
       .who-card { flex-direction: column; text-align: center; }
       .app-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (min-width: 1000px) {
+      .app-grid { grid-template-columns: repeat(3, 1fr); }
     }
 
     /* ---------- Reduced motion: stop every animation ---------- */
@@ -339,7 +342,7 @@
       </ul>
     </section>
 
-    <!-- ===== The two apps ===== -->
+    <!-- ===== The three apps ===== -->
     <section aria-labelledby="apps-title">
       <h2 id="apps-title" data-i18n="home.chooseApp">Choose an app</h2>
       <div class="app-grid">
@@ -369,6 +372,21 @@
           <p class="brand-sub" lang="en" dir="ltr">Ghost Tutor · Voice Teacher</p>
           <p class="app-desc" data-i18n="home.ghostTutorHint">Learn a topic by voice</p>
           <a class="btn btn--large app-start" href="/apps/ghost-tutor/index.html" aria-describedby="ghost-name">
+            <span data-i18n="home.start">Start</span>
+          </a>
+        </article>
+
+        <article class="app-card" aria-labelledby="lens-name">
+          <span class="app-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" focusable="false">
+              <path d="M4 8V6a2 2 0 012-2h2M16 4h2a2 2 0 012 2v2M20 16v2a2 2 0 01-2 2h-2M8 20H6a2 2 0 01-2-2v-2" />
+              <path d="M8 15l2.5-6 2.5 6M8.9 13h3.2M15 9h2M16 9v1.5c0 1.5-1 2.5-2 3" />
+            </svg>
+          </span>
+          <h3 id="lens-name" class="app-name" data-i18n="home.formTranslator">Translate a form</h3>
+          <p class="brand-sub" lang="en" dir="ltr">Phantom Lens · Form Translator</p>
+          <p class="app-desc" data-i18n="home.formTranslatorHint">See your form in your own language</p>
+          <a class="btn btn--large app-start" href="/apps/form-translator/index.html" aria-describedby="lens-name">
             <span data-i18n="home.start">Start</span>
           </a>
         </article>

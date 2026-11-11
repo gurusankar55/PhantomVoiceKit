@@ -440,6 +440,37 @@ Build the Phantom Voice Kit from the ground up: project scaffolding → Express 
     - Add the new keys (e.g. `ghostTutor.confirmTopic`, mic button label) to `skeleton/locales/en.json` and all 19 other locale files
     - _Requirements: R19, R18, R17, R11_
 
+- [x] 14. Phantom Lens · Form Translator (third app)
+  - [x] 14.1 Pure helpers and unit tests
+    - `skeleton/form-overlay-utils.js`: `boxToPixels`, `wrapText`, `fitText`, `scaleFromOffset`, `clampOffset`, `sampleBackground`, `readableTextColor`, `readingOrder` (no DOM access)
+    - `apps/form-translator/translator-utils.js`: `limitPages`, `fitImageSize`, `pdfPageSize`, `translatedFilename`, `chunkTexts`
+    - Unit tests in `tests/unit/formOverlayUtils.test.js` and `tests/unit/translatorUtils.test.js`
+    - _Requirements: R23.7, R23.8, R23.9, R23.10, R23.11_
+
+  - [x] 14.2 Route `POST /api/translate-layout`
+    - `server/routes/translate-layout.js`: factory `createTranslateLayoutRouter(callGemini)` and exported `validateBlocks(raw)`; mount in `server/index.js`
+    - Validate input (400), validate and clamp Gemini's boxes, map errors like `/api/extract-fields`; no logging of bodies
+    - Add `translateLayout()` to `skeleton/api-client.js`
+    - Unit tests with a fake `callGemini` in `tests/unit/translateLayout.test.js`
+    - _Requirements: R23.2, R23.3, R23.4, R22_
+
+  - [x] 14.3 Shared module `skeleton/form-overlay.js`
+    - `loadImage`, `prepareOverlay`, `drawOverlay` using the pure helpers; browser fonts for all scripts; RTL support
+    - _Requirements: R23.7_
+
+  - [x] 14.4 App page `apps/form-translator`
+    - `index.html`, `app.js`, `style.css`: upload screen with how-it-works, privacy note and spinner; PDF pages rendered with pdf.js (max 5); one `translateLayout` call per page; preview with A- / Auto / A+; Download PDF with jsPDF; Read aloud / Stop
+    - _Requirements: R23.1, R23.5, R23.6, R23.9, R23.10, R23.11, R23.13_
+
+  - [x] 14.5 Home card, nav menu and locales
+    - `index.html`: third app card ("Translate a form" + "Phantom Lens · Form Translator"); `skeleton/nav-menu.js`: new menu entry
+    - Add all new keys to `en.json` and the 19 other locale files
+    - _Requirements: R23.12, R23.14, R17_
+
+  - [ ] 14.6 Verify
+    - [x] Run `npm test` (314 pass); re-read every changed file; headless Edge check of the overlay (Tamil, Arabic, Chinese, A- / A+) and of the page load
+    - [ ] Manual check in Microsoft Edge with a real form and the real Gemini key (PDF upload, PDF download, read aloud)
+
 ## Notes
 
 - Tasks marked with `*` are optional and can be skipped for a faster MVP.
@@ -481,7 +512,11 @@ Build the Phantom Voice Kit from the ground up: project scaffolding → Express 
     { "id": 24, "tasks": ["13.1", "13.2"] },
     { "id": 25, "tasks": ["13.3"] },
     { "id": 26, "tasks": ["13.4"] },
-    { "id": 27, "tasks": ["13.5"] }
+    { "id": 27, "tasks": ["13.5"] },
+    { "id": 28, "tasks": ["14.1", "14.2"] },
+    { "id": 29, "tasks": ["14.3"] },
+    { "id": 30, "tasks": ["14.4", "14.5"] },
+    { "id": 31, "tasks": ["14.6"] }
   ]
 }
 ```

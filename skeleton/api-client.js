@@ -16,6 +16,7 @@ const TIMEOUT_TRANSLATE_MS = TIMEOUT_MS;
 const TIMEOUT_EXTRACT_MS = TIMEOUT_MS;
 const TIMEOUT_LESSON_MS = TIMEOUT_MS;
 const TIMEOUT_EVALUATE_MS = TIMEOUT_MS;
+const TIMEOUT_LAYOUT_MS = TIMEOUT_MS;
 
 // Shared helper: POST `body` as JSON to `url`, aborting after `timeoutMs`.
 async function postJson(url, body, timeoutMs) {
@@ -72,6 +73,12 @@ export function translate({ text, targetLang, transliterate = false }) {
 // Ask the server to read the form fields from a base64 PDF/image.
 export function extractFields({ fileBase64, mimeType, lang }) {
   return postJson('/api/extract-fields', { fileBase64, mimeType, lang }, TIMEOUT_EXTRACT_MS);
+}
+
+// Translate ONE page image. Returns { blocks: [{ text, translation, box_2d }] } where
+// box_2d is [ymin, xmin, ymax, xmax] on a 0 to 1000 scale.
+export function translateLayout({ imageBase64, mimeType, lang }) {
+  return postJson('/api/translate-layout', { imageBase64, mimeType, lang }, TIMEOUT_LAYOUT_MS);
 }
 
 // Get a short lesson (segments + quiz questions) for a topic.

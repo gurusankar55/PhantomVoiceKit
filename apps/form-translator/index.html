@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title data-i18n="formTranslator.pageTitle">Translate a form · Phantom Lens</title>
+  <!-- Shared theme and app styles (absolute paths, per project rules) -->
+  <link rel="stylesheet" href="/skeleton/theme.css" />
+  <link rel="stylesheet" href="/apps/form-translator/style.css" />
+</head>
+<body>
+  <!-- Shared navigation header (menu, Back, language) is built by app.js -->
+  <header id="app-header"></header>
+
+  <main id="app">
+    <h1 class="app-title"><span data-i18n="formTranslator.title">Translate a form</span><span class="brand-sub" lang="en" dir="ltr">Phantom Lens · Form Translator</span></h1>
+
+    <!-- Screen 1: upload a form -->
+    <section id="screen-upload" class="screen">
+      <h2 data-i18n="formTranslator.uploadHeading">Upload your form</h2>
+      <h3 class="how-it-works-title" data-i18n="howItWorks.title">How it works</h3>
+      <ol class="how-it-works">
+        <li class="how-it-works__step"><span class="how-it-works__num" aria-hidden="true">1</span><span data-i18n="formTranslator.step1">Upload a photo or PDF of your form.</span></li>
+        <li class="how-it-works__step"><span class="how-it-works__num" aria-hidden="true">2</span><span data-i18n="formTranslator.step2">The ghost replaces the printed text with your language.</span></li>
+        <li class="how-it-works__step"><span class="how-it-works__num" aria-hidden="true">3</span><span data-i18n="formTranslator.step3">Check the new form, then download it or listen to it.</span></li>
+      </ol>
+      <p class="privacy-note"><span class="privacy-note__icon" aria-hidden="true"></span><span data-i18n="formTranslator.privacyNote">Your form is read and translated by Google Gemini AI. This app does not save your form or its translation. Do not upload documents you do not want to share.</span></p>
+      <label for="file-input" data-i18n="spiritClerk.fileLabel">Choose a PDF or a photo of your form</label>
+      <!-- The real input is visually hidden; the label below acts as our own translated button.
+           The input must come BEFORE the button so the focus style (sibling selector) works. -->
+      <div class="file-picker">
+        <input type="file" id="file-input" class="file-input-hidden" accept="application/pdf,image/jpeg,image/png,image/webp" />
+        <label for="file-input" class="btn btn--secondary file-picker-button" data-i18n="spiritClerk.chooseFile">Choose file</label>
+        <span id="file-name" class="file-name" data-i18n="spiritClerk.noFileChosen" aria-live="polite">No file chosen</span>
+      </div>
+      <button id="translate-button" type="button" class="btn" disabled data-i18n="formTranslator.translateButton">Translate my form</button>
+      <p id="upload-message" class="error-message" role="alert" hidden></p>
+      <div id="upload-loading" role="status" hidden>
+        <span class="spinner"></span>
+        <span id="progress-text"></span>
+        <span data-i18n="common.working">Working... this can take up to a minute. Please wait.</span>
+      </div>
+    </section>
+
+    <!-- Screen 2: the translated form -->
+    <section id="screen-result" class="screen" hidden>
+      <h2 data-i18n="formTranslator.resultHeading">Your translated form</h2>
+      <ul id="result-notices" class="notices" hidden></ul>
+
+      <div class="toolbar">
+        <!-- Text size: A- / Auto / A+ (the letters are the same in every language) -->
+        <div class="toolbar-group" role="group" aria-labelledby="text-size-label">
+          <span id="text-size-label" class="toolbar-label" data-i18n="formTranslator.textSize">Text size</span>
+          <button id="size-smaller" type="button" class="btn btn--secondary size-button" data-i18n-attr="aria-label:formTranslator.smallerLabel" aria-label="Make text smaller">A-</button>
+          <button id="size-auto" type="button" class="btn btn--secondary size-auto" data-i18n-attr="aria-label:formTranslator.autoLabel" aria-label="Fit the text automatically"><span data-i18n="formTranslator.auto">Auto</span></button>
+          <button id="size-bigger" type="button" class="btn btn--secondary size-button" data-i18n-attr="aria-label:formTranslator.biggerLabel" aria-label="Make text bigger">A+</button>
+        </div>
+
+        <div class="toolbar-group">
+          <button id="download-pdf" type="button" class="btn" data-i18n="formTranslator.downloadPdf">Download PDF</button>
+          <button id="read-button" type="button" class="btn btn--secondary" aria-pressed="false"><span id="read-label" data-i18n="formTranslator.readAloud">Read aloud</span></button>
+        </div>
+      </div>
+      <p id="result-message" class="error-message" role="alert" hidden></p>
+
+      <!-- One canvas per page is added here by app.js -->
+      <div id="pages" class="pages"></div>
+
+      <button id="another-button" type="button" class="btn btn--secondary" data-i18n="formTranslator.another">Translate another form</button>
+    </section>
+  </main>
+
+  <!-- jsPDF (download) and pdf.js (reads PDF pages) must load BEFORE app.js -->
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+  <script type="module" src="/apps/form-translator/app.js"></script>
+</body>
+</html>

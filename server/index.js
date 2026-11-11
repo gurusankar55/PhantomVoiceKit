@@ -11,6 +11,7 @@ import { createTranslateRouter } from './routes/translate.js';
 import { createExtractFieldsRouter } from './routes/extract-fields.js';
 import { createLessonRouter } from './routes/lesson.js';
 import { createEvaluateRouter } from './routes/evaluate.js';
+import { createTranslateLayoutRouter } from './routes/translate-layout.js';
 
 // ROOT = repository root (one folder above /server).
 const __filename = fileURLToPath(import.meta.url);
@@ -34,6 +35,7 @@ app.use('/api/translate', createTranslateRouter(callGemini));
 app.use('/api/extract-fields', createExtractFieldsRouter(callGemini));
 app.use('/api/lesson', createLessonRouter(callGemini));
 app.use('/api/evaluate', createEvaluateRouter(callGemini));
+app.use('/api/translate-layout', createTranslateLayoutRouter(callGemini));
 
 // Generic error handler: never leak stack traces to the browser.
 // (Express recognises error handlers by their four parameters.)

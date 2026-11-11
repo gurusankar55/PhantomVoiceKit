@@ -366,3 +366,26 @@ Phantom Voice Kit is a reusable skeleton for voice-first web applications with a
 2. THE AI_Backend SHALL NOT write uploaded files, answers, or translated text to disk, a database, or logs.
 3. THE AI_Backend SHALL keep uploaded files only in memory for the duration of the request.
 4. IF an error is logged by the AI_Backend, THEN THE AI_Backend SHALL log only error codes or messages and never request bodies.
+
+---
+
+### Requirement 23: Phantom Lens · Form Translator
+
+**User Story:** As a user who cannot read a form written in another language, I want to upload a photo or PDF of the form and get the same form back with its printed text replaced by my language, so that I can read it and keep a copy, like Google Lens.
+
+#### Acceptance Criteria
+
+1. THE System SHALL provide a third app, Form_Translator, at `/apps/form-translator`, built on the shared `/skeleton` modules. It SHALL need no voice input.
+2. THE AI_Backend SHALL expose `POST /api/translate-layout` that accepts one page image (`imageBase64`, `mimeType`, `lang`), makes ONE Gemini call, and returns `{ blocks: [{ text, translation, box_2d }] }`: every printed text block on the page, its translation into the Chosen_Language, and its box as `[ymin, xmin, ymax, xmax]` on a 0 to 1000 scale.
+3. THE AI_Backend SHALL return HTTP 400 for a missing image, an unsupported image type, or a missing language, and SHALL use the same 504 / 429 / 502 error mapping as the other routes.
+4. THE AI_Backend SHALL validate Gemini's JSON: a block with a blank translation, a `box_2d` that is not four finite numbers, or a box with no area SHALL be dropped; box values outside 0 to 1000 SHALL be clamped into that range. IF the reply has no `blocks` array, THEN THE AI_Backend SHALL return HTTP 502.
+5. WHEN the user uploads a PDF, THE Form_Translator SHALL render each page to an image in the browser (at most 5 pages; extra pages are ignored with a translated note) and SHALL call `/api/translate-layout` once per page, one page after another, showing "page n of total" progress.
+6. IF one page cannot be translated, THEN THE Form_Translator SHALL keep that page as it was, say so, and continue with the other pages.
+7. THE System SHALL provide the shared module `skeleton/form-overlay.js` (reusable by Spirit Clerk) that draws a page image on a canvas, covers each block with the background colour sampled in a ring around it, and writes the translated text inside the box, wrapped and auto-sized to fit, using browser fonts so that all 20 languages (including Tamil) render correctly.
+8. THE pure logic of the overlay (box conversion, text wrapping and font fitting, colour sampling, readable text colour) SHALL live in `skeleton/form-overlay-utils.js` without any DOM access and SHALL have unit tests.
+9. THE Form_Translator preview SHALL offer "A-" and "A+" buttons that change the text size of ALL blocks, and an "Auto" button that returns to auto-fit. The preview SHALL redraw at once, with no new request.
+10. THE Form_Translator SHALL offer "Download PDF": one PDF page per image, with each page's size matching its image's shape, and the text drawn as part of the image so non-Latin text shows correctly.
+11. THE Form_Translator SHALL offer "Read aloud", which speaks the translations in reading order (top to bottom, left to right, page by page) in the translated language, and a "Stop" button. IF the browser has no voice for the language, THEN it SHALL show a translated note instead.
+12. THE Home_Screen SHALL show a third app card with the big translated name "Translate a form" (Tamil: "படிவத்தை மொழிமாற்று") and the small English name "Phantom Lens · Form Translator", and THE Navigation_Header menu SHALL list the app.
+13. THE Form_Translator upload screen SHALL show the same kind of privacy note as Spirit Clerk (adapted to this app: the form is read and translated by Google Gemini AI and is not saved) and the same working spinner while it works. THE AI_Backend SHALL NOT store the image or the translation (see R22).
+14. THE System SHALL add every new UI string to `en.json` and the 19 other Locale_Files with the same keys.

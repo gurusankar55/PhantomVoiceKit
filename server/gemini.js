@@ -45,6 +45,49 @@ function safeText(err) {
   return text;
 }
 
+/**
+ * Turn the text of Gemini's reply into an object.
+ * Models sometimes wrap the JSON in markdown fences (```json ... ```) or add a
+ * sentence before or after it, even when JSON was requested. This accepts those.
+ * The error thrown for unusable text never contains the text itself, because
+ * it could hold the user's form and error messages are logged.
+ * @param {unknown} text
+ * @returns {any}
+ */
+export function parseModelJson(text) {
+  const raw = String(text ?? '').trim();
+
+  // 1. Plain JSON (the normal case).
+  try {
+    return JSON.parse(raw);
+  } catch {
+    // fall through to the repairs below
+  }
+
+  // 2. Remove markdown fences.
+  const unfenced = raw.replace(/^```[a-zA-Z]*\s*/, '').replace(/\s*```\s*$/, '').trim();
+  try {
+    return JSON.parse(unfenced);
+  } catch {
+    // fall through
+  }
+
+  // 3. Cut out the part from the first { or [ to the last } or ].
+  const starts = [unfenced.indexOf('{'), unfenced.indexOf('[')].filter((i) => i !== -1);
+  const ends = [unfenced.lastIndexOf('}'), unfenced.lastIndexOf(']')];
+  const start = starts.length > 0 ? Math.min(...starts) : -1;
+  const end = Math.max(...ends);
+  if (start !== -1 && end > start) {
+    try {
+      return JSON.parse(unfenced.slice(start, end + 1));
+    } catch {
+      // fall through
+    }
+  }
+
+  throw new Error('Gemini reply is not valid JSON');
+}
+
 // One single attempt at calling ONE model (with its own 90 second timer).
 // Resolves to the parsed JSON, or throws { code: 'timeout' | 'rate_limit' | 'gemini_error' }.
 async function attemptGemini(model, contents) {
@@ -74,7 +117,7 @@ async function attemptGemini(model, contents) {
     const request = getClient().models.generateContent({ model, contents, config });
 
     const response = await Promise.race([request, timeout]);
-    return JSON.parse(response.text);
+    return parseModelJson(response.text);
   } catch (err) {
     throw toGeminiError(err);
   } finally {

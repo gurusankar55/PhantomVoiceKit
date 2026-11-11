@@ -1,7 +1,7 @@
 // nav-menu.js
 // Shared navigation header (Requirement 16):
 //   [ ☰ menu ] [ ← Back ]                     [ language dropdown ]
-// plus a slide-in drawer with links to Home, Spirit Clerk and Ghost Tutor.
+// plus a slide-in drawer with links to Home, Spirit Clerk, Ghost Tutor and Form Translator.
 //
 // Nothing here touches `document` or `window` when the file is loaded,
 // so createScreenHistory can be imported and tested in plain Node.
@@ -60,6 +60,7 @@ const MENU_LINKS = [
   { id: 'home', labelKey: 'nav.home', href: '/' },
   { id: 'spirit-clerk', labelKey: 'nav.spiritClerk', href: '/apps/spirit-clerk/index.html', subtitle: 'Spirit Clerk · Voice Form Filler' },
   { id: 'ghost-tutor', labelKey: 'nav.ghostTutor', href: '/apps/ghost-tutor/index.html', subtitle: 'Ghost Tutor · Voice Teacher' },
+  { id: 'form-translator', labelKey: 'nav.formTranslator', href: '/apps/form-translator/index.html', subtitle: 'Phantom Lens · Form Translator' },
 ];
 
 // Stop any speech that is currently playing (safe if unsupported).

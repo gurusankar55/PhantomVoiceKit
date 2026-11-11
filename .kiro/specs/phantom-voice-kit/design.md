@@ -676,3 +676,66 @@ Not run automatically. Run manually against a live `.env` to verify end-to-end w
 *For any* string composed entirely of whitespace characters (spaces, tabs, newlines), submitting it via the Text_Fallback SHALL not advance the flow and SHALL leave the task list / field state unchanged.
 
 **Validates: Requirements 5.3, 11.3**
+
+---
+
+## Phantom Lens · Form Translator (Requirement 23)
+
+A third app on the same skeleton. The user uploads a form photo or PDF in any language and gets the SAME form back with its printed text replaced by the Chosen_Language, as a preview and a downloadable PDF. There is no voice input.
+
+### New and changed files
+
+```
+skeleton/
+  form-overlay-utils.js   <- pure (no DOM): boxToPixels, wrapText, fitText, scaleFromOffset,
+                             clampOffset, sampleBackground, readableTextColor, readingOrder
+  form-overlay.js         <- browser: loadImage, prepareOverlay, drawOverlay (canvas)
+  api-client.js           <- + translateLayout({ imageBase64, mimeType, lang })
+  nav-menu.js             <- + menu entry "form-translator"
+apps/form-translator/
+  index.html, app.js, style.css
+  translator-utils.js     <- pure: limitPages, pdfPageSize, translatedFilename, chunkTexts, fitImageSize
+server/routes/translate-layout.js  <- createTranslateLayoutRouter(callGemini) + validateBlocks()
+index.html                <- + third app card
+```
+
+### POST /api/translate-layout
+
+| Field | Detail |
+|---|---|
+| Request body | `{ imageBase64: string, mimeType: 'image/jpeg' \| 'image/png' \| 'image/webp', lang: string }` (ONE page) |
+| Response | `{ blocks: [{ text: string, translation: string, box_2d: [ymin, xmin, ymax, xmax] }] }` |
+| Prompt strategy | Sends the page image inline. "Find every block of printed text (a line, a label, a paragraph or a table cell). For each give `text` (as printed), `translation` into `{language name}` (keep names, numbers, dates, codes and e-mail addresses as printed, transliterating only if the script differs) and `box_2d` = `[ymin, xmin, ymax, xmax]` on a 0 to 1000 scale. Reply with JSON only." |
+| Validation of the reply | `validateBlocks(raw)`: not an array -> route answers 502. Each block must be an object with a non-blank string `translation` and a `box_2d` of four finite numbers. Numbers are clamped into 0..1000 and rounded; a box with `ymax <= ymin` or `xmax <= xmin` is dropped. At most 300 blocks are kept. |
+| Errors | 400 `invalid_input`; 504 `timeout`; 429 `busy`; 502 `gemini_error` (same mapping as `/api/extract-fields`) |
+| Privacy | Nothing is written to disk or logged (R22). |
+
+### Tolerant reply parsing (server/routes/layout-parser.js)
+
+Found with a real test form: `gemini-3.5-flash-lite` answered with every box nested one level deeper (`[[ymin, xmin, ymax, xmax]]`), so the strict check dropped all blocks and the app said "no printed text". The route now accepts and repairs these variations, and counts them: box nested in a list, box as an object (`ymin/xmin/ymax/xmax`, `y_min...`, `top/left/bottom/right`, `x/y/width/height`), numbers as strings, values on a 0 to 1 scale (multiplied by 1000), other key names (`bbox`, `translated_text`, `original_text`...), the list under another name or at the top level. `callGemini` also accepts JSON wrapped in markdown fences or with words around it (`parseModelJson`). Unusable blocks are dropped with a reason (`not_an_object`, `missing_translation`, `empty_translation`, `missing_box`, `bad_box`, `no_area`, `too_many`).
+
+The server console gets one line per page: `[translate-layout] ta-IN received=6 kept=6 dropped=0 reasons={} fixes={}`. Only numbers and reason names are logged, never text from the form. The prompt shows the exact reply shape with an example and says the box is a FLAT list of 4 whole numbers on a 0 to 1000 scale for both axes.
+
+### Overlay pipeline (skeleton/form-overlay.js)
+
+1. `prepareOverlay(image, blocks)` draws the image on a scratch canvas and reads its pixels ONCE. For each block it converts the box to pixels (`boxToPixels`), samples the background colour with `sampleBackground` (median of the pixels in a thin ring just outside the box, so the text itself does not tint the colour) and picks black or white text with `readableTextColor`.
+2. `drawOverlay(canvas, image, prepared, { lang, rtl, scaleOffset })` draws the image, fills each box with its sampled colour, then writes the translation. The font size comes from `fitText` (largest size whose wrapped text fits the box; binary search between a minimum and the box height). The A- / A+ offset multiplies that size (`scaleFromOffset`: 1.15 per step, offset clamped to -6..+6); offset 0 is "Auto".
+2a. Visual rules (pure functions in `form-overlay-utils.js`): the cover is the box grown by `coverPadding` = 20% of the box height (at least 3 px) on every side (`coverRect`), and the background is sampled just outside it. Auto-fit uses the full height: one line needs only the font size (`textHeight`), and the text may use the whole cleared cover area. The text colour is the average of the darkest 5% of the pixels inside the original box (`sampleDarkest`); if its contrast with the background is below 4.5 (`contrastRatio`), pure black or white is used (`chooseTextColor`), always fully opaque. A block whose translation equals the original ignoring spaces at the ends and case (`isSameText`: names, numbers, codes) is not redrawn; its pixels stay untouched.
+3. Text is wrapped with `wrapText` (spaces first; a word wider than the box, or text without spaces such as Chinese or Japanese, is broken by character). Fonts use the browser: `"Nirmala UI", "Noto Sans", "Segoe UI", "Malgun Gothic", "Microsoft YaHei", "Yu Gothic", Tahoma, system-ui, sans-serif`, and per-character fallback in the canvas draws Tamil and the other scripts. Right-to-left languages (Arabic, Urdu) set `ctx.direction = 'rtl'` and align to the right edge.
+4. Pixel sampling happens only in `prepareOverlay`, so A- / A+ / Auto only redraw (instant, no network).
+
+### App flow (apps/form-translator)
+
+1. **Upload screen**: How it works (3 steps), privacy note, file picker (PDF/JPEG/PNG/WEBP, 10 MB), "Translate my form" button, spinner + "page n of total" progress.
+2. **Preparing pages**: an image is scaled so its long side is at most 2000 px (`fitImageSize`) and re-encoded as JPEG. A PDF is rendered with pdf.js (classic script from the same CDN, version pinned) at the same size limit; at most 5 pages (`limitPages`).
+3. **Translating**: one `translateLayout` call per page, one after another. A failed page stays untranslated and a translated note says so; if every page fails the error is shown and there is no preview.
+4. **Result screen**: one canvas per page; "Text size" group with A-, Auto, A+; Download PDF; Read aloud / Stop; "Translate another form".
+5. **Download PDF**: jsPDF (already used by Spirit Clerk), one page per canvas, page size from `pdfPageSize` (same shape as the image, long side 842 pt), the canvas added as a JPEG, so the text is part of the picture and any script displays correctly.
+6. **Read aloud**: translations in `readingOrder` (rows top to bottom, left to right), page by page, joined into chunks of at most 200 characters (`chunkTexts`) and spoken one after another with `createSpeechOutput` in the language of the translation. Stop cancels at once. No voice -> translated note.
+
+### Correctness notes
+
+- `boxToPixels` result always lies inside the image and has a width and height of at least 1 px.
+- `fitText` never returns a size below its minimum and, when text fits at all, the wrapped height does not exceed the box.
+- `sampleBackground` ignores pixels outside the image and returns white if there is nothing to sample.
+- `validateBlocks` never returns a block with an out-of-range or empty box.
