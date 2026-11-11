@@ -8,11 +8,14 @@
 //   - NEVER throws. On any problem it returns { error: '<description>' }
 //   - on success returns the parsed JSON body from the server
 
-// Timeouts in milliseconds (a bit longer than the server's own limits where needed).
-const TIMEOUT_TRANSLATE_MS = 5000;
-const TIMEOUT_EXTRACT_MS = 35000;
-const TIMEOUT_LESSON_MS = 25000;
-const TIMEOUT_EVALUATE_MS = 10000;
+// Timeout in milliseconds. The server waits up to 90 seconds for Gemini and tries
+// a second time if the first attempt fails, so the browser must wait for both
+// attempts (2 x 90 s) plus a little extra before it gives up.
+const TIMEOUT_MS = 190000;
+const TIMEOUT_TRANSLATE_MS = TIMEOUT_MS;
+const TIMEOUT_EXTRACT_MS = TIMEOUT_MS;
+const TIMEOUT_LESSON_MS = TIMEOUT_MS;
+const TIMEOUT_EVALUATE_MS = TIMEOUT_MS;
 
 // Shared helper: POST `body` as JSON to `url`, aborting after `timeoutMs`.
 async function postJson(url, body, timeoutMs) {

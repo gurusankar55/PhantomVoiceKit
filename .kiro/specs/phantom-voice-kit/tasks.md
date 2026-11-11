@@ -289,17 +289,17 @@ Build the Phantom Voice Kit from the ground up: project scaffolding → Express 
     - Language change mid-session: recreate `SpeechInput` + `SpeechOutput` after current speech ends
     - _Requirements: R1, R2, R3, R4, R5, R12_
 
-- [ ] 9. Checkpoint — verify Ghost Tutor
+- [x] 9. Checkpoint — verify Ghost Tutor
   - Run the app, select a topic, complete all 4 lesson segments in at least one non-English language, and verify the topic-complete message.
 
-- [ ] 10. Create README files
-  - [ ] 10.1 Create `README.md`
+- [x] 10. Create README files
+  - [x] 10.1 Create `README.md`
     - Project overview, prerequisites, setup instructions (`npm install`, copy `.env.example` to `.env`, fill in keys, `npm start`)
     - Brief description of Spirit Clerk and Ghost Tutor with screenshots placeholder
     - Link to `skeleton/README.md` for developer extension guide
     - _Requirements: R14_
 
-  - [ ] 10.2 Create `skeleton/README.md`
+  - [x] 10.2 Create `skeleton/README.md`
     - Numbered steps for a developer to create a new voice app using the skeleton:
       1. Create a new folder under `apps/`
       2. Add an HTML entry point importing `theme.css` and the skeleton modules you need
@@ -308,21 +308,21 @@ Build the Phantom Voice Kit from the ground up: project scaffolding → Express 
     - List all exported functions from each skeleton module with brief descriptions
     - _Requirements: R14_
 
-- [ ] 11. Write automated tests
-  - [ ] 11.1 Create `tests/unit/selectVoice.test.js`
+- [x] 11. Write automated tests
+  - [x] 11.1 Create `tests/unit/selectVoice.test.js`
     - Import `selectVoice` from `skeleton/speech-output-utils.js`
     - Test: exact-match voice returned; prefix-match voice returned when no exact match; `null` returned when no match at all
     - Test: Natural preferred over Online and plain; Online preferred over plain; first match when no Natural/Online; same preference applied among prefix matches; null when nothing matches
     - _Requirements: R3_
 
-  - [ ] 11.2 Create `tests/unit/validateText.test.js`
+  - [x] 11.2 Create `tests/unit/validateText.test.js`
     - Import `validateText` and `cleanAnswer` from `skeleton/text-fallback-utils.js`
     - Test: empty string → `'empty'`; whitespace-only (spaces, tabs, newlines) → `'empty'`; non-empty valid text → `'ok'`
     - `cleanAnswer`: `'Shankar.'` → `'Shankar'`; `'T.'` → `'T'`; trailing `।`, `。`, `!`, `?`, `,`, `;`, `:` and mixed/repeated marks and spaces (e.g. `'Hello ?! . '`) are all removed; leading/trailing whitespace is trimmed; inner punctuation is kept (`'a.b, c'` unchanged, `'3.5'` unchanged); text of only punctuation → `''`; empty string → `''`; already clean text is unchanged (idempotent)
     - Property test (fast-check, ≥100 runs): `cleanAnswer(cleanAnswer(s)) === cleanAnswer(s)` and the result never ends with a trailing mark or whitespace
     - _Requirements: R5_
 
-  - [ ] 11.3 Create `tests/unit/formUtils.test.js`
+  - [x] 11.3 Create `tests/unit/formUtils.test.js`
     - Import `nextRedoOrSkip`, `nextSilenceOrSkip`, `pdfFilename`, `cleanLabel` from `apps/spirit-clerk/form-utils.js`
     - `nextRedoOrSkip`: `'redo'` for counts 0, 1, 2; `'skip'` for count 3
     - `nextSilenceOrSkip`: `'reask'` for count 0; `'skip'` for count 1
@@ -330,19 +330,19 @@ Build the Phantom Voice Kit from the ground up: project scaffolding → Express 
     - `cleanLabel`: `'First name:'` → `'First name'`; `'First name::'` → `'First name'`; `'First name :  '` → `'First name'`; `'  Date of birth '` → `'Date of birth'`; full-width colon `'名前：'` → `'名前'`; inner colons kept (`'Time: hh:mm'` unchanged except trailing); colon-only or empty → `''`; already clean label unchanged
     - _Requirements: R9, R10_
 
-  - [ ] 11.4 Create `tests/unit/lessonUtils.test.js`
+  - [x] 11.4 Create `tests/unit/lessonUtils.test.js`
     - Import `computeHasMore` from `apps/ghost-tutor/lesson-utils.js`
     - Test: `true` for indexes 0, 1, 2; `false` for index 3
     - _Requirements: R12_
 
-  - [ ] 11.5 Create `tests/unit/routes.test.js`
+  - [x] 11.5 Create `tests/unit/routes.test.js`
     - Import each router factory (`createTranslateRouter`, `createExtractFieldsRouter`, `createLessonRouter`, `createEvaluateRouter`) directly — no module mocking, no experimental Node flags
     - Create a fake `callGemini` function for each test case: a simple async function that either returns a canned response or throws `{ code: 'timeout' }`, `{ code: 'rate_limit' }`, or `{ code: 'gemini_error', message }`
     - Pass the fake `callGemini` directly to the router factory; mount it on a minimal Express app using `supertest` (or Node's built-in fetch against a test server)
     - For each route, test: HTTP 400 on empty / missing required input; HTTP 504 when fake throws `{ code: 'timeout' }`; HTTP 502 when fake throws `{ code: 'gemini_error', message }`; HTTP 429 when fake throws `{ code: 'rate_limit' }`; response body never contains the value of `GEMINI_API_KEY`
     - _Requirements: R7_
 
-  - [ ] 11.9 Create `tests/unit/locales.test.js`
+  - [x] 11.9 Create `tests/unit/locales.test.js`
     - Read every `skeleton/locales/*.json` with `fs` and `JSON.parse` (no network)
     - Test exactly 20 files exist (en, ta, hi, te, kn, ml, ko, zh, ja, es, fr, ar, pt, ru, bn, ur, id, de, vi, tr)
     - Test every locale file has exactly the same set of keys as `en.json` (report missing and extra keys by name)
@@ -350,7 +350,7 @@ Build the Phantom Voice Kit from the ground up: project scaffolding → Express 
     - Test placeholders such as `{n}` in an English value also appear in the translated value
     - _Requirements: R17_
 
-  - [ ] 11.10 Create `tests/unit/voiceCommands.test.js`
+  - [x] 11.10 Create `tests/unit/voiceCommands.test.js`
     - Import `matchCommand`, `parseWords` from `skeleton/voice-commands.js`
     - English examples with `words = { yes: ['yes','ok','correct'], redo: ['again','no','redo'] }`: `'Yes.'` → `'yes'`; `'  OK!! '` → `'yes'`; `'again'` → `'redo'`; `'No'` → `'redo'`; `'yes yes'` → `'yes'`; `'maybe'` → `null`; `''` → `null`
     - Tamil: load `skeleton/locales/ta.json` with `fs`, build words with `parseWords` from `voice.yesWords` / `voice.redoWords`; `'சரி'` → `'yes'` and `'மறுபடி'` → `'redo'`
@@ -361,13 +361,13 @@ Build the Phantom Voice Kit from the ground up: project scaffolding → Express 
     - Locale check: for every `skeleton/locales/*.json`, `voice.yesWords` and `voice.redoWords` each parse to at least 2 words and the two lists share no word
     - _Requirements: R18_
 
-  - [ ] 11.11 Extend `tests/unit/routes.test.js` for field help
+  - [x] 11.11 Extend `tests/unit/routes.test.js` for field help
     - Use a fake `callGemini` returning `fields` with and without `help` (missing, blank, non-string)
     - Test every returned field has a string `help`, and it is `""` when the fake omitted it or returned a blank/non-string value; the request still succeeds with HTTP 200
     - Test the prompt passed to `callGemini` mentions the help sentence and the requested `lang`
     - _Requirements: R20_
 
-  - [ ] 11.12 Create `tests/unit/privacy.test.js`
+  - [x] 11.12 Create `tests/unit/privacy.test.js`
     - Static check: read every file under `server/` with `fs`; none imports or calls fs write APIs (`writeFile`, `appendFile`, `createWriteStream`, `mkdir`) or a database / upload-storage package (e.g. `multer`, `sqlite`, `mongoose`, `pg`)
     - Static check: no `console.log` / `console.error` call in `server/` logs `req.body`
     - Supertest check: `POST /api/extract-fields` with a fake `callGemini` leaves no new files in the repository or the OS temp directory (compare directory listings before and after)
