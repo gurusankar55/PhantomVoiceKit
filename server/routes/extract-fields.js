@@ -8,6 +8,9 @@ import { Router } from 'express';
 // File types we accept.
 const ALLOWED_MIME_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
 
+// What a field can hold. The app uses "name" to transliterate and tidy names.
+const FIELD_KINDS = ['name', 'email', 'number', 'date', 'text'];
+
 /**
  * Factory: receives callGemini so tests can pass a fake function.
  * @param {Function} callGemini - async ({ prompt, inlineParts }) => object
@@ -36,8 +39,12 @@ export function createExtractFieldsRouter(callGemini) {
       `(BCP-47 code "${lang}"), even if the form is in another language. ` +
       'For example, "IFSC code" means the bank branch code printed on your cheque book, like SBIN0001234; ' +
       '"DOB" means your date of birth, like 15 August 1990. ' +
+      'Also, for each field give "kind": what the field holds. Use "name" for ANY person\'s name ' +
+      '(first name, last name, surname, full name, father\'s name, mother\'s name, spouse name, nominee name, etc.), ' +
+      '"email" for an email address, "number" for numbers (phone, ID, account, PIN code, amounts, codes made of digits), ' +
+      '"date" for dates, and "text" for everything else (addresses, cities, codes like PAN or IFSC, free text). ' +
       'Reply with JSON only, in this shape: ' +
-      '{ "fields": [ { "label": string, "inputType": "text" | "date" | "checkbox" | "selection", "question": string, "help": string } ] }';
+      '{ "fields": [ { "label": string, "inputType": "text" | "date" | "checkbox" | "selection", "kind": "name" | "email" | "number" | "date" | "text", "question": string, "help": string } ] }';
 
     // The file is sent to Gemini as inline data.
     const inlineParts = [{ inlineData: { mimeType, data: fileBase64 } }];
@@ -52,6 +59,8 @@ export function createExtractFieldsRouter(callGemini) {
         .map((f) => ({
           ...f,
           help: typeof f.help === 'string' ? f.help.trim() : '',
+          // kind must be one of the known values; anything else becomes "text".
+          kind: FIELD_KINDS.includes(f.kind) ? f.kind : 'text',
         }));
       return res.json({ fields });
     } catch (err) {

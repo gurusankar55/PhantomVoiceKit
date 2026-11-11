@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title data-i18n="ghostTutor.pageTitle">Ghost Tutor</title>
+  <title data-i18n="ghostTutor.pageTitle">Learn by speaking · Ghost Tutor</title>
   <!-- Shared theme and app styles (absolute paths, per project rules) -->
   <link rel="stylesheet" href="/skeleton/theme.css" />
   <link rel="stylesheet" href="/apps/ghost-tutor/style.css" />
@@ -13,7 +13,7 @@
   <header id="app-header"></header>
 
   <main id="app">
-    <h1 class="app-title" data-i18n="ghostTutor.title">Ghost Tutor</h1>
+    <h1 class="app-title"><span data-i18n="ghostTutor.title">Learn by speaking</span><span class="brand-sub" lang="en" dir="ltr">Ghost Tutor · Voice Teacher</span></h1>
 
     <!-- Screen 1: pick a topic -->
     <section id="screen-topic" class="screen">
@@ -35,6 +35,7 @@
       </div>
       <!-- The spoken confirmation question ("Shall I teach you about ...?") -->
       <p id="topic-confirm" class="topic-confirm" hidden></p>
+      <p id="topic-listening-indicator" class="listening-indicator" role="status" hidden><span class="listening-dot" aria-hidden="true"></span><span data-i18n="common.listening">Listening... please speak now.</span></p>
       <button id="topic-start" type="button" class="btn" data-i18n="ghostTutor.start">Start lesson</button>
       <p id="topic-message" class="error-message" role="alert" hidden></p>
       <div id="topic-loading" class="loading" hidden><span class="spinner"></span> <span data-i18n="common.working">Working... this can take up to a minute. Please wait.</span></div>
@@ -56,6 +57,7 @@
         <p id="quiz-question"></p>
         <button id="mic-button" type="button" class="btn" data-i18n="ghostTutor.speak">Speak</button>
         <p id="mic-message" hidden></p>
+        <p id="listening-indicator" class="listening-indicator" role="status" hidden><span class="listening-dot" aria-hidden="true"></span><span data-i18n="common.listening">Listening... please speak now.</span></p>
         <!-- Typed-answer fallback is rendered here by app.js -->
         <div id="text-fallback-container"></div>
         <!-- Shows the answer in the user's language and in English -->
@@ -66,12 +68,15 @@
       <div id="feedback-area" class="feedback-area" hidden>
         <h3 data-i18n="ghostTutor.feedbackHeading">Feedback</h3>
         <p id="feedback-text"></p>
+        <!-- Always available, so the user is never stuck on a question -->
+        <button id="next-button" type="button" class="btn" data-i18n="ghostTutor.next">Next</button>
       </div>
 
       <div id="complete-area" class="complete-area" hidden>
         <span class="icon-ghost" aria-hidden="true"></span>
         <h3 data-i18n="ghostTutor.completeHeading">Well done!</h3>
         <p id="complete-text" data-i18n="ghostTutor.complete">You finished this topic.</p>
+        <p id="score-text"></p>
         <button id="new-topic" type="button" class="btn" data-i18n="ghostTutor.newTopic">Pick another topic</button>
       </div>
     </section>

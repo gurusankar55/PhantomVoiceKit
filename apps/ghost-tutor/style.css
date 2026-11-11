@@ -312,6 +312,11 @@
   color: var(--color-ghost);
 }
 
+#next-button {
+  width: 100%;
+  margin-block-start: var(--space-3);
+}
+
 /* ---------- Lesson complete card ---------- */
 .complete-area {
   display: flex;
@@ -338,6 +343,14 @@
   color: var(--color-ghost);
 }
 
+/* The score, for example "3 of 4 correct" */
+#score-text {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-orange-light);
+}
+
 #new-topic {
   width: 100%;
 }
@@ -354,6 +367,11 @@
 
   #segment-text {
     font-size: 1.35rem;
+  }
+
+  #next-button {
+    width: auto;
+    min-width: 12rem;
   }
 
   #topic-start,

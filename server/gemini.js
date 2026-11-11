@@ -8,9 +8,6 @@ import { GoogleGenAI } from '@google/genai';
 // How long we wait for ONE Gemini attempt before giving up (90 seconds).
 const TIMEOUT_MS = 90_000;
 
-// If a call fails or times out we try once more before reporting the error.
-const MAX_ATTEMPTS = 2;
-
 // The client is created lazily (on first use) so that importing this module
 // without an API key does not crash the server or the tests.
 let client = null;
@@ -48,8 +45,9 @@ function safeText(err) {
   return text;
 }
 
-// One single attempt at calling Gemini (with its own 90 second timer).
-async function attemptGemini(contents) {
+// One single attempt at calling ONE model (with its own 90 second timer).
+// Resolves to the parsed JSON, or throws { code: 'timeout' | 'rate_limit' | 'gemini_error' }.
+async function attemptGemini(model, contents) {
   // The AbortSignal cancels the HTTP request if it takes too long.
   const controller = new AbortController();
   let timer;
@@ -63,15 +61,17 @@ async function attemptGemini(contents) {
   });
 
   try {
-    const request = getClient().models.generateContent({
-      model: process.env.GEMINI_MODEL,
-      contents,
-      config: {
-        responseMimeType: 'application/json',
-        thinkingConfig: { thinkingBudget: 0 }, // no "thinking" = faster replies
-        abortSignal: controller.signal,
-      },
-    });
+    const config = {
+      responseMimeType: 'application/json',
+      abortSignal: controller.signal,
+    };
+    // "No thinking" = faster replies. Only the main model gets this setting:
+    // the lighter fallback model rejects thinkingBudget 0 with HTTP 400.
+    if (model === process.env.GEMINI_MODEL) {
+      config.thinkingConfig = { thinkingBudget: 0 };
+    }
+
+    const request = getClient().models.generateContent({ model, contents, config });
 
     const response = await Promise.race([request, timeout]);
     return JSON.parse(response.text);
@@ -83,33 +83,74 @@ async function attemptGemini(contents) {
 }
 
 /**
+ * Build a callGemini function around an "attempt" function.
+ * (Tests pass a fake attempt, so the real Gemini API is never called.)
+ *
+ * Rules:
+ *  - rate_limit (HTTP 429): the same model is NOT tried again, because that only
+ *    wastes the free quota. The call is tried once with GEMINI_FALLBACK_MODEL.
+ *    If that is empty (or the same as GEMINI_MODEL) there is no fallback.
+ *  - timeout or any other error: tried one more time on the same model.
+ *  - If every model is rate limited, { code: 'rate_limit' } is thrown.
+ * Every failed attempt, and the model that answered, is printed to the console.
+ *
+ * @param {(model: string, contents: object[]) => Promise<object>} attempt
+ */
+export function createCallGemini(attempt) {
+  return async function callGemini({ prompt, inlineParts = [] } = {}) {
+    // One user message: the text first, then any files/images.
+    const contents = [{ role: 'user', parts: [{ text: prompt }, ...inlineParts] }];
+
+    const primary = process.env.GEMINI_MODEL;
+    const fallback = (process.env.GEMINI_FALLBACK_MODEL ?? '').trim();
+
+    let model = primary;
+    let fallbackUsed = false;
+    let retryUsed = false;
+
+    // The loop always ends: each failure uses up the fallback or the retry.
+    for (;;) {
+      const startedAt = Date.now();
+      try {
+        const result = await attempt(model, contents);
+        const seconds = ((Date.now() - startedAt) / 1000).toFixed(1);
+        console.log(`[gemini] answered by ${model} in ${seconds}s`);
+        return result;
+      } catch (err) {
+        const seconds = ((Date.now() - startedAt) / 1000).toFixed(1);
+        const prefix = `[gemini] ${model} failed after ${seconds}s - ${safeText(err)}`;
+
+        if (err.code === 'rate_limit') {
+          // Never retry the same model on a rate limit: switch to the fallback once.
+          if (fallback !== '' && fallback !== primary && !fallbackUsed) {
+            console.error(`${prefix} - trying fallback model ${fallback}`);
+            fallbackUsed = true;
+            model = fallback;
+            continue;
+          }
+          console.error(`${prefix} - giving up`);
+          throw err;
+        }
+
+        // Timeout or other error: one more try on the same model.
+        if (!retryUsed) {
+          console.error(`${prefix} - retrying`);
+          retryUsed = true;
+          continue;
+        }
+        console.error(`${prefix} - giving up`);
+        throw err;
+      }
+    }
+  };
+}
+
+/**
  * Ask Gemini for a JSON answer.
- * If an attempt fails or times out, it is tried once more before the error is thrown.
- * Every failed attempt is printed to the server console with how long it took.
  * @param {{ prompt: string, inlineParts?: object[] }} options
  *   prompt      - the instruction text
  *   inlineParts - optional extra parts, e.g. [{ inlineData: { mimeType, data } }]
  * @returns {Promise<object>} the parsed JSON response
  * @throws {{code: 'timeout'} | {code: 'rate_limit'} | {code: 'gemini_error', message: string}}
  */
-export async function callGemini({ prompt, inlineParts = [] } = {}) {
-  // One user message: the text first, then any files/images.
-  const contents = [{ role: 'user', parts: [{ text: prompt }, ...inlineParts] }];
-
-  let lastError;
-  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
-    const startedAt = Date.now();
-    try {
-      return await attemptGemini(contents);
-    } catch (err) {
-      lastError = err;
-      const seconds = ((Date.now() - startedAt) / 1000).toFixed(1);
-      const willRetry = attempt < MAX_ATTEMPTS;
-      console.error(
-        `[gemini] attempt ${attempt}/${MAX_ATTEMPTS} failed after ${seconds}s - ${safeText(err)}` +
-          (willRetry ? ' - retrying' : ' - giving up')
-      );
-    }
-  }
-  throw lastError;
-}
+export const callGemini = createCallGemini(attemptGemini);

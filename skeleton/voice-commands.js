@@ -12,6 +12,7 @@
  */
 export function normalize(text) {
   return String(text ?? '')
+    .normalize('NFC') // same letters can be typed in different Unicode forms (Tamil, Hindi...)
     .toLocaleLowerCase()
     .replace(/[\p{P}\p{S}]/gu, ' ')
     .replace(/\s+/gu, ' ')

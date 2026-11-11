@@ -58,8 +58,8 @@ export function createScreenHistory(firstScreen) {
 // The pages that can appear in the menu.
 const MENU_LINKS = [
   { id: 'home', labelKey: 'nav.home', href: '/' },
-  { id: 'spirit-clerk', labelKey: 'nav.spiritClerk', href: '/apps/spirit-clerk/index.html' },
-  { id: 'ghost-tutor', labelKey: 'nav.ghostTutor', href: '/apps/ghost-tutor/index.html' },
+  { id: 'spirit-clerk', labelKey: 'nav.spiritClerk', href: '/apps/spirit-clerk/index.html', subtitle: 'Spirit Clerk · Voice Form Filler' },
+  { id: 'ghost-tutor', labelKey: 'nav.ghostTutor', href: '/apps/ghost-tutor/index.html', subtitle: 'Ghost Tutor · Voice Teacher' },
 ];
 
 // Stop any speech that is currently playing (safe if unsupported).
@@ -149,7 +149,20 @@ export function createNavMenu(
     setI18nText(text, item.labelKey);
 
     a.appendChild(icon);
-    a.appendChild(text);
+    if (item.subtitle) {
+      // Big translated name, with the small spooky English name below it.
+      const wrapper = document.createElement('span');
+      wrapper.className = 'nav-link-text';
+      const sub = document.createElement('span');
+      sub.className = 'brand-sub';
+      sub.lang = 'en';
+      sub.dir = 'ltr';
+      sub.textContent = item.subtitle;
+      wrapper.append(text, sub);
+      a.appendChild(wrapper);
+    } else {
+      a.appendChild(text);
+    }
 
     if (item.id === current) {
       a.classList.add('is-current');

@@ -12,6 +12,7 @@ import { createNavMenu, createScreenHistory } from '/skeleton/nav-menu.js';
 import { initI18n, t, setI18nText, clearI18n } from '/skeleton/i18n.js';
 import { computeHasMore } from '/apps/ghost-tutor/lesson-utils.js';
 import { matchCommand, parseWords } from '/skeleton/voice-commands.js';
+import { createRetryCounter, LISTEN_DELAY_MS } from '/skeleton/voice-retry.js';
 
 // Load the translations BEFORE the nav and language dropdown are created.
 await initI18n();
@@ -44,6 +45,7 @@ const topicLoading = document.getElementById('topic-loading');
 const topicMic = document.getElementById('topic-mic');
 const topicMicText = topicMic.querySelector('[data-i18n]'); // the "Speak" / "Stop" label
 const topicConfirm = document.getElementById('topic-confirm');
+const topicListeningIndicator = document.getElementById('topic-listening-indicator');
 
 // ---------- Screen helper ----------
 
@@ -174,7 +176,7 @@ function clearTopicMessage() {
 // Turn a client/server error code into a translation key.
 function friendlyError(code) {
   if (code === 'timeout') return 'ghostTutor.errTimeout';
-  if (code === 'busy') return 'ghostTutor.errBusy';
+  if (code === 'busy') return 'common.rateLimit'; // every AI model is out of free quota
   if (code === 'network_error') return 'ghostTutor.errNetwork';
   return 'ghostTutor.errGeneric';
 }
@@ -262,12 +264,14 @@ let topicListening = false;  // is the topic microphone open?
 let topicMode = '';          // 'topic' (hearing a topic) | 'command' (hearing yes)
 let topicToken = 0;          // changes whenever voice must be cancelled
 let topicListenToken = 0;    // the token that was current when listening began
+const topicRetries = createRetryCounter(); // "I did not understand" retries (max 2)
 
 // Update the mic button: orange pulse and "Stop" while listening.
 function setTopicListening(isListening) {
   topicListening = isListening;
   topicMic.classList.toggle('listening', isListening);
   topicMic.setAttribute('aria-pressed', String(isListening));
+  topicListeningIndicator.hidden = !isListening; // clear "Listening..." sign
   setI18nText(topicMicText, isListening ? 'ghostTutor.stop' : 'ghostTutor.speak');
 }
 
@@ -331,6 +335,7 @@ topicMic.addEventListener('click', () => {
   stopTopicVoice(); // also silences the spoken question
   hideTopicConfirm();
   clearTopicMessage();
+  topicRetries.reset(); // the user is in control: two fresh retries
   listenOnTopicScreen('topic');
 });
 
@@ -338,36 +343,79 @@ topicMic.addEventListener('click', () => {
 function handleTopicResult(text) {
   // Ignore anything that is not for the current listening session.
   if (!topicListening || topicListenToken !== topicToken) return;
-  setTopicListening(false);
 
   if (topicMode === 'topic') {
     const topic = String(text || '').trim().slice(0, 100);
-    if (topic === '') return;
+    if (topic === '') {
+      handleTopicNotUnderstood();
+      return;
+    }
+    setTopicListening(false);
     topicInput.value = topic;
     setSelectedChip('');
     clearTopicMessage();
     askTopicConfirmation(topic);
   } else if (topicMode === 'command') {
-    topicMode = '';
     const command = matchCommand(text, {
       yes: parseWords(t('voice.yesWords')),
       redo: parseWords(t('voice.redoWords')),
     });
+    if (command === null) {
+      handleTopicNotUnderstood(); // neither "yes" nor "no": say it once more
+      return;
+    }
+    setTopicListening(false);
+    topicMode = '';
+    clearTopicMessage();
     if (command === 'yes') submitTopic(); // same checks and request as Start
-    // Anything else: keep the topic and the question on screen.
+    // "no" / "again": keep the topic and the question on screen.
   }
 }
 
-// The microphone reported silence or a problem.
+// The microphone reported silence, unclear speech or a problem.
 function handleTopicError(info) {
   if (!topicListening || topicListenToken !== topicToken) return;
-  topicMode = '';
+  if (info && info.fallbackOnly) {
+    // Too many mic failures: typing and the buttons only.
+    topicMode = '';
+    setTopicListening(false);
+    topicMic.hidden = true;
+    return;
+  }
+  handleTopicNotUnderstood();
+}
+
+// Say and show "I did not understand. Please say it once more." and listen
+// again by itself, at most 2 times. After that listening stops and the
+// topic buttons and the type box stay ready.
+function handleTopicNotUnderstood() {
+  const mode = topicMode;
   setTopicListening(false);
-  if (info && info.fallbackOnly) topicMic.hidden = true;
+  if (topicSpeechInput && topicSpeechInput.supported) topicSpeechInput.stop();
+  if (mode === '' || !topicRetries.next()) {
+    topicMode = '';
+    return;
+  }
+
+  const myToken = topicToken;
+  showTopicMessage('common.notUnderstood');
+
+  let done = false;
+  function listenAgain() {
+    if (done) return;
+    done = true;
+    // Open the microphone only after the spoken message has finished.
+    setTimeout(() => {
+      if (myToken !== topicToken) return; // cancelled meanwhile
+      listenOnTopicScreen(mode);
+    }, LISTEN_DELAY_MS);
+  }
+  topicSpeechOutput.speak(t('common.notUnderstood'), { onEnd: listenAgain, onError: listenAgain });
 }
 
 // Show and speak "Shall I teach you about ...?", then listen once for "yes".
 function askTopicConfirmation(topic) {
+  topicRetries.reset();
   topicToken += 1;
   const myToken = topicToken;
   setI18nText(topicConfirm, 'ghostTutor.confirmTopic', { topic });
@@ -378,7 +426,11 @@ function askTopicConfirmation(topic) {
     if (finished) return;
     finished = true;
     if (myToken !== topicToken) return; // cancelled meanwhile
-    listenOnTopicScreen('command');
+    // Open the microphone only after our own voice has fully stopped.
+    setTimeout(() => {
+      if (myToken !== topicToken) return;
+      listenOnTopicScreen('command');
+    }, LISTEN_DELAY_MS);
   }
   topicSpeechOutput.speak(t('ghostTutor.confirmTopic', { topic }), {
     onEnd: listenAfterQuestion,
@@ -406,6 +458,10 @@ const feedbackArea = document.getElementById('feedback-area');
 const feedbackText = document.getElementById('feedback-text');
 const completeArea = document.getElementById('complete-area');
 const completeText = document.getElementById('complete-text');
+const scoreText = document.getElementById('score-text');
+const nextButton = document.getElementById('next-button');
+const listeningIndicator = document.getElementById('listening-indicator');
+const notUnderstood = createRetryCounter(); // quiz "I did not understand" retries (max 2)
 const newTopicButton = document.getElementById('new-topic');
 
 // Lesson flow state
@@ -421,6 +477,7 @@ let textFallbackReady = false; // the typed box is created only once
 let currentQuestion = '';      // quiz question text shown to the user
 let feedbackNoticeKey = '';    // set when a notice is shown instead of AI feedback
 let loadingCount = 0;          // number of requests showing the spinner
+let score = 0;                 // how many quiz answers were correct in this lesson
 
 // ----- Small helpers -----
 
@@ -461,6 +518,7 @@ function setListening(isListening) {
   micButton.classList.toggle('listening', isListening);
   setI18nText(micButton, isListening ? 'ghostTutor.stop' : 'ghostTutor.speak');
   micButton.setAttribute('aria-pressed', String(isListening));
+  listeningIndicator.hidden = !isListening; // clear "Listening..." sign
 }
 
 // Empty the answer area (dual display, messages, typed box).
@@ -587,6 +645,7 @@ function startLesson() {
   state.language = getCurrentLanguage();
   state.segmentIndex = 0;
   silenceCount = 0;
+  score = 0;
   feedbackNoticeKey = '';
   feedbackArea.hidden = true;
   completeArea.hidden = true;
@@ -653,7 +712,7 @@ async function askQuiz(notice, isRepeat) {
   stopEverything();
   phase = 'asking';
   autoListenTried = false;
-  if (!isRepeat) repeatTried = false;
+  notUnderstood.reset();
 
   const item = state.segments[state.segmentIndex];
   clearAudioNote();
@@ -681,16 +740,22 @@ async function askQuiz(notice, isRepeat) {
 function autoStartListening() {
   if (autoListenTried) return; // never start twice
   autoListenTried = true;
-  if (phase !== 'asking' || micListening || voiceDisabled) return;
-  if (!speechInput || !speechInput.supported) return;
-  setListening(true); // set first: start() may report an error right away
-  speechInput.start();
+  const myId = askId;
+  // Wait a moment so the microphone does not hear the end of our own voice.
+  setTimeout(() => {
+    if (myId !== askId) return;
+    if (phase !== 'asking' || micListening || voiceDisabled) return;
+    if (!speechInput || !speechInput.supported) return;
+    setListening(true); // set first: start() may report an error right away
+    speechInput.start();
+  }, LISTEN_DELAY_MS);
 }
 
 // The mic button toggles listening on and off.
 micButton.addEventListener('click', () => {
   if (phase !== 'asking' || !speechInput || !speechInput.supported || voiceDisabled) return;
   autoListenTried = true; // the user is in control now
+  notUnderstood.reset(); // two fresh retries
   if (micListening) {
     speechInput.stop();
     setListening(false);
@@ -705,53 +770,60 @@ micButton.addEventListener('click', () => {
 // A voice answer arrived.
 function handleVoiceResult(text) {
   if (!micListening) return; // we already stopped listening: stale result
+  if (phase === 'feedback') {
+    handleNextCommand(text); // after the feedback only "yes" (go on) is understood
+    return;
+  }
   if (typeof text !== 'string' || text.trim() === '') {
-    askToRepeat();
+    handleNotUnderstood();
     return;
   }
   handleAnswer(text);
 }
 
-// R12.5: the voice result was empty. Say "please say it again", then listen once more.
-function askToRepeat() {
-  setListening(false);
-  if (phase !== 'asking' || repeatTried) return;
-  repeatTried = true;
-  askId += 1;
-  const myId = askId;
-  stopEverything();
-  showQuizMessage('ghostTutor.repeatAnswer');
-  speakThen(t('ghostTutor.repeatAnswer'), myId, () => {
-    autoListenTried = false;
-    autoStartListening();
-  });
-}
-
-// The microphone reported a problem.
+// The microphone reported a problem (silence, unclear speech or a mic error).
 function handleVoiceError(info) {
-  if (phase !== 'asking' || !info) return;
-  setListening(false);
+  if (!info) return;
+  if (phase === 'feedback') {
+    // Listening for "yes" ended. The Next button still works.
+    setListening(false);
+    if (info.fallbackOnly) voiceDisabled = true;
+    return;
+  }
+  if (phase !== 'asking') return;
 
-  if (info.inactivity) {
-    handleSilence();
-  } else if (info.fallbackOnly) {
+  if (info.fallbackOnly) {
+    // Too many mic failures: typing only.
+    setListening(false);
     voiceDisabled = true;
     micButton.hidden = true;
     setI18nText(micMessage, 'ghostTutor.voiceNotWorking');
     micMessage.hidden = false;
-  } else {
-    showQuizMessage('ghostTutor.tryAgain');
+    return;
   }
+  handleNotUnderstood();
 }
 
-// Nothing was heard for a long time: ask once more, then move on.
-function handleSilence() {
-  if (silenceCount < 1) {
-    silenceCount += 1;
-    askQuiz('ghostTutor.didNotHear', false);
-  } else {
-    nextSegment('ghostTutor.noAnswerNext');
-  }
+// Nothing was heard, or it was unclear, or the mic failed once.
+// Say and show "I did not understand. Please say it once more." and listen
+// again by itself, at most 2 times. After that listening stops and the
+// mic button and the type box stay ready.
+function handleNotUnderstood() {
+  setListening(false);
+  if (speechInput && speechInput.supported) speechInput.stop();
+  if (phase !== 'asking' || !notUnderstood.next()) return; // both retries used: stop here
+
+  const myId = askId;
+  showQuizMessage('common.notUnderstood');
+  speakThen(t('common.notUnderstood'), myId, () => {
+    // Open the microphone only after the spoken message has finished.
+    setTimeout(() => {
+      if (myId !== askId || phase !== 'asking' || micListening || voiceDisabled) return;
+      if (!speechInput || !speechInput.supported) return;
+      setListening(true);
+      speechInput.start();
+    }, LISTEN_DELAY_MS);
+  });
 }
 
 // An answer (voice or typed) arrived for the current quiz question.
@@ -805,11 +877,13 @@ async function handleAnswer(text) {
       ? evalResult.feedback.trim()
       : '';
   if (feedback === '') {
-    // Not counted as silence: ask the same question again.
-    askQuiz('ghostTutor.errEvaluate', false);
+    // The answer could not be checked. Never block the user: say so and offer Next.
+    feedbackNoticeKey = 'ghostTutor.evaluateSkipped';
+    playFeedback();
     return;
   }
 
+  if (evalResult.correct === true) score += 1; // counted once: handleAnswer runs once per question
   item.feedbackSource = { text: feedback, bcp47: requestLang.bcp47 };
   item.feedbackTexts = { [requestLang.bcp47]: feedback };
   feedbackNoticeKey = '';
@@ -838,13 +912,42 @@ async function playFeedback() {
   }
   feedbackArea.hidden = false;
 
+  // The Next button is visible right away (feedbackArea is shown above).
+  // After the feedback is spoken we also listen once for a spoken "yes".
   if (!result.ok) {
     showAudioNote();
-    continueAfterReading(myId, () => nextSegment());
+    listenForNext(myId);
     return;
   }
-  speakThen(result.text, myId, () => nextSegment());
+  speakThen(result.text, myId, () => listenForNext(myId));
 }
+
+// Open the microphone once, to hear "yes" (= Next) after the feedback.
+function listenForNext(myId) {
+  // Wait a moment so the microphone does not hear the end of our own voice.
+  setTimeout(() => {
+    if (myId !== askId || phase !== 'feedback' || micListening || voiceDisabled) return;
+    if (!speechInput || !speechInput.supported) return;
+    setListening(true); // set first: start() may report an error right away
+    speechInput.start();
+  }, LISTEN_DELAY_MS);
+}
+
+// A spoken "yes" (in the chosen language) moves on, like the Next button.
+function handleNextCommand(text) {
+  setListening(false);
+  const command = matchCommand(text, {
+    yes: parseWords(t('voice.yesWords')),
+    redo: parseWords(t('voice.redoWords')),
+  });
+  if (command === 'yes') nextSegment();
+  // Anything else: the Next button keeps waiting.
+}
+
+nextButton.addEventListener('click', () => {
+  if (phase !== 'feedback') return;
+  nextSegment();
+});
 
 // ----- Next segment / completion -----
 
@@ -875,9 +978,11 @@ function playComplete() {
   phase = 'complete';
   resetLessonScreen();
 
+  const total = state.segments.length;
   setI18nText(completeText, 'ghostTutor.complete');
+  setI18nText(scoreText, 'ghostTutor.score', { score, total });
   completeArea.hidden = false;
-  speakThen(t('ghostTutor.complete'), myId, () => {});
+  speakThen(t('ghostTutor.score', { score, total }) + ' ' + t('ghostTutor.complete'), myId, () => {});
 }
 
 newTopicButton.addEventListener('click', () => {

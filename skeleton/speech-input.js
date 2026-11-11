@@ -10,6 +10,7 @@ import { cleanAnswer } from './text-fallback-utils.js';
 
 // onResult(heardText)  -> called with the final transcript
 // onError(info)        -> called with one of:
+//     { noSpeech: true }     the microphone closed without hearing anything usable
 //     { inactivity: true }   no speech for 30 seconds
 //     { fallbackOnly: true } 3 recognition failures: use the text box only
 //     { error: '<code>' }    a single recognition failure (retry allowed)
@@ -37,6 +38,8 @@ export function createSpeechInput({ lang, onResult, onError }) {
   let inactivityTimer = null;
   let listening = false;
   let gotResult = false;    // true once a final result was delivered
+  let stoppedByUs = false;  // true when stop() ended the session (not the browser)
+  let errorReported = false; // true when onerror already told the caller
 
   // Safely call a callback if the caller provided one.
   function notifyError(info) {
@@ -79,6 +82,7 @@ export function createSpeechInput({ lang, onResult, onError }) {
     if (event.error === 'aborted' || event.error === 'no-speech') return;
     clearTimer();
     listening = false;
+    errorReported = true; // onend must not report this a second time
     failureCount += 1;
     if (failureCount >= MAX_FAILURES) {
       notifyError({ fallbackOnly: true });
@@ -89,9 +93,17 @@ export function createSpeechInput({ lang, onResult, onError }) {
 
   recognition.onend = () => {
     listening = false;
-    // Browser ended without a result and without an error: do nothing here.
-    // The inactivity timer (if still running) reports silence.
-    if (gotResult) clearTimer();
+    if (gotResult) {
+      clearTimer();
+      return;
+    }
+    // The browser closed the microphone without a result and without an error
+    // (it heard nothing, or only noise). Tell the caller right away instead of
+    // waiting for the 30 second timer. Not reported when we stopped it ourselves.
+    if (!stoppedByUs && !errorReported) {
+      clearTimer();
+      notifyError({ noSpeech: true });
+    }
   };
 
   function start() {
@@ -103,6 +115,8 @@ export function createSpeechInput({ lang, onResult, onError }) {
     }
     recognition.lang = lang; // set the language before every start()
     gotResult = false;
+    stoppedByUs = false;
+    errorReported = false;
     try {
       recognition.start();
       listening = true;
@@ -121,6 +135,7 @@ export function createSpeechInput({ lang, onResult, onError }) {
   function stop() {
     clearTimer();
     listening = false;
+    stoppedByUs = true;
     try {
       recognition.stop();
     } catch (err) {

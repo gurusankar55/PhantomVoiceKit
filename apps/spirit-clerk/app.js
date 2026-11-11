@@ -8,11 +8,12 @@ import { createSpeechOutput } from '/skeleton/speech-output.js';
 import { renderDualDisplay } from '/skeleton/dual-display.js';
 import { createTextFallback } from '/skeleton/text-fallback.js';
 import { extractFields, translate } from '/skeleton/api-client.js';
-import { nextRedoOrSkip, nextSilenceOrSkip, pdfFilename, cleanLabel } from '/apps/spirit-clerk/form-utils.js';
+import { nextRedoOrSkip, pdfFilename, cleanLabel, formatAnswerByKind } from '/apps/spirit-clerk/form-utils.js';
 import { cleanAnswer } from '/skeleton/text-fallback-utils.js';
 import { createNavMenu, createScreenHistory } from '/skeleton/nav-menu.js';
 import { initI18n, t, setI18nText, clearI18n } from '/skeleton/i18n.js';
 import { matchCommand, parseWords } from '/skeleton/voice-commands.js';
+import { createRetryCounter, LISTEN_DELAY_MS } from '/skeleton/voice-retry.js';
 
 // Load the translations BEFORE the nav and language dropdown are created.
 await initI18n();
@@ -64,6 +65,8 @@ const fillLoading = document.getElementById('fill-loading');
 const helpButton = document.getElementById('help-button');
 const helpText = document.getElementById('help-text');
 const confirmPrompt = document.getElementById('confirm-prompt');
+const listeningIndicator = document.getElementById('listening-indicator');
+const notUnderstood = createRetryCounter(); // "I did not understand" retries (max 2)
 // ---------- Form-fill state ----------
 
 let fillActive = false;   // true while the form-fill screen is running
@@ -206,7 +209,7 @@ function friendlyError(code) {
     return 'spiritClerk.errTimeout';
   }
   if (code === 'busy') {
-    return 'spiritClerk.errBusy';
+    return 'common.rateLimit'; // every AI model is out of free quota
   }
   if (code === 'network_error') {
     return 'spiritClerk.errNetwork';
@@ -344,6 +347,7 @@ function setListening(isListening) {
   micButton.classList.toggle('listening', isListening);
   setI18nText(micButton, isListening ? 'spiritClerk.stop' : 'spiritClerk.speak');
   micButton.setAttribute('aria-pressed', String(isListening));
+  listeningIndicator.hidden = !isListening; // clear "Listening..." sign
 }
 
 // Stop any speech that is playing and any microphone that is listening.
@@ -428,6 +432,7 @@ function askCurrentQuestion(notice) {
   phase = 'asking';
   pendingAnswer = null;
   autoListenTried = false;
+  notUnderstood.reset();
 
   // Reset the screen for this question.
   fillLoading.hidden = true;
@@ -459,7 +464,10 @@ function askCurrentQuestion(notice) {
     if (moved) return;
     moved = true;
     if (myId !== askId) return; // a newer question or language took over
-    autoStartListening();
+    // Wait a moment so the microphone does not hear the end of our own voice.
+    setTimeout(() => {
+      if (myId === askId) autoStartListening();
+    }, LISTEN_DELAY_MS);
   }
 
   // Show the "audio unavailable" note.
@@ -551,6 +559,7 @@ function cancelCommandListening() {
 
 // Show and speak "Is this right? Say yes or again.", then listen once.
 function promptConfirm() {
+  notUnderstood.reset();
   const myId = askId;
   const myToken = voiceToken;
   setI18nText(confirmPrompt, 'spiritClerk.confirmPrompt');
@@ -563,7 +572,11 @@ function promptConfirm() {
     done = true;
     // Ignore if the question changed, speech was stopped, or help is open.
     if (myId !== askId || myToken !== voiceToken || phase !== 'confirming' || helpActive) return;
-    startCommandListening();
+    // Open the microphone only after our own voice has fully stopped.
+    setTimeout(() => {
+      if (myId !== askId || myToken !== voiceToken || phase !== 'confirming' || helpActive) return;
+      startCommandListening();
+    }, LISTEN_DELAY_MS);
   }
   speechOutput.speak(t('spiritClerk.confirmPrompt'), {
     onEnd: listenAfterPrompt,
@@ -574,6 +587,7 @@ function promptConfirm() {
 // The mic button toggles listening on and off.
 micButton.addEventListener('click', () => {
   if (!speechInput || !speechInput.supported || voiceDisabled) return;
+  notUnderstood.reset(); // the user is in control: two fresh retries
 
   if (phase === 'asking') {
     autoListenTried = true; // the user is in control now
@@ -604,65 +618,84 @@ function handleVoiceResult(text) {
   if (listenMode === 'command') {
     handleCommandResult(text);
   } else if (listenMode === 'answer') {
-    handleAnswer(text);
+    if (cleanAnswer(text) === '') handleNotUnderstood(); // nothing usable was heard
+    else handleAnswer(text);
   }
 }
 
 // A spoken command while confirming. It is never stored as an answer.
 function handleCommandResult(text) {
   if (phase !== 'confirming') return;
-  listenMode = '';
-  setListening(false);
   const command = matchCommand(text, {
     yes: parseWords(t('voice.yesWords')),
     redo: parseWords(t('voice.redoWords')),
   });
-  if (command === 'yes') doConfirm();
-  else if (command === 'redo') doRedo();
-  // Anything else: the buttons keep waiting.
-}
-
-// The microphone reported a problem.
-function handleVoiceError(info) {
-  if (!info) return;
-
-  // Command listening: just stop. No silence counting, no re-ask.
-  if (listenMode === 'command') {
-    listenMode = '';
-    setListening(false);
-    if (info.fallbackOnly) {
-      voiceDisabled = true;
-      micButton.hidden = true;
-      setI18nText(micMessage, 'spiritClerk.voiceNotWorking');
-      micMessage.hidden = false;
-    }
+  if (command === null) {
+    handleNotUnderstood(); // neither "yes" nor "again"
     return;
   }
-
-  if (phase !== 'asking') return;
   listenMode = '';
   setListening(false);
+  if (command === 'yes') doConfirm();
+  else doRedo();
+}
 
-  if (info.inactivity) {
-    handleSilence();
-  } else if (info.fallbackOnly) {
+// The microphone reported a problem (silence, unclear speech or a mic error).
+function handleVoiceError(info) {
+  if (!info || listenMode === '') return; // not listening for anything
+  if (info.fallbackOnly) {
+    // Too many mic failures: typing and the buttons only.
+    listenMode = '';
+    setListening(false);
     voiceDisabled = true;
     micButton.hidden = true;
     setI18nText(micMessage, 'spiritClerk.voiceNotWorking');
     micMessage.hidden = false;
-  } else {
-    showFillMessage('spiritClerk.tryAgain');
+    return;
   }
+  handleNotUnderstood();
 }
-// Nothing was heard for a long time.
-function handleSilence() {
-  if (nextSilenceOrSkip(silenceCount) === 'reask') {
-    silenceCount += 1;
-    askCurrentQuestion('spiritClerk.didNotHear');
-  } else {
-    storeAnswer('', '', true);
-    advance('spiritClerk.noAnswerSkip');
+
+// Nothing was heard, or it was unclear, or the mic failed once.
+// Say and show "I did not understand. Please say it once more." and listen
+// again by itself, at most 2 times. After that listening stops and the
+// buttons and the type box stay ready.
+function handleNotUnderstood() {
+  const mode = listenMode || (phase === 'confirming' ? 'command' : 'answer');
+  listenMode = '';
+  setListening(false);
+  if (speechInput && speechInput.supported) speechInput.stop();
+  if (!notUnderstood.next()) return; // both retries used: stop here
+
+  const myId = askId;
+  const myToken = voiceToken;
+  showFillMessage('common.notUnderstood');
+
+  let done = false;
+  function listenAgain() {
+    if (done) return;
+    done = true;
+    // Open the microphone only after the spoken message has finished.
+    setTimeout(() => {
+      if (myId !== askId || myToken !== voiceToken || helpActive) return;
+      if (mode === 'answer' && phase === 'asking') startAnswerListening();
+      else if (mode === 'command' && phase === 'confirming') startCommandListening();
+    }, LISTEN_DELAY_MS);
   }
+  speechOutput.speak(t('common.notUnderstood'), { onEnd: listenAgain, onError: listenAgain });
+}
+
+// The English text for something the user said.
+// Names (field.kind === 'name') are NOT translated: they are written in English
+// letters (ஷங்கர் -> Shankar) and then put in Title Case. Other fields are translated.
+// Returns '' when the server could not do it.
+async function englishFor(heardText, field) {
+  const kind = field ? field.kind : 'text';
+  const result = await translate({ text: heardText, targetLang: 'en', transliterate: kind === 'name' });
+  if (result && !result.error && typeof result.translation === 'string') {
+    return formatAnswerByKind(cleanAnswer(result.translation), kind);
+  }
+  return '';
 }
 
 // An answer (voice or typed) arrived for the current question.
@@ -672,21 +705,19 @@ async function handleAnswer(text) {
   if (heardText === '') return;
 
   const myId = askId;
+  const field = state.fields[state.currentIndex];
   phase = 'translating';
   stopEverything();
   clearFillMessage();
 
-  let englishMeaning = heardText;
+  // Already English: only names are tidied (Title Case).
+  let englishMeaning = formatAnswerByKind(heardText, field.kind);
   if (state.language.bcp47 !== 'en-US') {
     fillLoading.hidden = false;
-    const result = await translate({ text: heardText, targetLang: 'en' });
+    // On failure the English meaning stays '' (shown as unavailable).
+    englishMeaning = await englishFor(heardText, field);
     if (myId !== askId) return; // question or language changed while waiting
     fillLoading.hidden = true;
-    // On failure the English meaning stays '' (shown as unavailable).
-    englishMeaning =
-      result && !result.error && typeof result.translation === 'string'
-        ? cleanAnswer(result.translation)
-        : '';
   }
 
   pendingAnswer = { heardText, englishMeaning };
@@ -723,13 +754,15 @@ function advance(notice) {
   askCurrentQuestion(notice);
 }
 
-confirmButton.addEventListener('click', () => {
+// Confirm the answer. Used by the Confirm button AND by a spoken "yes".
+function doConfirm() {
   if (phase !== 'confirming' || !pendingAnswer) return;
   storeAnswer(pendingAnswer.heardText, pendingAnswer.englishMeaning, false);
   advance();
-});
+}
 
-redoButton.addEventListener('click', () => {
+// Ask the question again. Used by the Redo button AND by a spoken "again".
+function doRedo() {
   if (phase !== 'confirming') return;
   if (nextRedoOrSkip(redoCount) === 'redo') {
     redoCount += 1;
@@ -738,7 +771,10 @@ redoButton.addEventListener('click', () => {
     storeAnswer('', '', true);
     advance('spiritClerk.tooManyTries');
   }
-});
+}
+
+confirmButton.addEventListener('click', doConfirm);
+redoButton.addEventListener('click', doRedo);
 
 // ---------- Summary screen (task 6.5) ----------
 
@@ -789,10 +825,7 @@ async function showSummary() {
     state.answers.map(async (answer) => {
       if (!answer || answer.skipped || answer.englishMeaning) return;
       try {
-        const result = await translate({ text: answer.heardText, targetLang: 'en' });
-        if (result && !result.error && typeof result.translation === 'string') {
-          answer.englishMeaning = cleanAnswer(result.translation);
-        }
+        answer.englishMeaning = await englishFor(answer.heardText, answer.field);
       } catch (err) {
         // Ignore: the heard text is used as the fallback below.
       }

@@ -56,3 +56,30 @@ export function cleanLabel(label) {
   }
   return result;
 }
+
+/**
+ * Title Case for a person's name: the first letter of each word is a capital
+ * and the rest are small, e.g. "RENUKA DEVI" -> "Renuka Devi".
+ * A letter also counts as the start of a word after a space, hyphen, period
+ * or apostrophe, so "mary-ann" -> "Mary-Ann" and "o'neil" -> "O'Neil".
+ * @param {string} text
+ * @returns {string}
+ */
+export function toTitleCase(text) {
+  return String(text ?? '')
+    .toLocaleLowerCase()
+    .replace(/(^|[\s\-.'\u2019])(\p{L})/gu, (match, before, letter) => before + letter.toLocaleUpperCase());
+}
+
+/**
+ * Tidy an English answer according to the kind of field it belongs to.
+ * Only "name" fields change (Title Case). Emails, numbers, dates, codes
+ * (PAN, IFSC) and all other text are returned exactly as they are.
+ * @param {string} text
+ * @param {string} kind - "name" | "email" | "number" | "date" | "text"
+ * @returns {string}
+ */
+export function formatAnswerByKind(text, kind) {
+  const value = String(text ?? '');
+  return kind === 'name' ? toTitleCase(value) : value;
+}

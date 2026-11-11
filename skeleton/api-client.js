@@ -62,8 +62,11 @@ async function postJson(url, body, timeoutMs) {
 }
 
 // Translate `text` into `targetLang` (a language code such as 'ta' or 'en').
-export function translate({ text, targetLang }) {
-  return postJson('/api/translate', { text, targetLang }, TIMEOUT_TRANSLATE_MS);
+// With transliterate: true the text is a NAME: it is written in the target
+// letters (ஷங்கர் -> Shankar) and its meaning is not translated.
+export function translate({ text, targetLang, transliterate = false }) {
+  const body = transliterate ? { text, targetLang, transliterate: true } : { text, targetLang };
+  return postJson('/api/translate', body, TIMEOUT_TRANSLATE_MS);
 }
 
 // Ask the server to read the form fields from a base64 PDF/image.

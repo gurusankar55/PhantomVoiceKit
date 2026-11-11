@@ -19,13 +19,18 @@ export function createEvaluateRouter(callGemini) {
 
     const prompt =
       `Evaluate the following answer to a quiz question about "${topic}". ` +
-      `Provide brief spoken feedback in the language with BCP-47 code "${lang}". ` +
-      `Reply with JSON only, in this shape: { "feedback": string }. ` +
+      `Decide if the answer is correct. Be generous: accept an answer that has the right meaning even if it is worded differently. ` +
+      `Write "feedback" in the language with BCP-47 code "${lang}", in very simple words. ` +
+      `If the answer is correct: write one short sentence of praise. ` +
+      `If the answer is wrong: say what the correct answer is, then give ONE short, simple sentence that explains why. ` +
+      `Never ask the user to try again. ` +
+      `Reply with JSON only, in this shape: { "correct": boolean, "feedback": string }. ` +
       `Question: ${question}. Answer: ${answer}.`;
 
     try {
       const result = await callGemini({ prompt });
-      return res.json({ feedback: result.feedback });
+      // "correct" is true only when Gemini clearly said true; anything else counts as wrong.
+      return res.json({ correct: result.correct === true, feedback: result.feedback });
     } catch (err) {
       // Map our simple error codes to HTTP statuses.
       if (err && err.code === 'timeout') {

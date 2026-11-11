@@ -1,6 +1,7 @@
 // server/routes/translate.js
 // POST /api/translate  (server/index.js mounts this router at /api/translate)
-// Body: { text, targetLang }  ->  Response: { translation }
+// Body: { text, targetLang, transliterate? }  ->  Response: { translation }
+// transliterate: true means "write this name in the target letters, do not translate it".
 
 import { Router } from 'express';
 
@@ -9,7 +10,7 @@ export function createTranslateRouter(callGemini) {
   const router = Router();
 
   router.post('/', async (req, res) => {
-    const { text, targetLang } = req.body ?? {};
+    const { text, targetLang, transliterate } = req.body ?? {};
 
     // Reject missing, non-string, empty or whitespace-only text.
     if (typeof text !== 'string' || text.trim() === '') {
@@ -21,13 +22,14 @@ export function createTranslateRouter(callGemini) {
       return res.status(400).json({ error: 'invalid_input' });
     }
 
-    // Build the instruction for Gemini.
-    const prompt =
-      `Translate the following text into the language with BCP-47 code or name "${targetLang}". ` +
-      'Keep or transliterate proper names, numbers, dates, email addresses, phone numbers ' +
-      'and postal addresses so they stay correct and recognisable. ' +
-      'Reply with JSON only, in exactly this shape: {"translation": "<translated text>"}.\n\n' +
-      `Text:\n${text}`;
+    // Names are never translated: they are written with the letters of the
+    // target language, keeping the sound (for example Tamil "ஷங்கர்" -> "Shankar").
+    const prompt = transliterate === true
+      ? `Transliterate the following personal name into the letters of the language with BCP-47 code or name "${targetLang}". ` +
+        'Do NOT translate its meaning. Write how it sounds, using the usual spelling of that name, with no extra words. ' +
+        'Reply with JSON only, in exactly this shape: {"translation": "<transliterated name>"}.\n\n' +
+        `Name:\n${text}`
+      : buildTranslatePrompt(text, targetLang);
 
     try {
       const result = await callGemini({ prompt });
@@ -45,4 +47,15 @@ export function createTranslateRouter(callGemini) {
   });
 
   return router;
+}
+
+// The normal translation instruction.
+function buildTranslatePrompt(text, targetLang) {
+  return (
+    `Translate the following text into the language with BCP-47 code or name "${targetLang}". ` +
+      'Keep or transliterate proper names, numbers, dates, email addresses, phone numbers ' +
+      'and postal addresses so they stay correct and recognisable. ' +
+      'Reply with JSON only, in exactly this shape: {"translation": "<translated text>"}.\n\n' +
+      `Text:\n${text}`
+  );
 }

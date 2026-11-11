@@ -557,6 +557,72 @@ textarea {
   border-radius: var(--radius);
 }
 
+/* "Listening..." indicator shown while the microphone is open */
+.listening-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  margin: 0;
+  font-weight: 700;
+  color: var(--color-orange-light);
+}
+
+.listening-indicator[hidden] {
+  display: none;
+}
+
+.listening-dot {
+  flex: 0 0 auto;
+  width: 0.9rem;
+  height: 0.9rem;
+  border-radius: 50%;
+  background-color: var(--color-orange);
+  animation: listening-pulse 1s ease-in-out infinite;
+}
+
+@keyframes listening-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 0.5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .listening-dot {
+    animation: none;
+  }
+}
+
+/* Small spooky English app name shown under the big translated name */
+.brand-sub {
+  display: block;
+  margin-top: 0.2rem;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+  text-transform: none;
+  text-shadow: none;
+  color: inherit;
+  opacity: 0.8;
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+/* Menu entry: big name with the small name below it */
+.nav-link-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
 .nav-link:hover {
   background-color: var(--color-surface);
 }
