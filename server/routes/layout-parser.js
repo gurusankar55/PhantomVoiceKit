@@ -20,6 +20,8 @@ const BOX_KEYS = ['box_2d', 'box2d', 'box', 'bbox', 'bounding_box', 'boundingBox
 // Names a model may use for the translated text and for the original text.
 const TRANSLATION_KEYS = ['translation', 'translated_text', 'translatedText', 'translated', 'translation_text'];
 const TEXT_KEYS = ['text', 'original_text', 'originalText', 'original', 'source_text', 'source'];
+// Names a model may use for the short version of the translation.
+const SHORT_KEYS = ['short', 'short_translation', 'shortTranslation', 'short_version', 'shortVersion'];
 // Ways a box can be written as an object: [ymin, xmin, ymax, xmax] key names.
 const OBJECT_BOX_KEYS = [
   ['ymin', 'xmin', 'ymax', 'xmax'],
@@ -172,11 +174,20 @@ export function normalizeBlocks(list) {
     fixes.forEach((fix) => count('fixes', fix));
 
     const textKey = firstKey(item, TEXT_KEYS);
-    blocks.push({
+    const block = {
       text: textKey !== undefined && typeof item[textKey] === 'string' ? item[textKey].trim() : '',
       translation: translation.trim(),
       box_2d: result.box,
-    });
+    };
+
+    // The short version is optional. It is kept only when it is real text and really different.
+    const shortKey = firstKey(item, SHORT_KEYS);
+    const shortText = shortKey !== undefined && typeof item[shortKey] === 'string' ? item[shortKey].trim() : '';
+    if (shortText !== '' && shortText !== block.translation) {
+      block.short = shortText;
+    }
+
+    blocks.push(block);
   }
 
   report.kept = blocks.length;

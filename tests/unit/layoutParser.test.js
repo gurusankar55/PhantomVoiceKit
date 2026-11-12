@@ -212,3 +212,154 @@ describe('route: logging and prompt', () => {
     assert.match(prompt, /no markdown/);
   });
 });
+
+describe('short version from Gemini', () => {
+  test('a short version is kept', () => {
+    const { blocks } = normalizeBlocks([{ ...GOOD, short: ' முதல் ' }]);
+    assert.equal(blocks[0].short, 'முதல்');
+  });
+
+  test('other key names for it', () => {
+    assert.equal(normalizeBlocks([{ ...GOOD, short_translation: 'முதல்' }]).blocks[0].short, 'முதல்');
+    assert.equal(normalizeBlocks([{ ...GOOD, shortVersion: 'முதல்' }]).blocks[0].short, 'முதல்');
+  });
+
+  test('a missing, blank, non-text or identical short version is left out', () => {
+    for (const short of [undefined, '', '   ', 5, null, GOOD.translation]) {
+      const [block] = normalizeBlocks([{ ...GOOD, short }]).blocks;
+      assert.equal('short' in block, false, String(short));
+    }
+  });
+
+  test('a block without a short version is not dropped', () => {
+    const { blocks, report } = normalizeBlocks([GOOD]);
+    assert.equal(blocks.length, 1);
+    assert.equal(report.dropped, 0);
+  });
+});
+
+describe('prompt: everything in the target language and script', () => {
+  test('non-Latin target: names, brands and English words go into the target script', () => {
+    const prompt = buildPrompt('ta-IN');
+    assert.match(prompt, /Write EVERY word completely in Tamil, in the Tamil script/);
+    assert.match(prompt, /names of people, brand names/);
+    assert.match(prompt, /Do NOT leave any word in Latin \(English\) letters/);
+    assert.match(prompt, /Keep unchanged ONLY: e-mail addresses, web links, numbers, dates and ID codes/);
+    // the examples given for Tamil
+    assert.ok(prompt.includes('காயின்மார்க்கெட்கேப்'));
+    assert.ok(prompt.includes('கில்லி'));
+    assert.ok(prompt.includes('ஜான்'));
+  });
+
+  test('other scripts get the same rule with their own script name, but no Tamil examples', () => {
+    const hi = buildPrompt('hi-IN');
+    assert.match(hi, /completely in Hindi, in the Devanagari script/);
+    assert.ok(!hi.includes('காயின்மார்க்கெட்கேப்'));
+    assert.match(buildPrompt('ar-SA'), /in the Arabic script/);
+    assert.match(buildPrompt('ja-JP'), /Japanese \(kanji, hiragana and katakana\) script/);
+  });
+
+  test('Latin target: names stay, no script rule', () => {
+    const es = buildPrompt('es-ES');
+    assert.ok(!es.includes('Write EVERY word completely'));
+    assert.match(es, /Spanish/);
+    assert.match(es, /exactly as they are/);
+  });
+
+  test('every block asks for the short version too', () => {
+    const prompt = buildPrompt('ta-IN');
+    assert.match(prompt, /exactly four keys/);
+    assert.match(prompt, /"short"/);
+    assert.match(prompt, /SHORTER version/);
+  });
+});
+
+describe('route log: short versions and leftover Latin text', () => {
+  const body = { imageBase64: 'QUJD', mimeType: 'image/png' };
+  const appFor = (reply) => {
+    const app = express();
+    app.use(express.json());
+    app.use('/api/translate-layout', createTranslateLayoutRouter(async () => reply));
+    return app;
+  };
+  const logLine = (mockCalls) => mockCalls.map((c) => c.arguments.join(' ')).find((l) => l.includes('[translate-layout]'));
+
+  test('counts the translations that still have English words (non-Latin target)', async (t) => {
+    const log = t.mock.method(console, 'log', () => {});
+    const reply = {
+      blocks: [
+        { text: 'John', translation: 'John', box_2d: [10, 10, 40, 100] }, // stayed in English
+        { text: 'John', translation: 'ஜான்', short: 'ஜா', box_2d: [60, 10, 90, 100] },
+        { text: 'ID', translation: 'எண் ABCDE1234F', box_2d: [110, 10, 140, 100] }, // the code may stay
+        { text: 'x', translation: 'CoinMarketCap வழியாக', box_2d: [160, 10, 190, 100] },
+      ],
+    };
+    await request(appFor(reply)).post('/api/translate-layout').send({ ...body, lang: 'ta-IN' });
+    const line = logLine(log.mock.calls);
+    assert.match(line, / short=1 latinLeft=2$/);
+    assert.ok(!line.includes('John'));
+    assert.ok(!line.includes('CoinMarketCap'));
+  });
+
+  test('no latinLeft for a Latin-script target', async (t) => {
+    const log = t.mock.method(console, 'log', () => {});
+    const reply = { blocks: [{ text: 'John', translation: 'John', box_2d: [10, 10, 40, 100] }] };
+    await request(appFor(reply)).post('/api/translate-layout').send({ ...body, lang: 'es-ES' });
+    const line = logLine(log.mock.calls);
+    assert.ok(!line.includes('latinLeft'));
+    assert.match(line, / short=0$/);
+  });
+
+  test('the response keeps the short version', async (t) => {
+    t.mock.method(console, 'log', () => {});
+    const reply = { blocks: [{ text: 'Submit', translation: 'சமர்ப்பிக்கவும்', short: 'அனுப்பு', box_2d: [10, 10, 40, 100] }] };
+    const res = await request(appFor(reply)).post('/api/translate-layout').send({ ...body, lang: 'ta-IN' });
+    assert.equal(res.body.blocks[0].short, 'அனுப்பு');
+  });
+});
+
+describe('time words: AM and PM', () => {
+  const body = { imageBase64: 'QUJD', mimeType: 'image/png' };
+  const appFor = (reply) => {
+    const app = express();
+    app.use(express.json());
+    app.use('/api/translate-layout', createTranslateLayoutRouter(async () => reply));
+    return app;
+  };
+
+  test('the prompt asks for time words and common abbreviations to be translated (every language except English)', () => {
+    for (const lang of ['hi-IN', 'ta-IN', 'ar-SA', 'es-ES', 'fr-FR', 'ja-JP']) {
+      const prompt = buildPrompt(lang);
+      assert.match(prompt, /Time words and common abbreviations MUST be translated/, lang);
+      assert.match(prompt, /AM and PM/, lang);
+      assert.match(prompt, /10:30 AM/, lang);
+      assert.match(prompt, /Mr, Mrs, Dr/, lang);
+    }
+    assert.ok(!buildPrompt('en-US').includes('Time words and common abbreviations'));
+  });
+
+  test('safety net: if Gemini still writes AM / PM in English, the route uses the words of the language', async (t) => {
+    t.mock.method(console, 'log', () => {});
+    const reply = {
+      blocks: [{ text: 'Open 10:30 AM - 5:00 PM', translation: 'खुला 10:30 AM - 5:00 PM', short: '10:30 AM', box_2d: [10, 10, 40, 300] }],
+    };
+    const res = await request(appFor(reply)).post('/api/translate-layout').send({ ...body, lang: 'hi-IN' });
+    assert.equal(res.body.blocks[0].translation, 'खुला 10:30 पूर्वाह्न - 5:00 अपराह्न');
+    assert.equal(res.body.blocks[0].short, '10:30 पूर्वाह्न');
+  });
+
+  test('the safety net runs before the leftover-English count', async (t) => {
+    const log = t.mock.method(console, 'log', () => {});
+    const reply = { blocks: [{ text: 'Open 10:30 AM', translation: 'खुला 10:30 AM', box_2d: [10, 10, 40, 300] }] };
+    await request(appFor(reply)).post('/api/translate-layout').send({ ...body, lang: 'hi-IN' });
+    const line = log.mock.calls.map((c) => c.arguments.join(' ')).find((l) => l.includes('[translate-layout]'));
+    assert.match(line, /latinLeft=0$/);
+  });
+
+  test('English and Portuguese answers are not changed', async (t) => {
+    t.mock.method(console, 'log', () => {});
+    const reply = { blocks: [{ text: 'Open 10:30 AM', translation: 'Aberto 10:30 AM', box_2d: [10, 10, 40, 300] }] };
+    const res = await request(appFor(reply)).post('/api/translate-layout').send({ ...body, lang: 'pt-BR' });
+    assert.equal(res.body.blocks[0].translation, 'Aberto 10:30 AM');
+  });
+});

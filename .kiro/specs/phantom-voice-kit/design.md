@@ -716,6 +716,13 @@ Found with a real test form: `gemini-3.5-flash-lite` answered with every box nes
 
 The server console gets one line per page: `[translate-layout] ta-IN received=6 kept=6 dropped=0 reasons={} fixes={}`. Only numbers and reason names are logged, never text from the form. The prompt shows the exact reply shape with an example and says the box is a FLAT list of 4 whole numbers on a 0 to 1000 scale for both axes.
 
+### Adaptive cover, free space, short version, target script (Requirement 23.15 to 23.17)
+
+- **Adaptive cover** (`growCover` in `form-overlay-utils.js`): ink = a pixel clearly different from the background (colour distance 40 or more) and closer to the ink colour (`sampleInkColor`: the 5% of box pixels farthest from the background) than the background is. Each side grows 2 px at a time while the strip just outside it holds ink; it stops at a long straight line (`stripHasLine`: a row or column filled 60% or more that goes on past the strip), the image edge, another block's box (all other boxes are passed in `avoid`, also those of untouched blocks), or the limits of 1.5 x box height sideways and 0.5 x up and down, counted from the box.
+- **Free space** (`findFreeWidth`, `textArea`): columns next to the cover with no non-plain pixel, up to 2 x the box width, in the direction of the text (right; left for Arabic and Urdu). The text is drawn on that plain background, nothing is painted there.
+- **Short version**: the prompt asks for `short` per block; `layout-parser.js` keeps it when it is real text and different. `estimateOriginalSize` (width x height = 0.575 x characters x size^2) and `pickVersion` use it when the full text fits below 60% of that size and the short one is bigger.
+- **Target script** (`skeleton/translation-rules.js`, shared by server and browser): `isKeepAsIs` (only e-mail, links and words with a digit), `hasLeftoverLatin`, `isLatinScriptLang`, `scriptNameFor`. `leaveUntouched` = same text AND (Latin-script language OR keep-as-is). The route logs `short=N latinLeft=M` (counts only). Only a code VALUE like ABCDE1234F may stay; the label word PAN must be written in the target script.
+
 ### Overlay pipeline (skeleton/form-overlay.js)
 
 1. `prepareOverlay(image, blocks)` draws the image on a scratch canvas and reads its pixels ONCE. For each block it converts the box to pixels (`boxToPixels`), samples the background colour with `sampleBackground` (median of the pixels in a thin ring just outside the box, so the text itself does not tint the colour) and picks black or white text with `readableTextColor`.

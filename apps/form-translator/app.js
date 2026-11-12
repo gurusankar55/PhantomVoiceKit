@@ -330,7 +330,7 @@ async function showResult(images, results, skipped, lang) {
     } else {
       try {
         const blocks = Array.isArray(result.blocks) ? result.blocks : [];
-        page.prepared = prepareOverlay(image, blocks);
+        page.prepared = prepareOverlay(image, blocks, { lang });
         page.blocks = blocks;
         translatedPages += 1;
         totalBlocks += blocks.length;

@@ -2,13 +2,14 @@
 // Draws a translated version of a form page on a canvas, like Google Lens:
 //   1. the page image is drawn,
 //   2. every block of printed text is covered with the background colour
-//      sampled around it,
-//   3. the translated text is written inside the same box, wrapped and sized to fit.
+//      sampled around it (the cover grows until no old letters are left),
+//   3. the translated text is written in the cleared area. All blocks of the page are laid out
+//      together: lines that had the same size in the original get the same size here.
 //
 // Usage:
 //   const image = await loadImage(dataUrl);
-//   const prepared = prepareOverlay(image, blocks);          // reads pixels ONCE
-//   drawOverlay(canvas, image, prepared, { lang: 'ta-IN' }); // fast: call again for A- / A+
+//   const prepared = prepareOverlay(image, blocks, { lang: 'ta-IN' }); // reads pixels ONCE
+//   drawOverlay(canvas, image, prepared, { lang: 'ta-IN' });           // fast: call again for A- / A+
 //
 // The text is drawn with the browser's own fonts, so Tamil and the other
 // scripts show correctly. The maths lives in form-overlay-utils.js (unit tested).
@@ -17,11 +18,18 @@ import {
   boxToPixels,
   coverPadding,
   coverRect,
-  isSameText,
-  fitText,
+  growCover,
+  insetRect,
+  findFreeWidth,
+  textArea,
+  leaveUntouched,
+  describeOriginal,
+  planTextLayout,
+  layoutAt,
   textHeight,
   sampleBackground,
   sampleDarkest,
+  sampleInkColor,
   chooseTextColor,
   rgbToCss,
   scaleFromOffset,
@@ -32,9 +40,10 @@ import {
 const FONT_FAMILY =
   '"Nirmala UI", "Noto Sans", "Segoe UI", "Malgun Gothic", "Microsoft YaHei", "Yu Gothic", Tahoma, system-ui, sans-serif';
 
-// Space between the box edge and the new text (small, so the text can use the full box height).
-// The cover itself reaches further than the box: see coverPadding() in form-overlay-utils.js.
+// Space between the edge of the text area and the new text.
 const TEXT_PAD = 1;
+// Text up to this size gets a thin outline in its own colour, so small letters look solid, not grey.
+const SOLID_TEXT_MAX_SIZE = 22;
 // Languages written from right to left.
 const RTL_LANGS = ['ar', 'ur'];
 
@@ -60,14 +69,16 @@ export function loadImage(src) {
  * Work out, for every block, where to draw and which colours to use.
  * This reads the image pixels, so call it once per page and keep the result.
  * @param {HTMLImageElement} image
- * @param {{translation:string, box_2d:number[]}[]} blocks
- * @returns {{text:string, rect:object, cover:object, background:string, color:string}[]}
- *   one item per block that must be redrawn (blocks whose translation equals the
- *   original text are left out)
+ * @param {{text?:string, translation:string, short?:string, box_2d:number[]}[]} blocks
+ * @param {{lang?:string}} options  lang = BCP-47 code of the translation; it decides which
+ *   unchanged texts may stay (see leaveUntouched) and on which side the text continues
+ * @returns {object[]} one item per block that must be redrawn (blocks that may stay as they
+ *   are are left out): text, short, originalHeight, originalLines, rect, cover, area, background, color
  */
-export function prepareOverlay(image, blocks) {
+export function prepareOverlay(image, blocks, { lang = '' } = {}) {
   const width = image.naturalWidth || image.width;
   const height = image.naturalHeight || image.height;
+  const rtl = isRtlLang(lang);
 
   // Draw the original page on a scratch canvas and read its pixels once.
   const scratch = document.createElement('canvas');
@@ -77,29 +88,78 @@ export function prepareOverlay(image, blocks) {
   ctx.drawImage(image, 0, 0, width, height);
   const pixels = ctx.getImageData(0, 0, width, height);
 
-  return (
-    blocks
-      // A translation that equals the original (a name, a number, a code) is not redrawn:
-      // its pixels stay exactly as they were.
-      .filter((block) => !isSameText(block.text, block.translation))
-      .map((block) => {
-        const rect = boxToPixels(block.box_2d, width, height);
+  // A translation that equals the original is left as it is when that is allowed
+  // (see leaveUntouched): e-mail, links, numbers, dates, codes - and names only in Latin-script languages.
+  const rects = blocks.map((block) => boxToPixels(block.box_2d, width, height));
+  const redrawn = blocks.map((block) => !leaveUntouched(block.text, block.translation, lang));
 
-        // The background is read just outside the cover, so no original letters are in it.
-        const background = sampleBackground(pixels, rect, coverPadding(rect));
-        // The text colour is the colour of the original letters when it stands out enough.
-        const color = chooseTextColor(sampleDarkest(pixels, rect), background);
+  // The boxes a cover must not enter. An untouched block keeps its full box (it must stay exactly
+  // as it is). A block that is redrawn is protected a little less: boxes of neighbours often overlap
+  // by a few pixels, and its own cover repaints that edge anyway.
+  const guards = rects.map((rect, i) => (redrawn[i] ? insetRect(rect, Math.max(2, Math.round(rect.h * 0.25))) : rect));
 
-        return {
-          text: block.translation,
-          rect,
-          cover: coverRect(rect, width, height),
-          background: rgbToCss(background),
-          color,
-        };
-      })
-  );
+  const prepared = [];
+  blocks.forEach((block, index) => {
+    if (!redrawn[index]) return;
+
+    const rect = rects[index];
+    const others = guards.filter((_, i) => i !== index);
+
+    // The background is read just outside the first cover, so no original letters are in it.
+    const background = sampleBackground(pixels, rect, coverPadding(rect));
+    // The text colour is the colour of the original letters when it is a real colour that stands
+    // out strongly; otherwise solid black or white.
+    const color = chooseTextColor(sampleDarkest(pixels, rect), background);
+
+    // Start with the padded box, then grow each side while pieces of the old letters are left
+    // (also letters behind a gap, e.g. the "AM" after "10:30").
+    const cover = growCover({
+      image: pixels,
+      rect,
+      cover: coverRect(rect, width, height),
+      background,
+      ink: sampleInkColor(pixels, rect, background),
+      avoid: others,
+    });
+
+    // Plain background next to the cover may hold longer text (a narrow label or button): beside it
+    // in the direction of the text, and above and below it for a second line.
+    const sideScan = { image: pixels, cover, background, avoid: others, maxExtra: rect.w * 2 };
+    const freeRight = findFreeWidth({ ...sideScan, direction: 'right' });
+    const freeLeft = findFreeWidth({ ...sideScan, direction: 'left' });
+    const wide = textArea({ rect, cover, freeLeft, freeRight, rtl });
+    const rowScan = {
+      image: pixels,
+      cover: { x: wide.left, y: cover.y, w: wide.right - wide.left, h: cover.h },
+      background,
+      avoid: others,
+      maxExtra: Math.round(rect.h * 0.5),
+    };
+    const area = textArea({
+      rect, cover, freeLeft, freeRight, rtl,
+      freeUp: findFreeWidth({ ...rowScan, direction: 'up' }),
+      freeDown: findFreeWidth({ ...rowScan, direction: 'down' }),
+    });
+
+    const original = describeOriginal(rect, block.text);
+    prepared.push({
+      text: block.translation,
+      short: block.short || '',
+      originalHeight: original.height,
+      originalLines: original.lines,
+      rect,
+      cover,
+      area,
+      background: rgbToCss(background),
+      color,
+    });
+  });
+  return prepared;
 }
+
+// The layout of a page (text, lines, sizes) is worked out once per language and kept here, so
+// pressing A- / A+ only has to redraw.
+const planCache = new WeakMap();
 
 /**
  * Draw the page with the translated text on a canvas. Cheap to call again.
@@ -107,8 +167,9 @@ export function prepareOverlay(image, blocks) {
  * @param {HTMLImageElement} image
  * @param {object[]} prepared  result of prepareOverlay
  * @param {{lang?:string, scaleOffset?:number}} options
- *   lang         BCP-47 code of the translation (sets the text direction and glyph style)
+ *   lang         BCP-47 code of the translation (sets the text direction, the line breaking and the glyph style)
  *   scaleOffset  A- / A+ presses away from Auto (0 = auto-fit)
+ * @returns {object[]} what was drawn for every item: { text, lines, size, usedShort, group, align, x, area, fits }
  */
 export function drawOverlay(canvas, image, prepared, { lang = '', scaleOffset = 0 } = {}) {
   const width = image.naturalWidth || image.width;
@@ -132,36 +193,68 @@ export function drawOverlay(canvas, image, prepared, { lang = '', scaleOffset = 
     ctx.fillRect(item.cover.x, item.cover.y, item.cover.w, item.cover.h);
   }
 
-  // Step 2: write the translations.
-  const scale = scaleFromOffset(scaleOffset);
+  // Step 2: decide text, lines and size of every block together (cached per language).
+  const memo = new Map(); // measuring is the slow part: remember every answer
   const measureAt = (text, size) => {
-    ctx.font = `${size}px ${FONT_FAMILY}`;
-    return ctx.measureText(text).width;
+    const key = `${size}|${text}`;
+    let value = memo.get(key);
+    if (value === undefined) {
+      ctx.font = `${size}px ${FONT_FAMILY}`;
+      value = ctx.measureText(text).width;
+      memo.set(key, value);
+    }
+    return value;
   };
+  const boxOf = (item) => ({
+    boxW: Math.max(1, item.area.right - item.area.left - TEXT_PAD * 2),
+    boxH: Math.max(1, item.area.bottom - item.area.top - TEXT_PAD * 2),
+  });
 
-  for (const item of prepared) {
-    // The text may use the whole cleared area: the full height of the cover, and the
-    // width of the box plus the cleared space on the side where the text continues
-    // (right for left-to-right languages, left for Arabic and Urdu).
-    const { rect, cover } = item;
-    const areaLeft = rtl ? cover.x : rect.x;
-    const areaRight = rtl ? rect.x + rect.w : cover.x + cover.w;
-    const boxW = Math.max(1, areaRight - areaLeft - TEXT_PAD * 2);
-    const boxH = Math.max(1, cover.h - TEXT_PAD * 2);
+  let cached = planCache.get(prepared);
+  if (!cached || cached.lang !== lang) {
+    const items = prepared.map((item) => ({
+      text: item.text,
+      short: item.short,
+      originalHeight: item.originalHeight,
+      originalLines: item.originalLines,
+      ...boxOf(item),
+    }));
+    cached = { lang, plan: planTextLayout({ items, measureAt, lang }) };
+    planCache.set(prepared, cached);
+  }
 
-    const fit = fitText({ text: item.text, boxW, boxH, measureAt, scale });
-    const lineHeightPx = fit.size * fit.lineHeight;
+  // Step 3: write the translations.
+  const scale = scaleFromOffset(scaleOffset);
+  const drawn = [];
+  prepared.forEach((item, index) => {
+    const base = cached.plan[index];
+    const { boxW, boxH } = boxOf(item);
+
+    // A- / A+ changes the size of the planned text; the lines are wrapped again at the new size.
+    let { size, lines, fits } = base;
+    if (scale !== 1) {
+      size = Math.max(6, Math.round(base.size * scale));
+      ({ lines, fits } = layoutAt({ text: base.text, boxW, boxH, measureAt, size, lang }));
+    }
 
     // Centre the text up and down when it fits; otherwise start at the top edge.
-    const blockHeight = textHeight(fit.lines.length, fit.size, fit.lineHeight);
-    const offsetY = fit.fits ? (boxH - blockHeight) / 2 : 0;
-    const startY = cover.y + TEXT_PAD + offsetY;
-    const x = rtl ? areaRight - TEXT_PAD : areaLeft + TEXT_PAD;
+    const lineHeightPx = size * base.lineHeight;
+    const offsetY = fits ? (boxH - textHeight(lines.length, size, base.lineHeight)) / 2 : 0;
+    const startY = item.area.top + TEXT_PAD + offsetY;
+    const x = rtl ? item.area.right - TEXT_PAD : item.area.left + TEXT_PAD;
 
-    ctx.font = `${fit.size}px ${FONT_FAMILY}`;
+    ctx.font = `${size}px ${FONT_FAMILY}`;
     ctx.fillStyle = item.color;
-    fit.lines.forEach((line, index) => {
-      ctx.fillText(line, x, startY + index * lineHeightPx);
+    ctx.strokeStyle = item.color;
+    ctx.lineJoin = 'round';
+    ctx.lineWidth = Math.max(0.6, size * 0.035);
+    lines.forEach((line, i) => {
+      const y = startY + i * lineHeightPx;
+      ctx.fillText(line, x, y);
+      if (size <= SOLID_TEXT_MAX_SIZE) ctx.strokeText(line, x, y); // small text: a thin outline makes it solid
     });
-  }
+
+    drawn.push({ text: base.text, lines, size, usedShort: base.usedShort, group: base.group, align: rtl ? 'right' : 'left', x, area: item.area, fits });
+  });
+  return drawn;
 }

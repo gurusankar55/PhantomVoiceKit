@@ -471,6 +471,13 @@ Build the Phantom Voice Kit from the ground up: project scaffolding → Express 
     - [x] Run `npm test` (314 pass); re-read every changed file; headless Edge check of the overlay (Tamil, Arabic, Chinese, A- / A+) and of the page load
     - [ ] Manual check in Microsoft Edge with a real form and the real Gemini key (PDF upload, PDF download, read aloud)
 
+- [x] 15. Form Translator: adaptive cover, more room for text, everything in the target script
+  - [x] 15.1 `skeleton/form-overlay-utils.js`: `growCover`, `stripHasLine`, `sampleInkColor`, `findFreeWidth`, `textArea`, `estimateOriginalSize`, `pickVersion`, `leaveUntouched`; `skeleton/form-overlay.js` uses them (`prepareOverlay(image, blocks, { lang })`)
+    - _Requirements: R23.15, R23.16, R23.17_
+  - [x] 15.2 `skeleton/translation-rules.js` (shared); `server/routes/translate-layout.js` prompt (target script, `short` key) and log (`short`, `latinLeft`); `server/routes/layout-parser.js` keeps `short`
+    - _Requirements: R23.16, R23.17_
+  - [x] 15.3 Unit tests: `formOverlayScan.test.js`, `translationRules.test.js`, additions to `layoutParser.test.js`; two real Gemini calls for the final check
+
 ## Notes
 
 - Tasks marked with `*` are optional and can be skipped for a faster MVP.

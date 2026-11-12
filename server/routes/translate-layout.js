@@ -7,6 +7,7 @@
 
 import { Router } from 'express';
 import { parseLayoutReply, normalizeBlocks, describeReport } from './layout-parser.js';
+import { isLatinScriptLang, scriptNameFor, hasLeftoverLatin, translateTimeWords } from '../../skeleton/translation-rules.js';
 
 // Image types we accept (a PDF page is turned into an image in the browser).
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
@@ -38,23 +39,52 @@ export function validateBlocks(raw) {
  */
 export function buildPrompt(lang) {
   const languageName = LANGUAGE_NAMES[lang.split('-')[0].toLowerCase()] ?? lang;
+  const scriptName = scriptNameFor(lang);
+  const isLatin = isLatinScriptLang(lang);
+
+  // What may stay unchanged. For a non-Latin language this is a strict list;
+  // names, brands and English words must be written in the target script.
+  const keepRule = isLatin
+    ? 'Keep e-mail addresses, web links, numbers, dates and ID codes (such as PAN or IFSC codes) exactly as they are. '
+    : `Write EVERY word completely in ${languageName}, in the ${scriptName} script. This includes names of people, ` +
+      'brand names, product names, place names and English words: write them in that script, the way they sound ' +
+      `(for example "John" must be written in ${scriptName} letters, and so must a brand name such as "CoinMarketCap"). ` +
+      (languageName === 'Tamil'
+        ? 'Examples for Tamil: CoinMarketCap -> காயின்மார்க்கெட்கேப், ghilli -> கில்லி, John -> ஜான். '
+        : '') +
+      'Do NOT leave any word in Latin (English) letters. Keep unchanged ONLY: e-mail addresses, web links, numbers, ' +
+      'dates and ID codes (such as PAN or IFSC codes). ';
+
+  // Words that look like they could stay but must be translated (a model left "AM" and "PM" in English).
+  const wordsRule =
+    'Time words and common abbreviations MUST be translated into the target language: AM and PM ' +
+    '(a time such as "10:30 AM" is written with the target language\'s own word for AM; only the numbers stay), ' +
+    'noon, midnight, o\'clock, the days and months, and abbreviations such as Mr, Mrs, Dr, No., Tel, Fax, DOB, Rs. ' +
+    'Never leave AM or PM in English letters, unless that is exactly how the target language writes them. ';
+
   return (
     'You are given ONE page of a form (a photo, a screenshot or a scan). ' +
     'Find EVERY block of printed or written text on the page: titles, field labels, paragraphs, ' +
     'list items, table cells, notes and small print. One block is one line or one short paragraph. ' +
     'Never merge text from different columns or table cells into one block.\n' +
-    'For each block give exactly three keys:\n' +
+    'For each block give exactly four keys:\n' +
     '1. "text": the text exactly as printed.\n' +
     `2. "translation": that text translated into ${languageName} (BCP-47 code "${lang}"). ` +
-    'Keep names, numbers, dates, codes and e-mail addresses as they are. Never leave it empty.\n' +
-    '3. "box_2d": a FLAT list of exactly 4 whole numbers [ymin, xmin, ymax, xmax] giving the tight box around the text. ' +
+    keepRule +
+    (lang.split('-')[0].toLowerCase() === 'en' ? '' : wordsRule) +
+    'Never leave it empty.\n' +
+    '3. "short": a SHORTER version of "translation" with the same meaning (about 60% of its length or less), ' +
+    'for tight spaces such as buttons. It follows exactly the same rules as "translation". ' +
+    'If it cannot be shorter, repeat the translation.\n' +
+    '4. "box_2d": a FLAT list of exactly 4 whole numbers [ymin, xmin, ymax, xmax] giving the tight box around the text. ' +
     'The numbers are on a scale from 0 to 1000 for BOTH axes, whatever the size of the image: ' +
     'y runs from 0 (top edge) to 1000 (bottom edge), x runs from 0 (left edge) to 1000 (right edge). ' +
     'Do NOT use pixels, do NOT use values from 0 to 1, do NOT put the list inside another list, and do NOT use an object.\n' +
     'List the blocks in reading order. If the page has no text, return {"blocks": []}.\n' +
     'Reply with JSON only (no markdown, no explanation), in exactly this shape. ' +
     'The numbers below are only an example of the format:\n' +
-    '{"blocks": [{"text": "First name", "translation": "<First name in the target language>", "box_2d": [120, 40, 150, 230]}]}'
+    '{"blocks": [{"text": "First name", "translation": "<First name in the target language>", ' +
+    '"short": "<shorter version>", "box_2d": [120, 40, 150, 230]}]}'
   );
 }
 
@@ -94,7 +124,19 @@ export function createTranslateLayoutRouter(callGemini) {
         return res.status(502).json({ error: 'gemini_error' });
       }
 
-      console.log(`[translate-layout] ${lang} ${describeReport(parsed.report)}`);
+      // Safety net: if Gemini still wrote AM or PM in English letters, use the words of the language.
+      for (const block of parsed.blocks) {
+        block.translation = translateTimeWords(block.translation, lang);
+        if (block.short) block.short = translateTimeWords(block.short, lang);
+      }
+
+      // Counts only. For a non-Latin language, also how many translations still hold
+      // Latin letters outside the allowed exceptions (a word that stayed in English).
+      let extra = ` short=${parsed.blocks.filter((b) => b.short).length}`;
+      if (!isLatinScriptLang(lang)) {
+        extra += ` latinLeft=${parsed.blocks.filter((b) => hasLeftoverLatin(b.translation)).length}`;
+      }
+      console.log(`[translate-layout] ${lang} ${describeReport(parsed.report)}${extra}`);
       return res.json({ blocks: parsed.blocks });
     } catch (err) {
       if (err?.code === 'timeout') return res.status(504).json({ error: 'timeout' });

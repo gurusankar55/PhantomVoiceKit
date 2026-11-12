@@ -91,18 +91,71 @@ describe('wrapText', () => {
     assert.deepEqual(wrapText('aaa bbb ccc', 7, (s) => s.length), ['aaa bbb', 'ccc']);
   });
 
-  test('breaks a word that is wider than the box', () => {
-    assert.deepEqual(wrapText('abcdefghij', 4, (s) => s.length), ['abcd', 'efgh', 'ij']);
+  test('NEVER breaks inside a word, even when the word is wider than the box', () => {
+    assert.deepEqual(wrapText('abcdefghij', 4, (s) => s.length), ['abcdefghij']);
+    assert.deepEqual(wrapText('ab cdefghij kl', 4, (s) => s.length), ['ab', 'cdefghij', 'kl']);
   });
 
-  test('breaks text without spaces (Chinese) between characters', () => {
-    assert.deepEqual(wrapText('你好世界你好', 4, (s) => s.length), ['你好世界', '你好']);
+  test('a Tamil word stays whole (the real bug: "சமர்ப்பிக்கவு" + "ம்")', () => {
+    const grapheme = new Intl.Segmenter('ta', { granularity: 'grapheme' });
+    const width = (s) => Array.from(grapheme.segment(s)).length; // one unit per grapheme cluster
+    assert.deepEqual(wrapText('சமர்ப்பிக்கவும்', 5, width, 'ta-IN'), ['சமர்ப்பிக்கவும்']);
+    assert.deepEqual(wrapText('தயவுசெய்து சமர்ப்பிக்கவும்', 12, width, 'ta-IN'), ['தயவுசெய்து', 'சமர்ப்பிக்கவும்']);
   });
 
-  test('keeps a Tamil consonant with its vowel sign when breaking', () => {
-    // "கொ" is one letter made of 2-3 code points; it must never be split.
-    const lines = wrapText('கொகொகொ', 2, (s) => Array.from(new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(s)).length);
-    assert.deepEqual(lines, ['கொகொ', 'கொ']);
+  test('Chinese and Japanese break between characters', () => {
+    assert.deepEqual(wrapText('你好世界你好', 4, (s) => Array.from(s).length, 'zh-CN'), ['你好世界', '你好']);
+    assert.deepEqual(wrapText('こんにちは世界', 3, (s) => Array.from(s).length, 'ja-JP'), ['こんに', 'ちは世', '界']);
+  });
+
+  test('Chinese and Japanese: a closing mark never starts a line', () => {
+    const closing = /^[，。、！？；：）」』】ー]/;
+    for (const [text, lang] of [['你好世界。你好，再见！', 'zh'], ['今日は、晴れです。明日も、ね', 'ja'], ['「こんにちは」と言った。', 'ja']]) {
+      for (const width of [2, 3, 4, 5]) {
+        const lines = wrapText(text, width, (s) => Array.from(s).length, lang);
+        assert.equal(lines.join(''), text, `${text} / ${width}`); // nothing lost
+        for (const line of lines) assert.ok(!closing.test(line), `"${line}" starts with a closing mark (${text} / ${width})`);
+      }
+    }
+    // an opening bracket never ends a line either
+    for (const width of [2, 3, 4]) {
+      const lines = wrapText('これは「テスト」です', width, (s) => Array.from(s).length, 'ja');
+      for (const line of lines) assert.ok(!/[「（]$/.test(line), `"${line}" ends with an opening bracket`);
+    }
+  });
+
+  test('Chinese: an e-mail address, a time or a number is never cut', () => {
+    const lines = wrapText('请发送邮件到john.doe@example.com，谢谢', 6, (s) => Array.from(s).length, 'zh');
+    assert.ok(lines.some((line) => line.includes('john.doe@example.com')), lines.join(' | '));
+    assert.deepEqual(wrapText('上午 10:30 开门', 5, (s) => Array.from(s).length, 'zh').filter((l) => l.includes('10:30')).length, 1);
+  });
+
+  test('Thai breaks only between words', () => {
+    const text = 'กรุณาตรวจสอบข้อมูลของคุณก่อนส่งแบบฟอร์ม';
+    const words = Array.from(new Intl.Segmenter('th', { granularity: 'word' }).segment(text), (p) => p.segment);
+    const lines = wrapText(text, 8, (s) => Array.from(s).length, 'th-TH');
+    assert.ok(lines.length > 1);
+    assert.equal(lines.join(''), text);
+    // every line is a whole number of dictionary words
+    let at = 0;
+    const starts = new Set(words.map((_, i) => words.slice(0, i).join('').length));
+    for (const line of lines) {
+      assert.ok(starts.has(at), `line starts inside a word at ${at}`);
+      at += line.length;
+    }
+  });
+
+  test('a lone mark stays with its word: " :" " !" " »" never start a line, " «" never ends one (French)', () => {
+    for (const width of [4, 6, 8, 12, 20]) {
+      const a = wrapText('E-mail : john.doe@example.com', width, (s) => s.length, 'fr-FR');
+      const b = wrapText('Il a dit « bonjour » à tous !', width, (s) => s.length, 'fr-FR');
+      for (const line of [...a, ...b]) {
+        assert.ok(!/^[:!»]/.test(line), `"${line}" starts with a closing mark (width ${width})`);
+        assert.ok(!/«$/.test(line), `"${line}" ends with an opening mark (width ${width})`);
+      }
+      assert.equal(a.join(' '), 'E-mail : john.doe@example.com');
+      assert.equal(b.join(' '), 'Il a dit « bonjour » à tous !');
+    }
   });
 
   test('respects line breaks and returns no lines for empty text', () => {
@@ -110,8 +163,9 @@ describe('wrapText', () => {
     assert.deepEqual(wrapText('   ', 10, (s) => s.length), []);
   });
 
-  test('a single character wider than the box does not loop forever', () => {
-    assert.deepEqual(wrapText('abc', 0, () => 5), ['a', 'b', 'c']);
+  test('a single piece wider than the box does not loop forever', () => {
+    assert.deepEqual(wrapText('abc', 0, () => 5), ['abc']);
+    assert.deepEqual(wrapText('abc def', 0, () => 5), ['abc', 'def']);
   });
 });
 
@@ -342,6 +396,18 @@ describe('chooseTextColor', () => {
   test('pure white on a dark background (light text on a dark bar)', () => {
     // inside the box the darkest pixels are the bar itself: no contrast with the bar
     assert.equal(chooseTextColor(navy, navy), '#ffffff');
+  });
+
+  test('a grey is never kept: small anti-aliased text becomes solid black (or white on dark)', () => {
+    for (const grey of [{ r: 110, g: 110, b: 110 }, { r: 60, g: 60, b: 60 }, { r: 34, g: 34, b: 34 }, { r: 90, g: 95, b: 100 }]) {
+      assert.equal(chooseTextColor(grey, white), '#000000');
+    }
+    assert.equal(chooseTextColor({ r: 180, g: 180, b: 180 }, navy), '#ffffff');
+  });
+
+  test('a real colour is kept only with strong contrast (7 or more)', () => {
+    assert.equal(chooseTextColor({ r: 11, g: 42, b: 138 }, white), 'rgb(11, 42, 138)'); // dark blue: contrast about 12
+    assert.equal(chooseTextColor({ r: 90, g: 120, b: 220 }, white), '#000000'); // light blue: contrast about 4
   });
 
   test('pure black or white when the original colour is unknown', () => {
