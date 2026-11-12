@@ -961,16 +961,18 @@ export const findFreeSpace = findFreeWidth;
 
 /**
  * The area the translation may use: the cover, plus the free space found next to it in the
- * direction of the text, but never wider than 2 x the width of the original box.
+ * direction of the text, but never wider than maxWidth.
  * @param {object} options
  *   rect, cover  the box and its cover
  *   freeLeft, freeRight  free pixels beside the cover (findFreeWidth)
  *   freeUp, freeDown     free pixels above and below the cover
  *   rtl          true for right-to-left languages
+ *   maxWidth     widest the area may be (default 2 x the width of the original box). The free
+ *                space was already measured up to the page margin, so form-overlay.js passes the
+ *                page width here: the text may use all the plain background beside it.
  * @returns {{left:number, right:number, top:number, bottom:number}}
  */
-export function textArea({ rect, cover, freeLeft = 0, freeRight = 0, freeUp = 0, freeDown = 0, rtl = false }) {
-  const maxWidth = rect.w * 2;
+export function textArea({ rect, cover, freeLeft = 0, freeRight = 0, freeUp = 0, freeDown = 0, rtl = false, maxWidth = rect.w * 2 }) {
   // Plain space above and below may be used too (for a second line), at most half a box height each.
   const maxVertical = Math.round(rect.h * 0.5);
   const top = cover.y - Math.min(freeUp, maxVertical);

@@ -41,7 +41,7 @@ The `.env` file holds:
 | Variable | Meaning |
 | --- | --- |
 | `GEMINI_API_KEY` | Your Gemini API key. Stays on the server only. |
-| `GEMINI_MODEL` | Model name, for example `gemini-3.5-flash`. |
+| `GEMINI_MODELS` | Models to try in order, main first, for example `gemini-3.5-flash,gemini-3.5-flash-lite,gemini-3.1-flash-lite`. On HTTP 429 or 503 the next model is used. |
 | `PORT` | Server port. Default is `3000`. |
 
 To run the automated tests:

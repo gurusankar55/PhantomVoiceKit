@@ -44,6 +44,8 @@ const FONT_FAMILY =
 const TEXT_PAD = 1;
 // Text up to this size gets a thin outline in its own colour, so small letters look solid, not grey.
 const SOLID_TEXT_MAX_SIZE = 22;
+// Free space beside a block is used up to this share of the page width away from the page edge.
+const PAGE_MARGIN_SHARE = 0.03;
 // Languages written from right to left.
 const RTL_LANGS = ['ar', 'ur'];
 
@@ -79,6 +81,8 @@ export function prepareOverlay(image, blocks, { lang = '' } = {}) {
   const width = image.naturalWidth || image.width;
   const height = image.naturalHeight || image.height;
   const rtl = isRtlLang(lang);
+  // The page margin: text may reach this close to the edge of the page, never closer.
+  const margin = Math.round(width * PAGE_MARGIN_SHARE);
 
   // Draw the original page on a scratch canvas and read its pixels once.
   const scratch = document.createElement('canvas');
@@ -122,12 +126,15 @@ export function prepareOverlay(image, blocks, { lang = '' } = {}) {
       avoid: others,
     });
 
-    // Plain background next to the cover may hold longer text (a narrow label or button): beside it
-    // in the direction of the text, and above and below it for a second line.
-    const sideScan = { image: pixels, cover, background, avoid: others, maxExtra: rect.w * 2 };
-    const freeRight = findFreeWidth({ ...sideScan, direction: 'right' });
-    const freeLeft = findFreeWidth({ ...sideScan, direction: 'left' });
-    const wide = textArea({ rect, cover, freeLeft, freeRight, rtl });
+    // Plain background next to the cover may hold longer text: it is used BEFORE the text is made
+    // smaller. The scan goes on up to the page margin and stops at ink, a border or another block.
+    // (It looks beside the cover, and above and below it for a second line.)
+    const rightRoom = Math.max(0, width - margin - (cover.x + cover.w));
+    const leftRoom = Math.max(0, cover.x - margin);
+    const sideScan = { image: pixels, cover, background, avoid: others };
+    const freeRight = findFreeWidth({ ...sideScan, direction: 'right', maxExtra: rightRoom });
+    const freeLeft = findFreeWidth({ ...sideScan, direction: 'left', maxExtra: leftRoom });
+    const wide = textArea({ rect, cover, freeLeft, freeRight, rtl, maxWidth: width });
     const rowScan = {
       image: pixels,
       cover: { x: wide.left, y: cover.y, w: wide.right - wide.left, h: cover.h },
@@ -136,7 +143,7 @@ export function prepareOverlay(image, blocks, { lang = '' } = {}) {
       maxExtra: Math.round(rect.h * 0.5),
     };
     const area = textArea({
-      rect, cover, freeLeft, freeRight, rtl,
+      rect, cover, freeLeft, freeRight, rtl, maxWidth: width,
       freeUp: findFreeWidth({ ...rowScan, direction: 'up' }),
       freeDown: findFreeWidth({ ...rowScan, direction: 'down' }),
     });

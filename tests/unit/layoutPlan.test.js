@@ -319,3 +319,67 @@ describe('right to left', () => {
     assert.equal(ltr.left, rect.x);
   });
 });
+
+// ---------- Room beside a block, then one size per group ----------
+
+describe('free space is used before the text is made smaller', () => {
+  const rect = { x: 40, y: 100, w: 200, h: 20 };
+  const cover = { x: 37, y: 96, w: 206, h: 28 };
+
+  test('textArea: the default is at most 2 x the width of the original box', () => {
+    const area = textArea({ rect, cover, freeRight: 900 });
+    assert.equal(area.right, rect.x + rect.w * 2);
+  });
+
+  test('textArea: with maxWidth = the page width, all the free space is used', () => {
+    const area = textArea({ rect, cover, freeRight: 500, maxWidth: 1000 });
+    assert.equal(area.right, cover.x + cover.w + 500);
+    assert.equal(area.left, rect.x);
+    // Right-to-left text grows to the left instead.
+    const rtl = textArea({ rect, cover, freeLeft: 20, rtl: true, maxWidth: 1000 });
+    assert.equal(rtl.right, rect.x + rect.w);
+    assert.equal(rtl.left, cover.x - 20);
+  });
+
+  test('a line that is too long for its box reaches 70% once it may use the free space', () => {
+    const text = 'x'.repeat(40); // 40 characters of 0.55 em
+    const item = { text, short: '', originalHeight: 20, originalLines: 1, boxH: 24 };
+    const narrow = planTextLayout({ items: [{ ...item, boxW: 200 }], measureAt })[0];
+    const wide = planTextLayout({ items: [{ ...item, boxW: 520 }], measureAt })[0];
+    assert.ok(narrow.belowMinimum, 'in the narrow box it cannot reach 70%');
+    assert.ok(!wide.belowMinimum, 'with the free space it can');
+    assert.ok(wide.size > narrow.size);
+  });
+});
+
+describe('every block of a group gets the same final size', () => {
+  // Four lines of the "Important notice" paragraph: same original height, different box widths.
+  const make = (length, boxW) => ({
+    text: 'word '.repeat(length).trim(),
+    short: '',
+    originalHeight: 20,
+    originalLines: 1,
+    boxW,
+    boxH: 24,
+  });
+
+  test('blocks that reach 70% all get the smallest size that every one of them can use', () => {
+    // Widths are chosen so each line alone could be written at a different size (14 to 20).
+    const items = [make(8, 520), make(8, 470), make(8, 430), make(8, 400)];
+    const alone = items.map((item) => maxFitSize({ ...item, measureAt, maxLines: 1, maxSize: 20 }));
+    assert.ok(new Set(alone).size > 1, `the test needs different sizes alone: ${alone}`);
+
+    const plan = planTextLayout({ items, measureAt });
+    assert.ok(plan.every((p) => !p.belowMinimum));
+    assert.equal(new Set(plan.map((p) => p.size)).size, 1, `sizes: ${plan.map((p) => p.size)}`);
+    assert.equal(plan[0].size, Math.min(...alone));
+  });
+
+  test('a block that can never reach 70% does not pull the others down', () => {
+    const items = [make(8, 520), make(8, 470), make(8, 120)];
+    const plan = planTextLayout({ items, measureAt });
+    assert.ok(plan[2].belowMinimum);
+    assert.equal(plan[0].size, plan[1].size);
+    assert.ok(plan[0].size > plan[2].size);
+  });
+});

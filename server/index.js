@@ -12,6 +12,8 @@ import { createExtractFieldsRouter } from './routes/extract-fields.js';
 import { createLessonRouter } from './routes/lesson.js';
 import { createEvaluateRouter } from './routes/evaluate.js';
 import { createTranslateLayoutRouter } from './routes/translate-layout.js';
+import { parseLayoutReply } from './routes/layout-parser.js';
+import { createCache, withCache } from './cache.js';
 
 // ROOT = repository root (one folder above /server).
 const __filename = fileURLToPath(import.meta.url);
@@ -30,12 +32,27 @@ app.get('/', (req, res) => res.sendFile(path.join(ROOT, 'index.html')));
 app.use('/skeleton', express.static(path.join(ROOT, 'skeleton')));
 app.use('/apps', express.static(path.join(ROOT, 'apps')));
 
-// API routes. Each factory receives the real callGemini function.
-app.use('/api/translate', createTranslateRouter(callGemini));
-app.use('/api/extract-fields', createExtractFieldsRouter(callGemini));
+// One small cache (200 answers, 24 hours) shared by translate, extract-fields and translate-layout,
+// so the same text or the same form image is never sent to Gemini twice.
+// Lessons and quiz answers are not cached: they should be different each time.
+const cache = createCache();
+const hasText = (value) => typeof value === 'string' && value.trim() !== '';
+const cachedTranslate = withCache(callGemini, 'translate', { cache, isUsable: (answer) => hasText(answer?.translation) });
+const cachedExtract = withCache(callGemini, 'extract-fields', {
+  cache,
+  isUsable: (answer) => Array.isArray(answer?.fields) && answer.fields.length > 0,
+});
+const cachedLayout = withCache(callGemini, 'translate-layout', {
+  cache,
+  isUsable: (answer) => (parseLayoutReply(answer)?.blocks.length ?? 0) > 0,
+});
+
+// API routes. Each factory receives callGemini (or its cached version).
+app.use('/api/translate', createTranslateRouter(cachedTranslate));
+app.use('/api/extract-fields', createExtractFieldsRouter(cachedExtract));
 app.use('/api/lesson', createLessonRouter(callGemini));
 app.use('/api/evaluate', createEvaluateRouter(callGemini));
-app.use('/api/translate-layout', createTranslateLayoutRouter(callGemini));
+app.use('/api/translate-layout', createTranslateLayoutRouter(cachedLayout));
 
 // Generic error handler: never leak stack traces to the browser.
 // (Express recognises error handlers by their four parameters.)

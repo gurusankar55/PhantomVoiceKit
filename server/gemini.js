@@ -21,7 +21,7 @@ function getClient() {
 // Turn any error from the SDK into one of our three simple error shapes.
 function toGeminiError(err) {
   // Already one of our shapes (e.g. the timeout) - pass it through.
-  if (err && typeof err === 'object' && ['timeout', 'rate_limit', 'gemini_error'].includes(err.code)) {
+  if (err && typeof err === 'object' && ['timeout', 'rate_limit', 'unavailable', 'gemini_error'].includes(err.code)) {
     return err;
   }
   // Aborted requests count as timeouts.
@@ -31,6 +31,10 @@ function toGeminiError(err) {
   // The SDK puts the HTTP status on err.status (some versions use err.code).
   if (err && (err.status === 429 || err.code === 429)) {
     return { code: 'rate_limit' };
+  }
+  // 503 = the model is overloaded right now. Like a rate limit, another model may be free.
+  if (err && (err.status === 503 || err.code === 503)) {
+    return { code: 'unavailable' };
   }
   return { code: 'gemini_error', message: err?.message ?? String(err) };
 }
@@ -88,6 +92,33 @@ export function parseModelJson(text) {
   throw new Error('Gemini reply is not valid JSON');
 }
 
+/**
+ * Settings that differ from model to model.
+ * "No thinking" (thinkingBudget 0) makes replies faster, but the lite and pro models reject it
+ * with HTTP 400, so only the other (flash) models get it.
+ * @param {string} model
+ * @returns {object} extra generateContent config
+ */
+export function modelConfig(model) {
+  if (/lite|pro/i.test(String(model))) return {};
+  return { thinkingConfig: { thinkingBudget: 0 } };
+}
+
+/**
+ * The ordered list of models to try, main model first.
+ * Read from GEMINI_MODELS (comma separated). If it is not set, the older GEMINI_MODEL and
+ * GEMINI_FALLBACK_MODEL variables are used. Empty entries and repeats are dropped.
+ * @returns {string[]}
+ */
+export function getModelList() {
+  const listed = (process.env.GEMINI_MODELS ?? '').split(',');
+  const names = listed.some((name) => name.trim() !== '')
+    ? listed
+    : [process.env.GEMINI_MODEL, process.env.GEMINI_FALLBACK_MODEL];
+  const clean = names.map((name) => String(name ?? '').trim()).filter((name) => name !== '');
+  return [...new Set(clean)];
+}
+
 // One single attempt at calling ONE model (with its own 90 second timer).
 // Resolves to the parsed JSON, or throws { code: 'timeout' | 'rate_limit' | 'gemini_error' }.
 async function attemptGemini(model, contents) {
@@ -108,11 +139,8 @@ async function attemptGemini(model, contents) {
       responseMimeType: 'application/json',
       abortSignal: controller.signal,
     };
-    // "No thinking" = faster replies. Only the main model gets this setting:
-    // the lighter fallback model rejects thinkingBudget 0 with HTTP 400.
-    if (model === process.env.GEMINI_MODEL) {
-      config.thinkingConfig = { thinkingBudget: 0 };
-    }
+    // Settings that depend on the model (see modelConfig).
+    Object.assign(config, modelConfig(model));
 
     const request = getClient().models.generateContent({ model, contents, config });
 
@@ -129,12 +157,12 @@ async function attemptGemini(model, contents) {
  * Build a callGemini function around an "attempt" function.
  * (Tests pass a fake attempt, so the real Gemini API is never called.)
  *
+ * The models come from getModelList(), main model first.
  * Rules:
- *  - rate_limit (HTTP 429): the same model is NOT tried again, because that only
- *    wastes the free quota. The call is tried once with GEMINI_FALLBACK_MODEL.
- *    If that is empty (or the same as GEMINI_MODEL) there is no fallback.
- *  - timeout or any other error: tried one more time on the same model.
- *  - If every model is rate limited, { code: 'rate_limit' } is thrown.
+ *  - rate_limit (HTTP 429) or unavailable (HTTP 503): the same model is NOT tried again.
+ *    The call moves on to the next model in the list.
+ *  - timeout or any other error: tried one more time on the same model (once per call).
+ *  - If every model is rate limited or unavailable, the error of the last model is thrown.
  * Every failed attempt, and the model that answered, is printed to the console.
  *
  * @param {(model: string, contents: object[]) => Promise<object>} attempt
@@ -144,15 +172,13 @@ export function createCallGemini(attempt) {
     // One user message: the text first, then any files/images.
     const contents = [{ role: 'user', parts: [{ text: prompt }, ...inlineParts] }];
 
-    const primary = process.env.GEMINI_MODEL;
-    const fallback = (process.env.GEMINI_FALLBACK_MODEL ?? '').trim();
-
-    let model = primary;
-    let fallbackUsed = false;
+    const models = getModelList();
+    let position = 0;
     let retryUsed = false;
 
-    // The loop always ends: each failure uses up the fallback or the retry.
+    // The loop always ends: each failure moves to the next model or uses up the one retry.
     for (;;) {
+      const model = models[position];
       const startedAt = Date.now();
       try {
         const result = await attempt(model, contents);
@@ -163,12 +189,11 @@ export function createCallGemini(attempt) {
         const seconds = ((Date.now() - startedAt) / 1000).toFixed(1);
         const prefix = `[gemini] ${model} failed after ${seconds}s - ${safeText(err)}`;
 
-        if (err.code === 'rate_limit') {
-          // Never retry the same model on a rate limit: switch to the fallback once.
-          if (fallback !== '' && fallback !== primary && !fallbackUsed) {
-            console.error(`${prefix} - trying fallback model ${fallback}`);
-            fallbackUsed = true;
-            model = fallback;
+        if (err.code === 'rate_limit' || err.code === 'unavailable') {
+          // Never retry the same model: go to the next one, if there is one.
+          if (position + 1 < models.length) {
+            position += 1;
+            console.error(`${prefix} - trying next model ${models[position]}`);
             continue;
           }
           console.error(`${prefix} - giving up`);
