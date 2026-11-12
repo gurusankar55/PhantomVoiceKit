@@ -536,3 +536,401 @@
     animation: none;
   }
 }
+
+/* ---------- Answer flow: Speak / Done, editable answer, boxes, pickers ---------- */
+.how-to {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--color-ghost-dim);
+}
+
+/* "First: letters (5)" - which group of characters to say now */
+.chunk-prompt {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--color-ghost);
+  background-color: var(--color-surface);
+  border-inline-start: 6px solid var(--color-orange);
+  border-radius: var(--radius);
+}
+
+#mic-button,
+#done-button {
+  width: 100%;
+  min-height: 4.5rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+/* "Done" is green like "Correct": it finishes something */
+#done-button {
+  color: #ffffff;
+  background-color: #1f7a45;
+  border-color: #145a31;
+}
+
+.heard-line {
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--color-surface);
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius);
+}
+
+.heard-line .dual-display__text {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.answer-heading {
+  margin: 0;
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-orange-light);
+}
+
+.answer-area {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* A real text box: big letters, easy to tap */
+.answer-input {
+  display: block;
+  width: 100%;
+  min-height: 3.5rem;
+  padding: 0.6rem 0.75rem;
+  font-size: 1.3rem;
+  font-family: inherit;
+  color: #111111;
+  background-color: #ffffff;
+  border: 3px solid var(--color-orange);
+  border-radius: var(--radius);
+}
+
+.answer-input:focus-visible,
+.answer-select:focus-visible,
+.cell:focus-visible,
+.key:focus-visible {
+  outline: 4px solid var(--color-orange-light);
+  outline-offset: 2px;
+}
+
+.answer-hint {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  font-size: 1.05rem;
+  color: #ffd9d6;
+  background-color: rgba(179, 38, 30, 0.35);
+  border-inline-start: 6px solid #ff6b61;
+  border-radius: var(--radius);
+}
+
+/* One box for each character: letters blue, digits orange, either purple, a wrong character red */
+.cells {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  direction: ltr; /* codes always read left to right, even in Arabic and Urdu */
+}
+
+.cell {
+  min-width: 2.6rem;
+  min-height: 3.4rem;
+  padding: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  font-family: inherit;
+  color: #ffffff;
+  background-color: #243a7a;
+  border: 3px solid #6f8cff;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.cell--digit {
+  background-color: #7a3e12;
+  border-color: #ffa24d;
+}
+
+.cell--any {
+  background-color: #4a2a7a;
+  border-color: #b48cff;
+}
+
+.cell--literal {
+  background-color: #333333;
+  border-color: #777777;
+  cursor: default;
+}
+
+.cell--bad {
+  background-color: #b3261e;
+  border-color: #ff6b61;
+  animation: none;
+}
+
+.cell--selected {
+  box-shadow: 0 0 0 4px var(--color-orange-light);
+}
+
+.cell--empty {
+  opacity: 0.85;
+}
+
+.cell-hint {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--color-ghost-dim);
+}
+
+.cell-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  background-color: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(3rem, 1fr));
+  gap: 0.4rem;
+  direction: ltr;
+}
+
+.key {
+  min-height: 3.2rem;
+  font-size: 1.35rem;
+  font-weight: 700;
+  font-family: inherit;
+  color: #ffffff;
+  background-color: #243a7a;
+  border: 2px solid #6f8cff;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.key--digit {
+  background-color: #7a3e12;
+  border-color: #ffa24d;
+}
+
+/* E-mail endings: big buttons */
+.email-domains {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.email-domain {
+  flex: 1 1 8rem;
+  min-height: 3.5rem;
+  font-size: 1.1rem;
+  direction: ltr;
+}
+
+/* Date: day, month, year */
+.date-pickers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.date-picker {
+  display: flex;
+  flex: 1 1 6rem;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.date-label {
+  font-weight: 700;
+  color: var(--color-ghost-dim);
+}
+
+.answer-select {
+  width: 100%;
+  min-height: 3.5rem;
+  padding: 0.5rem;
+  font-size: 1.2rem;
+  font-family: inherit;
+  color: #111111;
+  background-color: #ffffff;
+  border: 3px solid var(--color-orange);
+  border-radius: var(--radius);
+}
+
+.date-shown {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  direction: ltr;
+}
+
+#confirm-controls > .btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+#skip-button {
+  width: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cell--bad {
+    animation: none;
+  }
+}
+
+/* ---------- Signature pad, option buttons, review screen ---------- */
+.signature {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.signature-title {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+.signature-hint {
+  margin: 0;
+  color: var(--color-ghost-dim);
+}
+
+/* A white pad: drawing with a finger must not scroll the page (touch-action: none) */
+.signature-pad {
+  display: block;
+  width: 100%;
+  height: 220px;
+  background-color: #ffffff;
+  border: 3px solid var(--color-orange);
+  border-radius: var(--radius);
+  touch-action: none;
+  cursor: crosshair;
+}
+
+.signature-preview {
+  display: block;
+  max-width: 100%;
+  max-height: 220px;
+  padding: var(--space-2);
+  background-color: #ffffff;
+  border: 3px solid #1f7a45;
+  border-radius: var(--radius);
+  object-fit: contain;
+}
+
+.signature-message {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  color: #ffd9d6;
+  background-color: rgba(179, 38, 30, 0.35);
+  border-inline-start: 6px solid #ff6b61;
+  border-radius: var(--radius);
+}
+
+.signature-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.signature-buttons > .btn {
+  flex: 1 1 10rem;
+  min-height: 3.5rem;
+  font-size: 1.15rem;
+}
+
+.signature-later {
+  width: 100%;
+  min-height: 3.5rem;
+}
+
+.signature-small {
+  display: block;
+  max-width: 12rem;
+  max-height: 5rem;
+  margin-top: var(--space-1);
+  padding: 0.25rem;
+  background-color: #ffffff;
+  border-radius: 6px;
+  object-fit: contain;
+}
+
+/* Options as big buttons: the chosen one is green */
+.choose-title {
+  margin: 0;
+  font-weight: 700;
+  color: var(--color-ghost-dim);
+}
+
+.options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.option-button {
+  flex: 1 1 10rem;
+  min-height: 4rem;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.option-button--chosen {
+  color: #ffffff;
+  background-color: #1f7a45;
+  border-color: #145a31;
+  box-shadow: 0 0 0 4px var(--color-orange-light);
+}
+
+/* Review: label, answer and an Edit button on each line */
+#review-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+#review-list li {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  background-color: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-inline-start: 6px solid var(--color-orange);
+  border-radius: var(--radius);
+}
+
+.review-edit {
+  align-self: flex-start;
+  min-width: 8rem;
+  min-height: 3rem;
+}
+
+#review-all-correct {
+  width: 100%;
+  min-height: 4.5rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+@media (min-width: 768px) {
+  #review-all-correct {
+    width: auto;
+    min-width: 16rem;
+    align-self: flex-start;
+  }
+}

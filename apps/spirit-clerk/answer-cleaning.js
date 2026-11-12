@@ -8,9 +8,10 @@
 
 import { cleanAnswer } from '../../skeleton/text-fallback-utils.js';
 import { toTitleCase } from './form-utils.js';
+import { parsePattern, parseDateString, parseSpokenDate, formatDate } from '../../skeleton/field-formats.js';
 
 // Kinds that are cleaned by their own rules (everything else just loses its trailing full stop).
-const STRICT_KINDS = ['number', 'code', 'email'];
+const STRICT_KINDS = ['number', 'phone', 'code', 'email'];
 
 // Spoken "at" and "dot" in English are always understood, whatever the language of the form.
 const ENGLISH_AT = ['at', 'at the rate', 'at sign'];
@@ -94,19 +95,43 @@ export function cleanEmail(text, { atWords = [], dotWords = [] } = {}) {
 }
 
 /**
+ * Digits for a field with a digit pattern: a number longer than the pattern keeps its LAST digits
+ * (so "+91 98765 43210" becomes the 10 digits of the mobile number). Others are unchanged.
+ * @param {string} digits
+ * @param {string} [pattern]
+ */
+export function fitDigitsToPattern(digits, pattern = '') {
+  const cells = parsePattern(pattern);
+  const onlyDigits = cells.length > 0 && cells.every((cell) => cell.type === 'digit');
+  return onlyDigits && digits.length > cells.length ? digits.slice(digits.length - cells.length) : digits;
+}
+
+/**
+ * A date as DD/MM/YYYY when it can be read (written or said in English); otherwise the text as it is.
+ */
+export function cleanDate(text) {
+  const parsed = parseDateString(text);
+  if (parsed) return formatDate(parsed.day, parsed.month, parsed.year);
+  return parseSpokenDate(text) ?? cleanAnswer(text);
+}
+
+/**
  * Clean an answer by the kind of its field.
- *   number -> digits only            code  -> UPPERCASE letters and digits, nothing else
- *   email  -> lower case, @ and .    name  -> no trailing full stop, Title Case
- *   others -> no trailing full stop
+ *   number, phone -> digits only      code  -> UPPERCASE letters and digits, nothing else
+ *   email -> lower case, @ and .      date  -> DD/MM/YYYY when it can be read
+ *   name  -> no trailing full stop, Title Case
+ *   others (text, address, choice, checkbox) -> no trailing full stop
  * @param {string} text
  * @param {string} kind
  * @param {{atWords?:string[], dotWords?:string[]}} [words]
+ * @param {string} [pattern]  the pattern of a code or number field
  * @returns {string}  may be empty
  */
-export function cleanByKind(text, kind, words = {}) {
-  if (kind === 'number') return cleanNumber(text);
+export function cleanByKind(text, kind, words = {}, pattern = '') {
+  if (kind === 'number' || kind === 'phone') return fitDigitsToPattern(cleanNumber(text), pattern);
   if (kind === 'code') return cleanCode(text);
   if (kind === 'email') return cleanEmail(text, words);
+  if (kind === 'date') return cleanDate(text);
   const plain = cleanAnswer(text);
   return kind === 'name' ? toTitleCase(plain) : plain;
 }
@@ -115,10 +140,9 @@ export function cleanByKind(text, kind, words = {}) {
  * The text to keep as "what was heard". Number, code and e-mail answers are cleaned at once, so
  * the user sees "9876543210" and not "98765 43210." Other answers only lose their trailing full stop.
  */
-export function cleanHeard(text, kind, words = {}) {
-  return STRICT_KINDS.includes(kind) ? cleanByKind(text, kind, words) : cleanAnswer(text);
+export function cleanHeard(text, kind, words = {}, pattern = '') {
+  return STRICT_KINDS.includes(kind) ? cleanByKind(text, kind, words, pattern) : cleanAnswer(text);
 }
-
 /**
  * Does this text still hold letters of a script other than Latin? A code or an e-mail address
  * heard in Tamil letters has to be written in Latin letters (transliterated) first.

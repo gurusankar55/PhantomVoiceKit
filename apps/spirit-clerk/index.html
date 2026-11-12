@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -48,27 +48,45 @@
       <p id="help-text" class="help-text" hidden></p>
       <p id="fill-audio-note" hidden></p>
 
-      <button id="mic-button" type="button" class="btn" data-i18n="spiritClerk.speak">Speak</button>
+      <!-- How an answer works: Speak, talk as long as you like, Done -->
+      <p id="how-to-answer" class="how-to" data-i18n="spiritClerk.howToAnswer">Press Speak, say your answer, then press Done.</p>
+      <p id="chunk-prompt" class="chunk-prompt" role="status" aria-live="polite" hidden></p>
+
+      <button id="mic-button" type="button" class="btn btn--large" data-i18n="spiritClerk.speak">Speak</button>
       <p id="mic-message" hidden></p>
       <p id="listening-indicator" class="listening-indicator" role="status" hidden><span class="listening-dot" aria-hidden="true"></span><span data-i18n="common.listening">Listening... please speak now.</span></p>
       <!-- What is heard so far, shown while the user speaks -->
       <p id="live-text" class="live-text" aria-live="polite" hidden></p>
-      <button id="done-button" type="button" class="btn btn--secondary" hidden data-i18n="spiritClerk.done">Done</button>
+      <button id="done-button" type="button" class="btn btn--large btn--done" hidden data-i18n="spiritClerk.done">Done</button>
 
-      <!-- Typed-answer fallback is rendered here by app.js -->
-      <div id="text-fallback-container"></div>
+      <!-- What the user said (read only) -->
+      <section id="heard-line" class="heard-line" hidden>
+        <h3 class="dual-display__heading" data-i18n="dualDisplay.heard">Heard (your language)</h3>
+        <p id="heard-text" class="dual-display__text"></p>
+      </section>
 
-      <!-- Shows the answer in the user's language and in English -->
-      <div id="dual-display-container" hidden></div>
+      <!-- The answer as it will be written on the form: always editable -->
+      <h3 class="answer-heading" data-i18n="dualDisplay.english">English meaning</h3>
+      <div id="answer-area" class="answer-area"></div>
+      <p id="answer-hint" class="answer-hint" role="status" hidden></p>
 
-      <div id="confirm-controls" hidden>
+      <div id="confirm-controls">
         <p id="confirm-prompt" hidden></p>
         <button id="confirm-button" type="button" class="btn btn--correct" data-i18n="spiritClerk.confirm">✓ Correct</button>
         <button id="redo-button" type="button" class="btn btn--wrong" data-i18n="spiritClerk.redo">✗ Wrong</button>
       </div>
+      <button id="skip-button" type="button" class="btn btn--secondary" data-i18n="spiritClerk.skipField">Skip this question</button>
 
       <p id="fill-message" role="alert" hidden></p>
       <div id="fill-loading" hidden><span class="spinner"></span> <span data-i18n="spiritClerk.pleaseWait">Please wait...</span></div>
+    </section>
+
+    <!-- Screen 2b: review every answer before the summary -->
+    <section id="screen-review" class="screen" hidden>
+      <h2 data-i18n="spiritClerk.reviewHeading">Check your answers</h2>
+      <p data-i18n="spiritClerk.reviewHint">Look at each answer. Press Edit to change one.</p>
+      <ul id="review-list"></ul>
+      <button id="review-all-correct" type="button" class="btn btn--correct btn--large" data-i18n="spiritClerk.allCorrect">All correct</button>
     </section>
 
     <!-- Screen 3: summary and PDF download -->

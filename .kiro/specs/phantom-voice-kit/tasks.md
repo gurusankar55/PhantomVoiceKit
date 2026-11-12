@@ -501,6 +501,25 @@ Build the Phantom Voice Kit from the ground up: project scaffolding → Express 
   - [x] 17.6 Unit tests (`speechUtils`, `answerCleaning`, `voiceConfirm`, additions to `fillOriginal`, `routes`); `npm test`. Manual check by voice in Edge is still to do.
     - _Requirements: R25_
 
+- [x] 18. Spirit Clerk: answer flow redesign, part 1 (Requirement 26)
+  - [x] 18.1 `skeleton/field-formats.js`; kinds and patterns in `server/routes/extract-fields.js`; `kind` / `pattern` / `value` in `server/routes/translate.js` and `skeleton/api-client.js`
+  - [x] 18.2 Voice-message listening: `skeleton/speech-utils.js`, `skeleton/speech-input.js`, `voice.doneWords`
+  - [x] 18.3 `apps/spirit-clerk/spoken-chars.js`, `answer-flow.js`, `answer-cleaning.js`, `answer-widgets.js`
+  - [x] 18.4 `apps/spirit-clerk/app.js`, `index.html`, `style.css`: Speak / Done, editable answer, boxes, e-mail, date pickers, Correct / Wrong / Skip, signature skipped, help button wired
+  - [x] 18.5 23 new strings in all 20 locale files
+  - [x] 18.6 Unit tests (`fieldFormats`, `spokenChars`, `speechUtils`, `answerRoutes`, `answerCleaning`, `voiceConfirm`); `npm test`. Manual check by voice in Edge is still to do. Part 2: signature pad.
+    - _Requirements: R26_
+
+- [x] 19. Spirit Clerk redesign, part 2 (Requirement 27)
+  - [x] 19.1 Signature pad (`answer-widgets.js`, `signature-utils.js`), "I will sign by hand", signature placed in the original form
+  - [x] 19.2 Options as buttons and by voice; `options` with boxes in `extract-fields`; tick marks in `drawAnswers`
+  - [x] 19.3 Comb boxes: `detectCombCells`, `layoutComb`, `analyzeBoxes`
+  - [x] 19.4 Review screen with Edit and "All correct"
+  - [x] 19.5 Summary PDF and "could not be placed" page as pictures (`text-pages-utils.js`, `text-pages.js`)
+  - [x] 19.6 One clear message when voice is not available (`spiritClerk.voiceOff`)
+  - [x] 19.7 17 new strings in all 20 locale files; unit tests in `spiritClerkPart2.test.js`; one real Gemini call checked options, tick box and signature box on a drawn form. Manual check in Edge (finger drawing, PDF in Tamil) is still to do.
+    - _Requirements: R27_
+
 ## Notes
 
 - Tasks marked with `*` are optional and can be skipped for a faster MVP.

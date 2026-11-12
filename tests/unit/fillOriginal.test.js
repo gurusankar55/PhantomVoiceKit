@@ -60,8 +60,8 @@ describe('placeAnswers', () => {
   test('answers go to their page; the rest are unplaced with a clean label; skipped stays empty', () => {
     const { pages, unplaced } = placeAnswers(fields, answers, 2);
     assert.deepEqual(pages, [
-      [{ index: 0, label: 'Name', text: 'John Smith', box: [100, 100, 130, 500] }],
-      [{ index: 1, label: 'Address', text: '12 High Street', box: [200, 100, 260, 900] }],
+      [{ index: 0, label: 'Name', type: 'text', text: 'John Smith', box: [100, 100, 130, 500], kind: undefined }],
+      [{ index: 1, label: 'Address', type: 'text', text: '12 High Street', box: [200, 100, 260, 900], kind: undefined }],
     ]);
     assert.deepEqual(unplaced, [
       { index: 2, label: 'No box', text: 'Blue' },

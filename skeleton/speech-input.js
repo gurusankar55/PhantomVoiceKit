@@ -7,30 +7,34 @@
 //   else { input.start(); }
 //
 // Two ways of listening:
-//   - one phrase (the default): the browser decides when the phrase ends. Good for "yes" / "again".
-//   - continuous: start({ continuous: true, silenceMs }) keeps listening through short pauses (a PAN
-//     code, a phone number) until the user has been silent for silenceMs. If the browser ends the
-//     recognition early, it is restarted and the parts are joined. onInterim(text) gets the live
-//     text while the user speaks, and finish() ends the answer at once ("Done" button).
+//   - one phrase (the default): the browser decides when the phrase ends. Good for "correct" / "wrong"
+//     and for one character.
+//   - continuous, like a voice message: start({ continuous: true, doneWords }) listens until the user
+//     presses "Done" (finish()), says a done word, or has been silent for 15 seconds. A pause does NOT
+//     end it. If the browser ends the recognition, it is restarted silently and the text is kept.
+//     onInterim(text) gets the live text while the user speaks.
+//   start({ lang }) listens in another language for that answer (e.g. en-IN for a PAN code).
 //
 import { cleanAnswer } from './text-fallback-utils.js';
-import { SILENCE_MS, joinParts, transcriptFromResults, silenceElapsed } from './speech-utils.js';
+import { SAFETY_SILENCE_MS, joinParts, transcriptFromResults, silenceElapsed, splitDoneWord } from './speech-utils.js';
 
 // onResult(heardText)  -> called with the final transcript
 // onInterim(text)      -> (continuous only) called with everything heard so far, while speaking
 // onError(info)        -> called with one of:
 //     { noSpeech: true }     the microphone closed without hearing anything usable
-//     { inactivity: true }   no speech for 30 seconds
+//     { inactivity: true }   no speech for 30 seconds (one-phrase mode)
 //     { fallbackOnly: true } 3 recognition failures: use the text box only
-//     { error: '<code>' }    a single recognition failure (retry allowed)
+//     { error: '<code>' }    a single recognition failure
 
-const INACTIVITY_MS = 30000; // 30 seconds without any speech
-const MAX_FAILURES = 3;      // after this many errors, use text fallback only
-const MAX_RESTARTS = 60;     // continuous mode: how often the browser may end early and be restarted
-const RESTART_DELAY_MS = 150; // wait a moment before restarting a recognition the browser ended
-const FINISH_WAIT_MS = 1500; // after stop(), wait at most this long for the last words
+const INACTIVITY_MS = 30000;  // one-phrase mode: 30 seconds without any speech
+const MAX_FAILURES = 3;       // after this many errors, use text fallback only
+const MAX_RESTARTS = 300;     // continuous mode: how often the browser may end early and be restarted
+const RESTART_DELAY_MS = 120; // wait a moment before restarting a recognition the browser ended
+const RESTART_TRIES = 5;      // if start() refuses (still stopping), try again this many times
+const MAX_NETWORK_ERRORS = 3; // continuous mode: network errors in a row (without any result) that end the answer
+const FINISH_WAIT_MS = 1500;  // after stop(), wait at most this long for the last words
 
-export function createSpeechInput({ lang, onResult, onError, onInterim, continuous = false, silenceMs = SILENCE_MS }) {
+export function createSpeechInput({ lang, onResult, onError, onInterim, doneWords: defaultDoneWords = [] }) {
   // Find the browser's SpeechRecognition class (Chrome uses a webkit prefix).
   const SpeechRecognitionClass =
     typeof window !== 'undefined'
@@ -55,17 +59,18 @@ export function createSpeechInput({ lang, onResult, onError, onInterim, continuo
 
   // ----- continuous mode state -----
   let longMode = false;      // true while a continuous answer is being listened to
-  let currentSilenceMs = silenceMs;
+  let doneWords = defaultDoneWords;
   let active = false;        // the continuous answer is not finished yet
   let finishing = false;     // stop() was called; waiting for the last words
   let delivered = false;     // the result (or error) of this answer was already given
   let committed = [];        // text of earlier recognition sessions of this answer
   let session = { final: '', interim: '' }; // text of the current recognition session
-  let heardAnything = false;
-  let lastActivityAt = 0;
+  let lastActivityAt = 0;    // when something was last heard (or when listening started)
   let restarts = 0;
-  let silenceTimer = null;
+  let networkErrors = 0;
+  let safetyTimer = null;
   let finishTimer = null;
+  let restartTimer = null;
 
   // Safely call a callback if the caller provided one.
   function notifyError(info) {
@@ -80,13 +85,15 @@ export function createSpeechInput({ lang, onResult, onError, onInterim, continuo
   }
 
   function clearLongTimers() {
-    clearTimeout(silenceTimer);
+    clearTimeout(safetyTimer);
     clearTimeout(finishTimer);
-    silenceTimer = null;
+    clearTimeout(restartTimer);
+    safetyTimer = null;
     finishTimer = null;
+    restartTimer = null;
   }
 
-  // Start (or restart) the 30-second silence timer.
+  // One-phrase mode: the 30-second timer.
   function startTimer() {
     clearTimer();
     inactivityTimer = setTimeout(() => {
@@ -96,12 +103,17 @@ export function createSpeechInput({ lang, onResult, onError, onInterim, continuo
     }, INACTIVITY_MS);
   }
 
-  // Everything heard so far in this answer (continuous mode).
+  // ----- continuous mode -----
+
+  // Everything heard so far in this answer, without a done word at the end.
   function heardSoFar() {
-    return joinParts([...committed, session.final, session.interim]);
+    return splitDoneWord(joinParts([...committed, session.final, session.interim]), doneWords).text;
   }
 
-  // ----- continuous mode -----
+  // Did the user say a done word?
+  function saidDoneWord() {
+    return splitDoneWord(joinParts([...committed, session.final, session.interim]), doneWords).done;
+  }
 
   // Give the answer to the caller, once.
   function deliver() {
@@ -133,29 +145,40 @@ export function createSpeechInput({ lang, onResult, onError, onInterim, continuo
     } catch (err) {
       // Ignore: stopping an already-stopped recognizer is harmless.
     }
-    finishTimer = setTimeout(deliver, FINISH_WAIT_MS); // safety: onend should call deliver first
+    // Safety: onend should call deliver first. If the browser never reports the end, force it.
+    finishTimer = setTimeout(() => {
+      try {
+        recognition.abort();
+      } catch (err) {
+        // Ignore: not every browser has abort() and a stopped recognizer cannot be aborted.
+      }
+      deliver();
+    }, FINISH_WAIT_MS);
   }
 
-  // (Re)start the timer that ends the answer after the user has been silent long enough.
-  function armSilenceTimer(waitMs = currentSilenceMs) {
-    clearTimeout(silenceTimer);
-    silenceTimer = setTimeout(() => {
+  // (Re)start the safety timer: 15 seconds without anything heard end the answer.
+  function armSafetyTimer(waitMs = SAFETY_SILENCE_MS) {
+    clearTimeout(safetyTimer);
+    safetyTimer = setTimeout(() => {
       if (!active || finishing) return;
-      if (silenceElapsed(lastActivityAt, Date.now(), currentSilenceMs)) finishNow();
-      else armSilenceTimer(currentSilenceMs - (Date.now() - lastActivityAt)); // heard something meanwhile
+      if (silenceElapsed(lastActivityAt, Date.now(), currentSafetyMs)) finishNow();
+      else armSafetyTimer(currentSafetyMs - (Date.now() - lastActivityAt)); // something was heard meanwhile
     }, Math.max(1, waitMs));
   }
+  let currentSafetyMs = SAFETY_SILENCE_MS;
 
-  function startLong() {
+  function startLong(options) {
     longMode = true;
     active = true;
     finishing = false;
     delivered = false;
     committed = [];
     session = { final: '', interim: '' };
-    heardAnything = false;
     restarts = 0;
+    networkErrors = 0;
     lastActivityAt = Date.now();
+    doneWords = options.doneWords ?? defaultDoneWords;
+    currentSafetyMs = options.safetyMs ?? SAFETY_SILENCE_MS;
     clearLongTimers();
     recognition.continuous = true;
     recognition.interimResults = true;
@@ -165,11 +188,27 @@ export function createSpeechInput({ lang, onResult, onError, onInterim, continuo
   function onLongResult(event) {
     session = transcriptFromResults(event.results);
     if (joinParts([session.final, session.interim]) === '') return;
-    heardAnything = true;
     lastActivityAt = Date.now();
-    clearTimer(); // the 30 second wait for a first word is over
-    if (!finishing) armSilenceTimer();
+    restarts = 0;
+    networkErrors = 0;
+    if (!finishing) armSafetyTimer(currentSafetyMs);
     if (typeof onInterim === 'function') onInterim(heardSoFar());
+    if (!finishing && saidDoneWord()) finishNow(); // the user said "done"
+  }
+
+  // Try to start the recognition again (after the browser ended it). Silent: the caller sees nothing.
+  function restart(triesLeft) {
+    restartTimer = setTimeout(() => {
+      if (!active || finishing) return;
+      try {
+        recognition.start();
+        listening = true;
+      } catch (err) {
+        // Still stopping: try again a little later; give up only after several tries.
+        if (triesLeft > 1) restart(triesLeft - 1);
+        else finishNow();
+      }
+    }, triesLeft === RESTART_TRIES ? RESTART_DELAY_MS : RESTART_DELAY_MS * 2);
   }
 
   // The browser ended the recognition while a continuous answer was running.
@@ -184,21 +223,13 @@ export function createSpeechInput({ lang, onResult, onError, onInterim, continuo
     }
     if (!active) return;
 
-    // The browser ended it early (a long pause, a network blip): listen again and keep the parts.
+    // The browser ended it by itself (a long pause, a network blip): listen again and keep the text.
     if (restarts >= MAX_RESTARTS) {
       finishNow();
       return;
     }
     restarts += 1;
-    setTimeout(() => {
-      if (!active || finishing) return;
-      try {
-        recognition.start();
-        listening = true;
-      } catch (err) {
-        finishNow();
-      }
-    }, RESTART_DELAY_MS);
+    restart(RESTART_TRIES);
   }
 
   // ----- recognition events -----
@@ -220,9 +251,16 @@ export function createSpeechInput({ lang, onResult, onError, onInterim, continuo
   };
 
   recognition.onerror = (event) => {
-    // 'aborted' happens when we call stop() ourselves, and 'no-speech' is
-    // handled by the inactivity timer, so neither counts as a failure.
+    // 'aborted' happens when we call stop() ourselves, and 'no-speech' only means a quiet moment
+    // (the browser ends the recognition and we restart it), so neither counts as a failure.
     if (event.error === 'aborted' || event.error === 'no-speech') return;
+
+    if (longMode && event.error === 'network' && active && !finishing) {
+      // A passing network problem: onend restarts the recognition. Only many in a row end the answer.
+      networkErrors += 1;
+      if (networkErrors < MAX_NETWORK_ERRORS) return;
+    }
+
     clearTimer();
     listening = false;
     errorReported = true; // onend must not report this a second time
@@ -262,7 +300,11 @@ export function createSpeechInput({ lang, onResult, onError, onInterim, continuo
 
   /**
    * Start listening.
-   * @param {{continuous?:boolean, silenceMs?:number}} [options]  override the defaults for this answer
+   * @param {{continuous?:boolean, lang?:string, doneWords?:string[], safetyMs?:number}} [options]
+   *   continuous  listen like a voice message (see above); default: one phrase
+   *   lang        language for this answer (default: the language of createSpeechInput)
+   *   doneWords   words that end a continuous answer
+   *   safetyMs    total silence that ends a continuous answer (default 15 seconds)
    */
   function start(options = {}) {
     if (listening) return;
@@ -271,15 +313,13 @@ export function createSpeechInput({ lang, onResult, onError, onInterim, continuo
       notifyError({ fallbackOnly: true });
       return;
     }
-    recognition.lang = lang; // set the language before every start()
+    recognition.lang = options.lang ?? lang; // set the language before every start()
     gotResult = false;
     stoppedByUs = false;
     errorReported = false;
 
-    const wantLong = options.continuous ?? continuous;
-    currentSilenceMs = options.silenceMs ?? silenceMs;
-    if (wantLong) {
-      startLong();
+    if (options.continuous) {
+      startLong(options);
     } else {
       longMode = false;
       active = false;
@@ -290,7 +330,8 @@ export function createSpeechInput({ lang, onResult, onError, onInterim, continuo
     try {
       recognition.start();
       listening = true;
-      startTimer();
+      if (options.continuous) armSafetyTimer(currentSafetyMs);
+      else startTimer();
     } catch (err) {
       active = false;
       // start() throws if the recognizer is already running.

@@ -57,7 +57,7 @@ const routes = [
       { fileBase64: 'QUJD', mimeType: 'text/plain', lang: 'en-US' },
     ],
     fakeResult: { fields: [{ label: 'Name', inputType: 'text', question: 'Your name?', help: ' Full name ' }] },
-    expected: { fields: [{ label: 'Name', inputType: 'text', question: 'Your name?', help: 'Full name', kind: 'text', answerBox: null, page: 0 }] },
+    expected: { fields: [{ label: 'Name', inputType: 'text', question: 'Your name?', help: 'Full name', kind: 'text', pattern: '', options: [], answerBox: null, page: 0 }] },
   },
   {
     name: 'lesson',
@@ -192,7 +192,8 @@ describe('POST /api/extract-fields kind', () => {
       return { fields: [{ label: 'PAN', kind: 'code' }, { label: 'Phone', kind: 'number' }] };
     }));
     const res = await request(app).post(path).send(body);
-    assert.deepEqual(res.body.fields.map((f) => f.kind), ['code', 'number']);
+    assert.deepEqual(res.body.fields.map((f) => f.kind), ['code', 'phone']); // a mobile number label makes a phone field
+    assert.deepEqual(res.body.fields.map((f) => f.pattern), ['AAAAA9999A', '9999999999']); // built-in patterns, no Gemini needed
     assert.match(seen.prompt, /"code"/);
     assert.match(seen.prompt, /PAN/);
     assert.match(seen.prompt, /IFSC/);
@@ -202,7 +203,7 @@ describe('POST /api/extract-fields kind', () => {
     const fakeFields = [
       { label: 'Last name', kind: 'name' },
       { label: 'Email', kind: 'email' },
-      { label: 'Phone', kind: 'number' },
+      { label: 'Account number', kind: 'number' },
       { label: 'DOB', kind: 'date' },
       { label: 'Address', kind: 'text' },
       { label: 'Missing' },

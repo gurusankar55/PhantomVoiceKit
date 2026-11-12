@@ -75,3 +75,60 @@ export function parseAnswerBox(item, pageCount = 1) {
 
   return { answerBox: result.box, page, status: 'ok' };
 }
+
+// ---------------------------------------------------------------------------
+// Options of a choice field
+// ---------------------------------------------------------------------------
+
+// Names a model may use for the box to tick of an option.
+export const OPTION_BOX_KEYS = ['box', 'box_2d', 'tick_box', 'tickBox', 'option_box', 'optionBox', 'checkbox', 'answerBox', 'answer_box', 'bbox'];
+// Names a model may use for the words of an option.
+const OPTION_LABEL_KEYS = ['label', 'text', 'name', 'option', 'value'];
+
+// A field never has more options than this.
+export const MAX_OPTIONS = 12;
+// A tick box is small: it needs only this much (on the 0 to 1000 scale) to be usable.
+export const MIN_OPTION_BOX = 3;
+// An option box wider or higher than this is not a tick box (it is probably a whole block of text).
+export const MAX_OPTION_BOX = 400;
+
+/**
+ * Read the options of a choice field: [{ label, box }] where box is the box to tick, or null.
+ * Tolerant like parseAnswerBox: an option may be just a text, an object with other key names, a
+ * box nested one level deeper, numbers as text... Options without words are dropped, repeats too.
+ * Never throws.
+ * @param {unknown} raw  the "options" of one field
+ * @returns {{label:string, box:number[]|null}[]}
+ */
+export function parseOptions(raw) {
+  if (!Array.isArray(raw)) return [];
+  const options = [];
+  const seen = new Set();
+
+  for (const item of raw) {
+    let label = '';
+    let box = null;
+
+    if (typeof item === 'string') {
+      label = item;
+    } else if (item !== null && typeof item === 'object' && !Array.isArray(item)) {
+      const key = OPTION_LABEL_KEYS.find((name) => typeof item[name] === 'string' && item[name].trim() !== '');
+      label = key ? item[key] : '';
+      const read = readBox(item, OPTION_BOX_KEYS);
+      if (!read.error) {
+        const [ymin, xmin, ymax, xmax] = read.box;
+        const w = xmax - xmin;
+        const h = ymax - ymin;
+        if (w >= MIN_OPTION_BOX && h >= MIN_OPTION_BOX && w <= MAX_OPTION_BOX && h <= MAX_OPTION_BOX) box = read.box;
+      }
+    }
+
+    label = label.trim().slice(0, 80);
+    const id = label.toLowerCase();
+    if (label === '' || seen.has(id)) continue;
+    seen.add(id);
+    options.push({ label, box });
+    if (options.length >= MAX_OPTIONS) break;
+  }
+  return options;
+}

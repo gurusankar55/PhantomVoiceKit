@@ -36,6 +36,24 @@ export function boxToPixels(box, width, height) {
   return { x, y, w: right - x, h: bottom - y };
 }
 
+/**
+ * Where to draw a picture inside a box: as big as possible, its shape kept (never stretched),
+ * centred, with a small margin. It is not enlarged more than `maxScale` times.
+ * @param {number} imageW
+ * @param {number} imageH
+ * @param {{x:number, y:number, w:number, h:number}} box
+ * @param {{margin?:number, maxScale?:number}} [options]  margin = share of the box left free on each side (default 0.06)
+ * @returns {{x:number, y:number, w:number, h:number}}
+ */
+export function fitInBox(imageW, imageH, box, { margin = 0.06, maxScale = 4 } = {}) {
+  const availableW = Math.max(1, box.w * (1 - 2 * margin));
+  const availableH = Math.max(1, box.h * (1 - 2 * margin));
+  const scale = Math.min(availableW / Math.max(1, imageW), availableH / Math.max(1, imageH), maxScale);
+  const w = imageW * scale;
+  const h = imageH * scale;
+  return { x: box.x + (box.w - w) / 2, y: box.y + (box.h - h) / 2, w, h };
+}
+
 // ---------------------------------------------------------------------------
 // Text wrapping (never inside a word) and font fitting
 // ---------------------------------------------------------------------------
@@ -941,6 +959,112 @@ export function boxHasInk(image, rect, { inset } = {}) {
     }
   }
   return ink >= Math.max(8, Math.round(0.002 * w * h));
+}
+
+// A column of the middle band counts as a divider of a comb box when ink fills this share of it.
+const COMB_LINE_SHARE = 0.9;
+
+/**
+ * Is an answer box divided into character cells (a "comb" box: one little box for each letter or
+ * digit, as for PAN, IFSC, dates and numbers)? The cells are found from the vertical dividers: thin
+ * columns of ink that cross the middle of the box, about the same distance apart.
+ * @param {{data: Uint8ClampedArray|number[], width:number, height:number}} image  RGBA pixels
+ * @param {{x:number, y:number, w:number, h:number}} rect  the answer box in pixels
+ * @returns {{x:number, y:number, w:number, h:number}[] | null}  the cells from left to right (4 or more), or null
+ */
+export function detectCombCells(image, rect) {
+  const { data, width, height } = image;
+  const x0 = Math.max(0, rect.x);
+  const x1 = Math.min(width, rect.x + rect.w);
+  const top = Math.max(0, Math.round(rect.y + rect.h * 0.3));
+  const bottom = Math.min(height, Math.round(rect.y + rect.h * 0.7));
+  const bandH = bottom - top;
+  const w = x1 - x0;
+  if (w < 40 || bandH < 4) return null;
+
+  // The background of the band: the middle colour.
+  const reds = [];
+  const greens = [];
+  const blues = [];
+  for (let py = top; py < bottom; py++) {
+    for (let px = x0; px < x1; px++) {
+      const i = (py * width + px) * 4;
+      if (data[i + 3] < 128) continue;
+      reds.push(data[i]);
+      greens.push(data[i + 1]);
+      blues.push(data[i + 2]);
+    }
+  }
+  if (reds.length === 0) return null;
+  const background = { r: median(reds), g: median(greens), b: median(blues) };
+
+  // Which columns are ink from the top to the bottom of the band?
+  const isLine = new Array(w).fill(false);
+  for (let column = 0; column < w; column++) {
+    let ink = 0;
+    for (let py = top; py < bottom; py++) {
+      const i = (py * width + (x0 + column)) * 4;
+      if (data[i + 3] >= 128 && colorDistance({ r: data[i], g: data[i + 1], b: data[i + 2] }, background) >= INK_DISTANCE) ink += 1;
+    }
+    isLine[column] = ink >= COMB_LINE_SHARE * bandH;
+  }
+
+  // Neighbouring line columns are one divider; its position is the middle.
+  const lines = [];
+  for (let column = 0; column < w; ) {
+    if (!isLine[column]) {
+      column += 1;
+      continue;
+    }
+    let end = column;
+    while (end < w && isLine[end]) end += 1;
+    if (end - column <= Math.max(6, bandH)) lines.push(x0 + (column + end - 1) / 2); // a wide block is a picture, not a divider
+    column = end;
+  }
+  if (lines.length < 3) return null;
+
+  // The dividers must be about the same distance apart.
+  const gaps = lines.slice(1).map((line, i) => line - lines[i]);
+  const typical = median([...gaps]);
+  if (typical < 6) return null;
+  if (!gaps.every((gap) => gap >= 0.6 * typical && gap <= 1.4 * typical)) return null;
+
+  // The first and the last cell may reach to the edge of the box (its border is not a divider we see).
+  const boundaries = [...lines];
+  if (lines[0] - x0 >= 0.6 * typical) boundaries.unshift(x0);
+  if (x1 - lines[lines.length - 1] >= 0.6 * typical) boundaries.push(x1);
+  const cells = boundaries.slice(1).map((edge, i) => ({ x: boundaries[i], y: rect.y, w: edge - boundaries[i], h: rect.h }));
+  return cells.length >= 4 ? cells : null;
+}
+
+/**
+ * Which character goes into which cell of a comb box.
+ *   - as many characters as cells: one each
+ *   - without spaces, dashes and slashes as many as cells: one each
+ *   - a date DD/MM/YYYY in a comb of 10 cells with a printed separator after the day and the month:
+ *     the separator cells stay empty
+ *   - a code, number, phone number or date with FEWER characters than cells: written from the left
+ * Otherwise the answer is not written cell by cell (null): it does not fit the comb.
+ * @param {string} text  the answer
+ * @param {number} cellCount
+ * @param {string} [kind]  the kind of the field
+ * @returns {string[] | null}  one entry per cell ('' = empty cell)
+ */
+export function layoutComb(text, cellCount, kind = 'text') {
+  const all = Array.from(String(text ?? '').replace(/\s+/gu, ''));
+  if (cellCount < 1 || all.length === 0) return null;
+  const letters = all.filter((c) => /[\p{L}\p{N}]/u.test(c));
+  if (letters.length === 0) return null;
+
+  if (kind === 'date' && cellCount === 10 && letters.length === 8) {
+    return [letters[0], letters[1], '', letters[2], letters[3], '', letters[4], letters[5], letters[6], letters[7]];
+  }
+  if (letters.length === cellCount) return letters;
+  if (all.length === cellCount) return all;
+  if (['code', 'number', 'phone', 'date'].includes(kind) && letters.length < cellCount) {
+    return [...letters, ...new Array(cellCount - letters.length).fill('')];
+  }
+  return null;
 }
 
 /**

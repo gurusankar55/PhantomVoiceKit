@@ -1,26 +1,44 @@
 // Spirit Clerk - app.js
-// Task 6.3: the Upload screen.
-// Tasks 6.4 (form fill) and 6.5 (summary) will extend this file.
+// The Upload screen, the form-fill screen (answers by voice like a voice message, or typed),
+// the summary and "Fill the original form".
+//
+// How an answer works: the user presses "Speak", talks as long as needed and presses "Done"
+// (or says a done word). The answer then appears in a real, editable box (or in character boxes,
+// an e-mail box or date pickers, depending on the kind of the field). Nothing moves on by itself:
+// only "✓ Correct" (button or word) goes to the next field and "✗ Wrong" clears the answer and
+// listens again.
 
 import { createLanguageDropdown, getCurrentLanguage } from '/skeleton/language-dropdown.js';
 import { createSpeechInput } from '/skeleton/speech-input.js';
 import { createSpeechOutput } from '/skeleton/speech-output.js';
-import { renderDualDisplay } from '/skeleton/dual-display.js';
-import { createTextFallback } from '/skeleton/text-fallback.js';
 import { extractFields, translate } from '/skeleton/api-client.js';
-import { nextRedoOrSkip, pdfFilename, cleanLabel, formatAnswerByKind } from '/apps/spirit-clerk/form-utils.js';
-import { cleanAnswer } from '/skeleton/text-fallback-utils.js';
+import { pdfFilename, cleanLabel } from '/apps/spirit-clerk/form-utils.js';
 import { renderPageImages } from '/skeleton/page-images.js';
 import { MAX_PAGES, pdfPageSize, splitDataUrl } from '/skeleton/page-images-utils.js';
-import { loadImage, drawAnswers, findOccupiedBoxes } from '/skeleton/form-overlay.js';
+import { loadImage, drawAnswers, analyzeBoxes } from '/skeleton/form-overlay.js';
+import { drawTextPages } from '/skeleton/text-pages.js';
 import { clampOffset, MIN_OFFSET, MAX_OFFSET } from '/skeleton/form-overlay-utils.js';
-import { answerLine, placeAnswers, moveOccupied, countPlaced, filledPdfFilename } from '/apps/spirit-clerk/fill-original-utils.js';
+import { answerLine, placeAnswers, moveOccupied, countPlaced, filledPdfFilename, reviewRows, SIGNATURE_TEXT } from '/apps/spirit-clerk/fill-original-utils.js';
+import { matchOption, optionsFor } from '/apps/spirit-clerk/option-utils.js';
 import { createNavMenu, createScreenHistory } from '/skeleton/nav-menu.js';
 import { initI18n, t, setI18nText, clearI18n } from '/skeleton/i18n.js';
 import { matchCommand, parseWords } from '/skeleton/voice-commands.js';
-import { createRetryCounter, LISTEN_DELAY_MS } from '/skeleton/voice-retry.js';
-import { silenceMsForKind } from '/skeleton/speech-utils.js';
-import { cleanHeard, cleanByKind, hasNonLatinLetters, isStrictKind } from '/apps/spirit-clerk/answer-cleaning.js';
+import { LISTEN_DELAY_MS } from '/skeleton/voice-retry.js';
+import { cleanByKind } from '/apps/spirit-clerk/answer-cleaning.js';
+import { spokenToChars, parseEmailSpeech } from '/apps/spirit-clerk/spoken-chars.js';
+import { createAnswerWidget } from '/apps/spirit-clerk/answer-widgets.js';
+import { resolveFormat, chunkPosition } from '/skeleton/field-formats.js';
+import {
+  ENGLISH_RECOGNITION_LANG,
+  ENGLISH_DONE_WORDS,
+  listeningPlan,
+  chunkPromptKeys,
+  needsGemini,
+  checkboxValue,
+  progressNumbers,
+  lastAskableIndex,
+  validationMessage,
+} from '/apps/spirit-clerk/answer-flow.js';
 
 // Load the translations BEFORE the nav and language dropdown are created.
 await initI18n();
@@ -29,12 +47,13 @@ await initI18n();
 
 const ALLOWED_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
 const MAX_FILE_BYTES = 10 * 1024 * 1024; // 10 MB
+const SPEAK_GUARD_MS = 12000; // if the voice never reports that it finished, go on after this long
 
 // ---------- Module state ----------
 
-// FieldAnswer (filled in by 6.4): { field, heardText, englishMeaning, skipped }
+// FieldAnswer: { field, heardText, englishMeaning, skipped, signature? }
 const state = {
-  fields: [],          // fields returned by the server
+  fields: [],          // fields returned by the server (kind and pattern already resolved)
   answers: [],         // FieldAnswer objects, one per field
   currentIndex: 0,     // which field we are on
   formName: '',        // used in the PDF file name
@@ -43,6 +62,7 @@ const state = {
   selectedFile: null,  // the valid file chosen by the user (kept for retries)
   pages: [],           // page images of the uploaded form: { dataUrl } (up to 5), kept for the preview
   pagesSkipped: 0,     // pages ignored because of the page limit
+  editing: null,       // index of the field that is being changed from the review screen (or null)
 };
 
 // ---------- DOM references ----------
@@ -50,6 +70,7 @@ const state = {
 const screens = {
   upload: document.getElementById('screen-upload'),
   fill: document.getElementById('screen-fill'),
+  review: document.getElementById('screen-review'),
   summary: document.getElementById('screen-summary'),
   original: document.getElementById('screen-original'),
 };
@@ -65,45 +86,51 @@ const fillQuestion = document.getElementById('fill-question');
 const fillAudioNote = document.getElementById('fill-audio-note');
 const micButton = document.getElementById('mic-button');
 const micMessage = document.getElementById('mic-message');
-const textFallbackContainer = document.getElementById('text-fallback-container');
-const dualDisplayContainer = document.getElementById('dual-display-container');
+const listeningIndicator = document.getElementById('listening-indicator');
+const liveText = document.getElementById('live-text');
+const doneButton = document.getElementById('done-button');
+const chunkPrompt = document.getElementById('chunk-prompt');
+const heardLine = document.getElementById('heard-line');
+const heardTextEl = document.getElementById('heard-text');
+const answerArea = document.getElementById('answer-area');
+const answerHint = document.getElementById('answer-hint');
 const confirmControls = document.getElementById('confirm-controls');
 const confirmButton = document.getElementById('confirm-button');
 const redoButton = document.getElementById('redo-button');
+const confirmPrompt = document.getElementById('confirm-prompt');
+const skipButton = document.getElementById('skip-button');
+const howTo = document.getElementById('how-to-answer');
 const fillMessage = document.getElementById('fill-message');
 const fillLoading = document.getElementById('fill-loading');
 const helpButton = document.getElementById('help-button');
 const helpText = document.getElementById('help-text');
-const confirmPrompt = document.getElementById('confirm-prompt');
-const listeningIndicator = document.getElementById('listening-indicator');
-const liveText = document.getElementById('live-text');
-const doneButton = document.getElementById('done-button');
-// "I did not understand" is said ONCE. After that the heard text goes into the editable box.
-const notUnderstood = createRetryCounter(1);
-let lastHeard = ''; // the live text of the answer being spoken (shown again in the editable box)
+
 // ---------- Form-fill state ----------
 
-let fillActive = false;   // true while the form-fill screen is running
-let phase = 'idle';       // 'idle' | 'asking' | 'translating' | 'confirming'
-let askId = 0;            // changes on every (re-)ask; used to ignore stale callbacks
-let redoCount = 0;        // redos used for the current field
-let silenceCount = 0;     // silences used for the current field
-let pendingAnswer = null; // { heardText, englishMeaning } waiting for Confirm
-let micListening = false; // is the microphone currently listening?
-let voiceDisabled = false; // true when only typing should be used
-let speechInput = null;   // result of createSpeechInput (may be { supported: false })
-let speechOutput = null;  // result of createSpeechOutput
-let textFallbackReady = false; // the typed box is created only once
-let listenMode = '';      // '' | 'answer' (hearing an answer) | 'command' (hearing yes / redo)
-let voiceToken = 0;       // bumped whenever speech/mic is stopped; old callbacks check it
-let commandPending = false; // the confirm prompt is being spoken; we will listen after it
-let helpActive = false;   // true while the help text is being fetched or spoken
+let fillActive = false;    // true while the form-fill screen is running
+let askId = 0;             // changes on every question and language change; late callbacks check it
+let voiceToken = 0;        // bumped whenever speech or the microphone is stopped; late callbacks check it
+let speechInput = null;    // result of createSpeechInput (may be { supported: false })
+let speechOutput = null;   // result of createSpeechOutput
+let voiceDisabled = false; // true when the microphone does not work: typing and buttons only
+let listenMode = '';       // '' | 'answer' (the answer, until Done) | 'command' ("correct" / "wrong") | 'char' (one character)
+let preparing = false;     // the prompt for the next group is being spoken; the microphone opens after it
+let micListening = false;  // is the microphone open?
+let busy = false;          // the answer is being translated
+let widget = null;         // the answer widget of the current field
+let currentField = null;
+let currentFormat = { kind: 'text', pattern: '' };
+let currentChunk = null;   // the group of characters that is being heard (boxes only)
+let heardParts = [];       // what the user said for this field, in order
+let charTarget = null;     // { type } while one character is being heard
+let helpActive = false;    // true while the help is being read
+
 // ---------- Screen helper ----------
 
 // Tracks the screens the user has seen (upload is the first one).
 const screenHistory = createScreenHistory('upload');
 
-// Show one screen ('upload' | 'fill' | 'summary') and hide the others.
+// Show one screen ('upload' | 'fill' | 'summary' | 'original') and hide the others.
 function showScreen(name) {
   screenHistory.visit(name); // remember it so Back can return here
   for (const [key, el] of Object.entries(screens)) {
@@ -113,38 +140,28 @@ function showScreen(name) {
 
 // ---------- Language handling ----------
 
-// Called when the user picks a different language. If the form-fill screen
-// is running, rebuild speech input/output and re-ask the current question.
+// Called when the user picks a different language. If the form-fill screen is running, stop the
+// microphone, build speech input and output for the new language and show the question again.
+// The answer typed or heard so far is kept.
 function onLanguageChanged() {
   if (!fillActive) return;
-
-  // Stop whatever is happening (speech and listening) for the old language.
-  // Bumping askId makes late callbacks from the old engines get ignored.
   stopEverything();
   askId += 1;
   createSpeechEngines();
-
-  // If a question is waiting for an answer, ask it again in the new language.
-  // (Stopping the old speech has already ended it, so nothing overlaps.)
-  // A pending answer waiting for Confirm/Redo is left alone.
-  if (phase === 'asking' || phase === 'translating') {
-    phase = 'asking';
-    fillLoading.hidden = true;
-    askCurrentQuestion();
-  } else if (phase === 'confirming') {
-    // Hide the old help (it was in the old language) and ask the
-    // confirm question again in the new language, then listen once more.
-    helpText.textContent = '';
-    helpText.hidden = true;
-    promptConfirm();
-  }
+  helpText.textContent = '';
+  helpText.hidden = true;
+  clearFillMessage();
+  showQuestion(askId);
+  updateButtons();
 }
 
 // ---------- Navigation header (menu, Back, language) ----------
 
 // Ask before leaving only while the user is answering questions.
 function getLeaveMessage() {
-  return screenHistory.current() === 'fill' && fillActive ? t('spiritClerk.leaveConfirm') : null;
+  const current = screenHistory.current();
+  const answering = current === 'fill' && fillActive && state.editing === null;
+  return answering || current === 'review' ? t('spiritClerk.leaveConfirm') : null;
 }
 
 // Called when the user really leaves the page: stop speech and microphone.
@@ -156,17 +173,26 @@ function onLeave() {
 function handleBack() {
   if (!screenHistory.canGoBack()) return false;
 
+  // Changing one answer from the review: Back returns to the review and keeps every answer.
+  if (screenHistory.current() === 'fill' && fillActive && state.editing !== null) {
+    askId += 1;
+    stopEverything();
+    fillActive = false;
+    state.editing = null;
+    destroyWidget();
+    showReview();
+    return true;
+  }
+
   if (screenHistory.current() === 'fill' && fillActive) {
     if (!window.confirm(t('spiritClerk.leaveConfirm'))) return true; // stay, but handled
     // Leave the fill screen cleanly.
     askId += 1;
     stopEverything();
     fillActive = false;
-    phase = 'idle';
-    pendingAnswer = null;
     state.answers = [];
     fillLoading.hidden = true;
-    confirmControls.hidden = true;
+    destroyWidget();
   }
 
   const previous = screenHistory.back();
@@ -178,13 +204,17 @@ function handleBack() {
   return true;
 }
 
-// From the summary, go back to the last question (stored answers are kept).
+// From the summary, go back to the last question that is asked (stored answers are kept).
 function reopenLastQuestion() {
+  const index = lastAskableIndex(state.fields);
+  if (index < 0) {
+    showReview();
+    return;
+  }
   showScreen('fill');
   fillActive = true;
-  state.currentIndex = state.fields.length - 1;
-  redoCount = 0;
-  silenceCount = 0;
+  state.editing = null;
+  state.currentIndex = index;
   askCurrentQuestion();
 }
 
@@ -312,6 +342,7 @@ uploadConfirm.addEventListener('click', async () => {
     state.fieldsLang = getCurrentLanguage();
     state.fields = result.fields.map((f) => ({
       ...f,
+      ...resolveFormat(f), // kind and character pattern (built-in patterns for PAN, IFSC, Aadhaar, mobile, PIN)
       questionLang: lang,
       questionTexts: { [lang]: f.question },
       helpTexts: { [lang]: typeof f.help === 'string' ? f.help : '' },
@@ -332,13 +363,12 @@ uploadConfirm.addEventListener('click', async () => {
   }
 });
 
-// ---------- Stubs for later tasks ----------
 
-// ---------- Form-fill screen (task 6.4) ----------
+// ---------- Form-fill screen ----------
 
 // Show / clear the short status message on the fill screen.
-function showFillMessage(key) {
-  setI18nText(fillMessage, key);
+function showFillMessage(key, params) {
+  setI18nText(fillMessage, key, params);
   fillMessage.hidden = false;
 }
 
@@ -347,19 +377,59 @@ function clearFillMessage() {
   fillMessage.hidden = true;
 }
 
-// Update the mic button to show whether we are listening.
-function setListening(isListening) {
-  micListening = isListening;
-  micButton.classList.toggle('listening', isListening);
-  setI18nText(micButton, isListening ? 'spiritClerk.stop' : 'spiritClerk.speak');
-  micButton.setAttribute('aria-pressed', String(isListening));
-  listeningIndicator.hidden = !isListening; // clear "Listening..." sign
-  // "Done" finishes an answer early; it is only needed while an answer (not a command) is heard.
-  doneButton.hidden = !(isListening && listenMode === 'answer');
-  if (!isListening) {
+// Show / clear the hint under the answer ("check the red boxes").
+function showHint(message) {
+  if (message) {
+    setI18nText(answerHint, message.key, message.params);
+    answerHint.hidden = false;
+  } else {
+    clearI18n(answerHint);
+    answerHint.hidden = true;
+  }
+}
+
+// What the user said, shown above the answer box (not editable).
+function renderHeard() {
+  const text = heardParts.join(' ').trim();
+  heardTextEl.textContent = text;
+  heardLine.hidden = text === '';
+}
+
+// Is the widget's answer valid right now?
+function answerIsValid() {
+  return Boolean(widget) && widget.validate().valid;
+}
+
+// Enable and hide the buttons according to what is going on. Called after every change.
+function updateButtons() {
+  const answering = listenMode === 'answer' || preparing;
+  const voiceOk = Boolean(speechInput && speechInput.supported) && !voiceDisabled;
+
+  // "Speak" is hidden while the answer is being heard; "Done" is shown while the microphone is open for it.
+  // A signature is drawn on a pad, never spoken: no "Speak" for it.
+  const spoken = currentFormat.kind !== 'signature';
+  micButton.hidden = answering || !voiceOk || !spoken;
+  doneButton.hidden = listenMode !== 'answer';
+  howTo.hidden = !voiceOk || !spoken;
+  if (widget && typeof widget.setVoiceAvailable === 'function') widget.setVoiceAvailable(voiceOk);
+  setI18nText(micButton, 'spiritClerk.speak');
+
+  // "Correct" needs a valid answer and nothing else going on. "Wrong" and "Skip" work at any time.
+  confirmButton.disabled = answering || busy || !answerIsValid();
+  redoButton.disabled = busy;
+  skipButton.disabled = false;
+}
+
+// The microphone opened or closed.
+function setListening(on) {
+  micListening = on;
+  listeningIndicator.hidden = !on;
+  micButton.classList.toggle('listening', on);
+  if (!on) {
     liveText.hidden = true;
     liveText.textContent = '';
   }
+  updateButtons();
 }
 
 // The words of the current language for "at" and "dot" in an e-mail address.
@@ -367,28 +437,17 @@ function emailWords() {
   return { atWords: parseWords(t('voice.atWords')), dotWords: parseWords(t('voice.dotWords')) };
 }
 
-// The text of an answer as it is kept, cleaned for the kind of the current field
-// (digits only for a number, UPPERCASE for a code, lower case with @ for an e-mail...).
-function cleanForField(text, field) {
-  return cleanHeard(text, field ? field.kind : 'text', emailWords());
-}
-
-// Live text while the user speaks.
-function handleInterim(text) {
-  if (listenMode !== 'answer') return;
-  lastHeard = text;
-  liveText.textContent = text;
-  liveText.hidden = text === '';
-}
-
-// Stop any speech that is playing and any microphone that is listening.
+// Stop everything that talks or listens, and forget callbacks that are still on their way.
 function stopEverything() {
-  voiceToken += 1;        // old speech callbacks must not start the microphone
+  voiceToken += 1;
   listenMode = '';
-  commandPending = false;
+  preparing = false;
+  charTarget = null;
   helpActive = false;
   if (speechOutput) speechOutput.stop();
   if (speechInput && speechInput.supported) speechInput.stop();
+  chunkPrompt.hidden = true;
+  confirmPrompt.hidden = true;
   setListening(false);
 }
 
@@ -396,7 +455,6 @@ function stopEverything() {
 function createSpeechEngines() {
   if (speechInput && speechInput.supported) speechInput.stop();
   if (speechOutput) speechOutput.stop();
-  setListening(false);
   voiceDisabled = false;
 
   const lang = state.language.bcp47;
@@ -418,14 +476,49 @@ function createSpeechEngines() {
   speechInput = created;
 
   if (!created.supported) {
-    micButton.hidden = true;
-    setI18nText(micMessage, 'spiritClerk.voiceUnavailable');
-    micMessage.hidden = false;
+    setVoiceOff(); // no speech recognition in this browser
   } else {
-    micButton.hidden = false;
     clearI18n(micMessage);
     micMessage.hidden = true;
   }
+  setListening(false);
+}
+
+// Voice cannot be used (no speech recognition in this browser, or the microphone is blocked or
+// does not work). ONE clear message says so; typing and every button keep working.
+function setVoiceOff() {
+  voiceDisabled = true;
+  setI18nText(micMessage, 'spiritClerk.voiceOff');
+  micMessage.hidden = false;
+  updateButtons();
+}
+
+// If the browser already knows that the microphone is blocked, say so before the first question.
+async function checkMicrophonePermission() {
+  try {
+    const status = await navigator.permissions.query({ name: 'microphone' });
+    if (status.state === 'denied') setVoiceOff();
+    status.onchange = () => {
+      if (status.state === 'denied') setVoiceOff();
+    };
+  } catch {
+    // This browser cannot tell (or has no Permissions API): the first listening will find out.
+  }
+}
+
+// Speak a text and call `then` when it is finished, or when the voice cannot speak, or after a
+// guard time (so a voice that never reports its end cannot leave the user waiting).
+function speakThen(text, then) {
+  let called = false;
+  let timer = null;
+  const once = () => {
+    if (called) return;
+    called = true;
+    clearTimeout(timer);
+    then();
+  };
+  timer = setTimeout(once, SPEAK_GUARD_MS);
+  speechOutput.speak(text, { onEnd: once, onError: once });
 }
 
 // Start of the form-fill flow (called after the fields are extracted).
@@ -439,95 +532,84 @@ function startFormFill() {
   state.answers = [];
   state.currentIndex = 0;
   state.language = getCurrentLanguage();
-  redoCount = 0;
-  silenceCount = 0;
 
-  // The typed-answer box is created only once and always available.
-  if (!textFallbackReady) {
-    createTextFallback(textFallbackContainer, {
-      onSubmit: (text) => handleAnswer(text),
-      onError: () => {}, // the box shows its own "please type something" message
-    });
-    textFallbackReady = true;
-  }
+  state.editing = null;
 
   createSpeechEngines();
+  checkMicrophonePermission();
   askCurrentQuestion();
 }
 
-// Show the current question, speak it, then start listening.
+function destroyWidget() {
+  if (widget) widget.destroy();
+  widget = null;
+  answerArea.textContent = '';
+}
+
+// Show the current question and its answer area. Nothing listens until the user presses "Speak".
 // `notice` is an optional short message to show with the question.
 function askCurrentQuestion(notice) {
   const field = state.fields[state.currentIndex];
+  const format = resolveFormat(field);
+
   askId += 1;
   const myId = askId; // callbacks below ignore themselves if askId changes
   stopEverything();
 
-  phase = 'asking';
-  pendingAnswer = null;
-  autoListenTried = false;
-  lastHeard = '';
-  notUnderstood.reset();
+  currentField = field;
+  currentFormat = format;
+  currentChunk = null;
+  heardParts = [];
+  busy = false;
 
   // Reset the screen for this question.
   fillLoading.hidden = true;
-  confirmControls.hidden = true;
-  clearI18n(confirmPrompt);
-  confirmPrompt.hidden = true;
   helpText.textContent = '';
   helpText.hidden = true;
   helpButton.hidden = !(typeof field.help === 'string' && field.help.trim() !== '');
-  renderDualDisplay(dualDisplayContainer, { heardText: '', englishMeaning: '' });
   clearI18n(fillAudioNote);
   fillAudioNote.hidden = true;
   clearFillMessage();
-  const typedBox = textFallbackContainer.querySelector('textarea');
-  if (typedBox) typedBox.value = '';
+  showHint(null);
+  renderHeard();
 
-  // The question text is always visible, even without audio.
-  // (Starts as the original text; replaced below if we translate it.)
-  setI18nText(fillProgress, 'spiritClerk.progress', {
-    n: state.currentIndex + 1,
-    total: state.fields.length,
+  destroyWidget();
+  widget = createAnswerWidget(answerArea, format, {
+    onChange: onAnswerChanged,
+    onSayChar: startCharListening,
+    onSignLater: doSignLater,
+    options: optionsFor({ kind: format.kind, options: field.options }),
+    lang: state.language.bcp47,
   });
-  fillQuestion.textContent = field.question;
+
+  setI18nText(fillProgress, 'spiritClerk.progress', progressNumbers(state.fields, state.currentIndex));
+  fillQuestion.textContent = field.question; // the original text until it is translated
   if (notice) showFillMessage(notice);
 
-  // After speech finishes (or is skipped), listen once for this question.
-  let moved = false;
-  function afterSpeech() {
-    if (moved) return;
-    moved = true;
-    if (myId !== askId) return; // a newer question or language took over
-    // Wait a moment so the microphone does not hear the end of our own voice.
-    setTimeout(() => {
-      if (myId === askId) autoStartListening();
-    }, LISTEN_DELAY_MS);
-  }
+  showQuestion(myId);
+  updateButtons();
+}
 
-  // Show the "audio unavailable" note.
-  function showAudioNote() {
-    setI18nText(fillAudioNote, 'spiritClerk.audioUnavailable');
-    fillAudioNote.hidden = false;
-  }
-
-  // Speak the given question text.
-  function speakQuestion(text) {
-    if (helpActive) return; // the help is being read: do not talk over it
-    speechOutput.speak(text, {
-      onEnd: afterSpeech,
-      onError: (info) => {
-        if (myId !== askId) return;
-        if (info && info.audioUnavailable) showAudioNote();
-        afterSpeech();
-      },
-    });
-  }
-
-  // Is the question already available in the current language?
+// Show the question in the chosen language (translating it once) and read it aloud.
+function showQuestion(myId) {
+  const field = currentField;
+  if (!field) return;
   const wanted = state.language;
   field.questionTexts = field.questionTexts || {};
   const cached = field.questionTexts[wanted.bcp47];
+
+  const speakQuestion = (text) => {
+    if (myId !== askId || helpActive) return;
+    speechOutput.speak(text, {
+      onError: (info) => {
+        if (myId === askId && info && info.audioUnavailable) {
+          setI18nText(fillAudioNote, 'spiritClerk.audioUnavailable');
+          fillAudioNote.hidden = false;
+        }
+      },
+    });
+  };
+
   if (cached) {
     fillQuestion.textContent = cached;
     speakQuestion(cached);
@@ -535,348 +617,598 @@ function askCurrentQuestion(notice) {
   }
 
   // The question was generated in another language: translate it first.
+  fillQuestion.textContent = field.question;
   fillLoading.hidden = false;
   translate({ text: field.question, targetLang: wanted.label }).then((result) => {
     if (myId !== askId) return; // question or language changed while waiting
     fillLoading.hidden = true;
-
-    const ok =
-      result && !result.error && typeof result.translation === 'string' && result.translation.trim() !== '';
+    const ok = result && !result.error && typeof result.translation === 'string' && result.translation.trim() !== '';
     if (ok) {
       field.questionTexts[wanted.bcp47] = result.translation; // cache it
       fillQuestion.textContent = result.translation;
       speakQuestion(result.translation);
     } else {
       // Do not speak with a mismatched voice: keep the original text on screen.
-      showAudioNote();
-      afterSpeech();
+      setI18nText(fillAudioNote, 'spiritClerk.audioUnavailable');
+      fillAudioNote.hidden = false;
     }
   });
 }
 
-let autoListenTried = false; // auto-listen happens at most once per question
-
-// Start the microphone automatically after the question was spoken.
-function autoStartListening() {
-  if (autoListenTried) return; // never start twice
-  autoListenTried = true;
-  if (phase !== 'asking' || micListening || voiceDisabled || helpActive) return;
-  startAnswerListening();
-}
-
-// Open the microphone for an ANSWER.
-function startAnswerListening() {
-  if (phase !== 'asking' || micListening || voiceDisabled) return;
-  if (!speechInput || !speechInput.supported) return;
-  listenMode = 'answer';
-  lastHeard = '';
-  setListening(true); // set first: start() may report an error right away
-  // Keep listening through short pauses: the answer ends after 2.5 s of silence (4 s for a
-  // number, a code or an e-mail address, which people read out slowly), or when "Done" is pressed.
-  const field = state.fields[state.currentIndex];
-  speechInput.start({ continuous: true, silenceMs: silenceMsForKind(field ? field.kind : 'text') });
-}
-
-// Open the microphone ONCE for a command ("yes" / "again").
-function startCommandListening() {
-  commandPending = false;
-  if (phase !== 'confirming' || micListening || voiceDisabled) return;
-  if (!speechInput || !speechInput.supported) return;
-  listenMode = 'command';
-  setListening(true);
-  speechInput.start({ continuous: false }); // one short word: "correct" / "wrong"
-}
-
-// Stop command listening (if it is on). Used before Confirm / Redo run.
-function cancelCommandListening() {
-  commandPending = false;
-  if (listenMode !== 'command') return;
-  listenMode = '';
-  if (speechInput && speechInput.supported) speechInput.stop();
-  setListening(false);
-}
-
-// Show and speak "Is this right? Say yes or again.", then listen once.
-function promptConfirm() {
-  notUnderstood.reset();
-  const myId = askId;
-  const myToken = voiceToken;
-  setI18nText(confirmPrompt, 'spiritClerk.confirmPrompt');
-  confirmPrompt.hidden = false;
-  commandPending = true;
-
-  let done = false;
-  function listenAfterPrompt() {
-    if (done) return;
-    done = true;
-    // Ignore if the question changed, speech was stopped, or help is open.
-    if (myId !== askId || myToken !== voiceToken || phase !== 'confirming' || helpActive) return;
-    // Open the microphone only after our own voice has fully stopped.
-    setTimeout(() => {
-      if (myId !== askId || myToken !== voiceToken || phase !== 'confirming' || helpActive) return;
-      startCommandListening();
-    }, LISTEN_DELAY_MS);
+// The "?" button: show the help in the chosen language and read it aloud (again: hide it).
+helpButton.addEventListener('click', async () => {
+  const field = currentField;
+  if (!field) return;
+  if (!helpText.hidden) {
+    helpText.hidden = true;
+    helpActive = false;
+    if (speechOutput) speechOutput.stop();
+    return;
   }
-  speechOutput.speak(t('spiritClerk.confirmPrompt'), {
-    onEnd: listenAfterPrompt,
-    onError: listenAfterPrompt, // no audio: still listen
-  });
-}
 
-// The mic button toggles listening on and off.
-micButton.addEventListener('click', () => {
-  if (!speechInput || !speechInput.supported || voiceDisabled) return;
-  notUnderstood.reset(); // the user is in control: two fresh retries
+  const myId = askId;
+  const wanted = state.language;
+  field.helpTexts = field.helpTexts || {};
+  let text = field.helpTexts[wanted.bcp47];
+  if (!text) {
+    fillLoading.hidden = false;
+    const result = await translate({ text: field.help, targetLang: wanted.label });
+    if (myId !== askId) return;
+    fillLoading.hidden = true;
+    if (result && !result.error && typeof result.translation === 'string' && result.translation.trim() !== '') {
+      text = result.translation;
+      field.helpTexts[wanted.bcp47] = text;
+    }
+  }
 
-  if (phase === 'asking') {
-    autoListenTried = true; // the user is in control now
-    if (micListening) {
-      speechInput.stop();
-      listenMode = '';
-      setListening(false);
-      return;
-    }
-    clearFillMessage();
-    stopEverything(); // silences question / help speech: do not listen to our own voice
-    startAnswerListening();
-  } else if (phase === 'confirming') {
-    // One more listen for a command (never an answer).
-    if (micListening && listenMode === 'command') {
-      cancelCommandListening();
-      return;
-    }
-    clearFillMessage();
-    stopEverything();
-    startCommandListening();
+  const spoken = Boolean(text);
+  helpText.textContent = text || field.help; // if translating failed, the original help is shown
+  helpText.hidden = false;
+  if (spoken) {
+    helpActive = true;
+    speechOutput.speak(text, {
+      onEnd: () => {
+        helpActive = false;
+      },
+      onError: (info) => {
+        helpActive = false;
+        if (info && info.audioUnavailable) {
+          setI18nText(fillAudioNote, 'spiritClerk.audioUnavailable');
+          fillAudioNote.hidden = false;
+        }
+      },
+    });
+  } else {
+    setI18nText(fillAudioNote, 'spiritClerk.audioUnavailable');
+    fillAudioNote.hidden = false;
   }
 });
 
-// "Done": finish the answer now with what was heard so far (no need to wait for the silence).
+// ---------- Listening ----------
+
+// The user changed the answer (typing, a picker, a box...).
+function onAnswerChanged() {
+  // Typing or tapping ends the short wait for a spoken "correct" / "wrong" (and the question being read).
+  if (listenMode === 'command') {
+    cancelCommandListening();
+  } else if (listenMode === '' && !preparing) {
+    voiceToken += 1;
+    confirmPrompt.hidden = true;
+    if (speechOutput) speechOutput.stop();
+  }
+  showHint(liveHint());
+  updateButtons();
+}
+
+// The hint while the user types or taps. It stays quiet while an answer is still being built:
+// boxes only complain about a wrong character, an e-mail only once it has an ending.
+function liveHint() {
+  if (!widget) return null;
+  const value = widget.getValue().trim();
+  if (value === '') return null;
+  if (widget.type === 'cells') return widget.hasBad() ? { key: 'spiritClerk.invalidFormat' } : null;
+  if (currentFormat.kind === 'email' && !value.includes('@')) return null;
+  return validationMessage(widget.validate());
+}
+
+// The live text while the user speaks.
+function handleInterim(text) {
+  if (listenMode !== 'answer') return;
+  liveText.textContent = text;
+  liveText.hidden = text === '';
+}
+
+// "Speak": listen until "Done". Boxes are asked group by group, an e-mail address part by part.
+function startAnswerListening() {
+  if (!fillActive || busy || !currentField) return;
+  if (!speechInput || !speechInput.supported || voiceDisabled) return;
+  if (listenMode === 'answer' || preparing) return;
+
+  stopEverything(); // stops the question being read and any wait for "correct" / "wrong"
+  clearFillMessage();
+  helpText.hidden = true;
+
+  let chunk = null;
+  let promptText = '';
+  if (widget.type === 'cells') {
+    // The next group that is still empty; when everything is filled, start again from the first.
+    chunk = widget.nextChunk() || { ...widget.chunks[0] };
+    promptText = chunkPromptText(chunk);
+  } else if (currentFormat.kind === 'email') {
+    promptText = t('spiritClerk.emailAsk');
+  }
+  beginListening(chunk, promptText);
+}
+
+// The words that tell which group to say: "First: letters (5)".
+function chunkPromptText(chunk) {
+  const { keys, params } = chunkPromptKeys(chunkPosition(widget.chunks, chunk), chunk);
+  return keys.map((key) => t(key, params)).join(' ');
+}
+
+// Say the prompt (if any), then open the microphone for the answer.
+function beginListening(chunk, promptText) {
+  const myId = askId;
+  const myToken = voiceToken;
+  currentChunk = chunk;
+
+  const open = () => {
+    if (myId !== askId || myToken !== voiceToken) return;
+    preparing = false;
+    listenMode = 'answer';
+    liveText.textContent = '';
+    liveText.hidden = true;
+    const plan = listeningPlan(currentFormat, state.language.bcp47);
+    const doneWords = [...parseWords(t('voice.doneWords')), ...ENGLISH_DONE_WORDS];
+    setListening(true);
+    speechInput.start({ continuous: true, lang: plan.lang, doneWords });
+  };
+
+  if (promptText === '') {
+    open();
+    return;
+  }
+  preparing = true;
+  chunkPrompt.textContent = promptText;
+  chunkPrompt.hidden = false;
+  updateButtons();
+  speakThen(promptText, () => setTimeout(open, LISTEN_DELAY_MS)); // let our own voice die away first
+}
+
+// "Done": end the answer now with what was heard.
 doneButton.addEventListener('click', () => {
   if (listenMode === 'answer' && speechInput && speechInput.supported) speechInput.finish();
 });
 
+// "Speak"
+micButton.addEventListener('click', () => {
+  clearFillMessage();
+  startAnswerListening();
+});
+
+// One character, said again for a tapped box.
+function startCharListening(index, type) {
+  if (!fillActive || busy) return;
+  if (!speechInput || !speechInput.supported || voiceDisabled) return;
+  stopEverything();
+  clearFillMessage();
+  charTarget = { type: { letter: 'letters', digit: 'digits', any: 'any' }[type] || 'any' };
+  listenMode = 'char';
+  setListening(true);
+  speechInput.start({ continuous: false, lang: ENGLISH_RECOGNITION_LANG });
+}
+
+// One short word: "correct" / "wrong" (not an answer). Quiet: nothing heard means nothing happens.
+function startCommandListening() {
+  if (!fillActive || busy || micListening || voiceDisabled) return;
+  if (!speechInput || !speechInput.supported) return;
+  listenMode = 'command';
+  setListening(true);
+  speechInput.start({ continuous: false, lang: state.language.bcp47 });
+}
+
+// Stop waiting for "correct" / "wrong".
+function cancelCommandListening() {
+  voiceToken += 1;
+  listenMode = '';
+  confirmPrompt.hidden = true;
+  if (speechOutput) speechOutput.stop();
+  if (speechInput && speechInput.supported) speechInput.stop();
+  setListening(false);
+}
+
+// After a valid answer: ask "Is this correct?" aloud once and listen once for "correct" / "wrong".
+// The user can also just press a button; typing or tapping cancels the listening.
+function offerVoiceConfirm() {
+  if (!speechInput || !speechInput.supported || voiceDisabled) return;
+  const myId = askId;
+  const myToken = voiceToken;
+  setI18nText(confirmPrompt, 'spiritClerk.confirmPrompt');
+  confirmPrompt.hidden = false;
+  speakThen(t('spiritClerk.confirmPrompt'), () => {
+    setTimeout(() => {
+      if (myId !== askId || myToken !== voiceToken || listenMode !== '' || !answerIsValid()) return;
+      startCommandListening();
+    }, LISTEN_DELAY_MS);
+  });
+}
+
 // A voice result arrived.
 function handleVoiceResult(text) {
   if (!micListening) return; // we already stopped listening: stale result
-  if (listenMode === 'command') {
-    handleCommandResult(text);
-  } else if (listenMode === 'answer') {
-    lastHeard = text;
-    // Nothing usable was heard (for a number: no digits at all)
-    if (cleanForField(text, state.fields[state.currentIndex]) === '') handleNotUnderstood();
-    else handleAnswer(text);
-  }
+  const mode = listenMode;
+  listenMode = '';
+  setListening(false);
+  if (mode === 'answer') handleAnswerHeard(text);
+  else if (mode === 'command') handleCommandHeard(text);
+  else if (mode === 'char') handleCharHeard(text);
 }
 
-// A spoken command while confirming. It is never stored as an answer.
-function handleCommandResult(text) {
-  if (phase !== 'confirming') return;
-  // "correct" / "wrong" (the words of the current language; see the confirm prompt)
+// "correct" / "wrong" said aloud. Anything else is ignored quietly.
+function handleCommandHeard(text) {
+  confirmPrompt.hidden = true;
   const command = matchCommand(text, {
     yes: parseWords(t('voice.correctWords')),
     redo: parseWords(t('voice.wrongWords')),
   });
-  if (command === null) {
-    handleNotUnderstood(); // neither "correct" nor "wrong"
-    return;
-  }
-  listenMode = '';
-  setListening(false);
   if (command === 'yes') doConfirm();
-  else doRedo();
+  else if (command === 'redo') doWrong();
 }
 
-// The microphone reported a problem (silence, unclear speech or a mic error).
+// One character said for a tapped box.
+function handleCharHeard(text) {
+  const chars = spokenToChars(text, charTarget ? charTarget.type : 'any');
+  charTarget = null;
+  if (chars === '' || !widget || widget.type !== 'cells') {
+    showFillMessage('spiritClerk.nothingHeard');
+    return;
+  }
+  widget.putCharAtSelected(chars[0]);
+  afterAnswerReady();
+}
+
+// The microphone reported a problem.
 function handleVoiceError(info) {
-  if (!info || listenMode === '') return; // not listening for anything
-  if (info.fallbackOnly) {
-    // Too many mic failures: typing and the buttons only.
-    listenMode = '';
-    setListening(false);
-    voiceDisabled = true;
-    micButton.hidden = true;
-    setI18nText(micMessage, 'spiritClerk.voiceNotWorking');
-    micMessage.hidden = false;
-    return;
-  }
-  handleNotUnderstood();
-}
-
-// Nothing was heard, or it was unclear, or the mic failed once.
-// Say and show "I did not understand. Please say it once more." and listen
-// again by itself, ONCE. After that listening stops: for an answer the heard text is put in the
-// editable box (so one wrong letter can be fixed by typing), and the buttons stay ready.
-function handleNotUnderstood() {
-  const mode = listenMode || (phase === 'confirming' ? 'command' : 'answer');
+  const mode = listenMode;
   listenMode = '';
+  charTarget = null;
+  chunkPrompt.hidden = true;
   setListening(false);
-  if (speechInput && speechInput.supported) speechInput.stop();
-  if (!notUnderstood.next()) {
-    if (mode === 'answer' && phase === 'asking') offerEditableText();
+  if (!info) return;
+
+  // The microphone is not allowed or does not work: typing and the buttons only.
+  const broken = info.fallbackOnly || ['not-allowed', 'service-not-allowed', 'audio-capture'].includes(info.error);
+  if (broken) {
+    setVoiceOff();
+    clearFillMessage();
+    if (widget) widget.focus();
+    return;
+  }
+  // Nothing was heard (or a passing problem): say so once. No automatic second try.
+  if (mode === 'answer' || mode === 'char') showFillMessage('spiritClerk.nothingHeard');
+  updateButtons();
+}
+
+// ---------- Understanding the answer ----------
+
+// The user finished speaking (Done, a done word, or the 15 second safety stop).
+async function handleAnswerHeard(text) {
+  const myId = askId;
+  const heard = String(text ?? '').trim();
+  const chunk = currentChunk;
+  chunkPrompt.hidden = true;
+  if (heard === '') {
+    showFillMessage('spiritClerk.nothingHeard');
+    return;
+  }
+  heardParts.push(heard);
+  renderHeard();
+
+  // Boxes: the characters go into the boxes of this group (and the next ones if more were said).
+  if (widget.type === 'cells') {
+    const chars = spokenToChars(heard, chunk ? chunk.type : 'any');
+    if (chars === '') {
+      showFillMessage('spiritClerk.nothingHeard');
+      return;
+    }
+    widget.putChars(chunk ? chunk.start : 0, chars);
+    const next = widget.nextChunk();
+    if (next) {
+      // Go on with the next group, as long as something was heard (so this always ends).
+      currentChunk = next;
+      beginListening(next, chunkPromptText(next));
+      return;
+    }
+    afterAnswerReady();
     return;
   }
 
-  const myId = askId;
-  const myToken = voiceToken;
-  showFillMessage('common.notUnderstood');
-
-  let done = false;
-  function listenAgain() {
-    if (done) return;
-    done = true;
-    // Open the microphone only after the spoken message has finished.
-    setTimeout(() => {
-      if (myId !== askId || myToken !== voiceToken || helpActive) return;
-      if (mode === 'answer' && phase === 'asking') startAnswerListening();
-      else if (mode === 'command' && phase === 'confirming') startCommandListening();
-    }, LISTEN_DELAY_MS);
-  }
-  speechOutput.speak(t('common.notUnderstood'), { onEnd: listenAgain, onError: listenAgain });
-}
-
-// Put what was heard (as far as it went) into the typed-answer box and ask the user to fix it.
-function offerEditableText() {
-  const field = state.fields[state.currentIndex];
-  const typedBox = textFallbackContainer.querySelector('textarea');
-  if (typedBox) {
-    typedBox.value = cleanForField(lastHeard, field);
-    typedBox.focus();
-  }
-  showFillMessage('spiritClerk.fixHeard');
-}
-
-// The English text for something the user said.
-// Names (field.kind === 'name') are NOT translated: they are written in English
-// letters (ஷங்கர் -> Shankar) and then put in Title Case. Other fields are translated.
-// Numbers, codes and e-mail addresses are cleaned on this device (digits only, UPPERCASE letters
-// and digits, lower case with @); only letters of another script are written in Latin letters.
-// Returns '' when the server could not do it.
-async function englishFor(heardText, field) {
-  const kind = field ? field.kind : 'text';
-  if (isStrictKind(kind)) {
-    const words = emailWords();
-    const local = cleanByKind(heardText, kind, words);
-    if (kind === 'number' || !hasNonLatinLetters(local)) return local;
-    const spelled = await translate({ text: heardText, targetLang: 'en', transliterate: true });
-    if (spelled && !spelled.error && typeof spelled.translation === 'string') {
-      return cleanByKind(spelled.translation, kind, words);
-    }
-    return '';
-  }
-  const result = await translate({ text: heardText, targetLang: 'en', transliterate: kind === 'name' });
-  if (result && !result.error && typeof result.translation === 'string') {
-    return formatAnswerByKind(cleanAnswer(result.translation), kind);
-  }
-  return '';
-}
-
-// An answer (voice or typed) arrived for the current question.
-async function handleAnswer(text) {
-  if (phase !== 'asking') return; // ignore late or duplicate answers
-  const myId = askId;
-  const field = state.fields[state.currentIndex];
-  // Cleaned for the kind of field (also covers typed and spoken text).
-  const heardText = cleanForField(text, field);
-  if (heardText === '') return;
-  phase = 'translating';
-  stopEverything();
-  clearFillMessage();
-
-  // Already English: names are tidied (Title Case); numbers, codes and e-mails are cleaned.
-  let englishMeaning = isStrictKind(field.kind) ? cleanByKind(heardText, field.kind, emailWords()) : formatAnswerByKind(heardText, field.kind);
-  if (state.language.bcp47 !== 'en-US') {
+  // Options as buttons (a choice, a tick box): the option that was said is chosen.
+  if (widget.type === 'choice') {
+    busy = true;
     fillLoading.hidden = false;
-    // On failure the English meaning stays '' (shown as unavailable).
-    englishMeaning = await englishFor(heardText, field);
-    if (myId !== askId) return; // question or language changed while waiting
+    updateButtons();
+    const index = await findSpokenOption(heard);
+    if (myId !== askId) return; // question changed while waiting
+    busy = false;
     fillLoading.hidden = true;
+    if (index === -1) {
+      updateButtons();
+      showFillMessage('spiritClerk.noOptionMatch'); // the buttons are right there
+      return;
+    }
+    widget.setValue(widget.options[index].value);
+    afterAnswerReady();
+    return;
   }
 
-  pendingAnswer = { heardText, englishMeaning };
-  phase = 'confirming';
-  renderDualDisplay(dualDisplayContainer, pendingAnswer);
-  confirmControls.hidden = false;
-  promptConfirm(); // ask aloud, then listen once for "yes" / "again"
+  // E-mail: the part before the @ (a whole address is kept as it is).
+  if (currentFormat.kind === 'email') {
+    widget.setHeard(parseEmailSpeech(heard, emailWords()));
+    afterAnswerReady();
+    return;
+  }
+
+  // Everything else: clean it, and ask Gemini for the form-ready English value when needed.
+  busy = true;
+  fillLoading.hidden = false;
+  updateButtons();
+  const result = await interpretAnswer(heard, currentFormat);
+  if (myId !== askId) return; // question changed while waiting
+  busy = false;
+  fillLoading.hidden = true;
+  widget.setValue(result.text);
+  if (result.unavailable) showFillMessage('dualDisplay.unavailable');
+  afterAnswerReady();
 }
+
+// Which option was said? The index in widget.options, or -1.
+//   1. the words of the option (or its Yes / No): found on this device
+//   2. a tick box: the "correct" / "wrong" words of the language mean Yes / No
+//   3. otherwise ONE Gemini call picks the option, whatever language was spoken
+async function findSpokenOption(heard) {
+  const options = widget.options.map((option) => ({ label: option.value }));
+  let index = matchOption(heard, options);
+  if (index !== -1) return index;
+
+  if (currentFormat.kind === 'checkbox') {
+    const command = matchCommand(heard, {
+      yes: parseWords(t('voice.correctWords')),
+      redo: parseWords(t('voice.wrongWords')),
+    });
+    if (command) return options.findIndex((option) => option.label === (command === 'yes' ? 'Yes' : 'No'));
+  }
+
+  const result = await translate({
+    text: heard,
+    targetLang: 'en',
+    kind: currentFormat.kind,
+    label: cleanLabel(currentField.label),
+    options: options.map((option) => option.label),
+  });
+  if (result && !result.error) {
+    index = matchOption(typeof result.value === 'string' && result.value !== '' ? result.value : result.translation, options);
+  }
+  return index;
+}
+
+// The English form-ready value for what was said: { text, unavailable? }.
+// ONE Gemini call (translate with kind, label and pattern) gives the meaning and the value.
+async function interpretAnswer(heard, format) {
+  const words = emailWords();
+  const lang = state.language.bcp47;
+  if (format.kind === 'checkbox' && lang === 'en-US') return { text: checkboxValue(heard) };
+
+  const local = cleanByKind(heard, format.kind, words, format.pattern);
+  if (!needsGemini(format, heard, local, lang)) return { text: local };
+
+  const result = await translate({
+    text: heard,
+    targetLang: 'en',
+    kind: format.kind,
+    label: cleanLabel(currentField.label),
+    pattern: format.pattern,
+  });
+  if (result && !result.error) {
+    const raw = typeof result.value === 'string' && result.value.trim() !== '' ? result.value : result.translation;
+    if (typeof raw === 'string' && raw.trim() !== '') {
+      return { text: cleanByKind(raw, format.kind, words, format.pattern) };
+    }
+  }
+  // Gemini did not answer: an English speaker keeps the cleaned text; others type the English.
+  return lang === 'en-US' ? { text: local } : { text: '', unavailable: true };
+}
+
+// The answer box has been filled by voice: show what is wrong, or offer "correct" / "wrong" by voice.
+function afterAnswerReady() {
+  const result = widget.validate();
+  showHint(validationMessage(result));
+  updateButtons();
+  if (result.valid) offerVoiceConfirm();
+}
+
+// ---------- Correct, Wrong, Skip ----------
 
 // Save the answer for the current field (kept in field order).
-function storeAnswer(heardText, englishMeaning, skipped) {
+function storeAnswer(heardText, englishMeaning, skipped, extra = {}) {
   state.answers[state.currentIndex] = {
     field: state.fields[state.currentIndex],
     heardText,
     englishMeaning,
     skipped,
+    ...extra,
   };
 }
 
-// Move to the next field, or to the summary when all are done.
+// Move to the next field, or to the review screen when all are done. When one answer is being
+// changed from the review, go back to the review.
 function advance(notice) {
   askId += 1; // ignore anything still in flight for the old question
   stopEverything();
-  state.currentIndex += 1;
-  redoCount = 0;
-  silenceCount = 0;
 
-  if (state.currentIndex >= state.fields.length) {
-    phase = 'idle';
+  if (state.editing !== null) {
+    state.editing = null;
     fillActive = false;
-    showSummary();
+    destroyWidget();
+    showReview();
+    return;
+  }
+
+  state.currentIndex += 1;
+  if (state.currentIndex >= state.fields.length) {
+    fillActive = false;
+    destroyWidget();
+    showReview();
     return;
   }
   askCurrentQuestion(notice);
 }
 
-// Confirm the answer. Used by the Confirm button AND by a spoken "yes".
+// "✓ Correct" (button or word): keep the answer and go to the next field.
 function doConfirm() {
-  if (phase !== 'confirming' || !pendingAnswer) return;
-  storeAnswer(pendingAnswer.heardText, pendingAnswer.englishMeaning, false);
+  if (!fillActive || busy || !widget) return;
+  const result = widget.validate();
+  if (!result.valid) {
+    showHint(validationMessage(result));
+    return;
+  }
+
+  // The drawn signature is kept as a picture; the text of the answer is only a note.
+  if (currentFormat.kind === 'signature') {
+    stopEverything();
+    storeAnswer('', SIGNATURE_TEXT, false, { signature: true, signatureImage: widget.getImage() });
+    advance();
+    return;
+  }
+
+  // An e-mail address is kept in lower case, whatever the user typed.
+  const typed = widget.getValue().trim();
+  const value = currentFormat.kind === 'email' ? typed.toLowerCase() : typed;
+  stopEverything();
+  storeAnswer(heardParts.join(' ').trim() || value, value, false);
   advance();
 }
 
-// Ask the question again. Used by the Redo button AND by a spoken "again".
-function doRedo() {
-  if (phase !== 'confirming') return;
-  if (nextRedoOrSkip(redoCount) === 'redo') {
-    redoCount += 1;
-    askCurrentQuestion(); // clears the display and asks again
-  } else {
-    storeAnswer('', '', true);
-    advance('spiritClerk.tooManyTries');
-  }
+// "✗ Wrong" (button or word): clear the answer and listen again.
+function doWrong() {
+  if (!fillActive || busy || !widget) return;
+  stopEverything();
+  heardParts = [];
+  renderHeard();
+  clearFillMessage();
+  showHint(null);
+  if (widget.type === 'cells') widget.clear();
+  else widget.setValue('');
+  updateButtons();
+  // A signature is drawn again (no listening); everything else is listened to again.
+  if (currentFormat.kind !== 'signature' && speechInput && speechInput.supported && !voiceDisabled) startAnswerListening();
+  else widget.focus();
+}
+
+// "Skip this question": the field stays empty.
+function doSkip() {
+  if (!fillActive) return;
+  stopEverything();
+  storeAnswer('', '', true, currentFormat.kind === 'signature' ? { signature: true } : {});
+  advance();
+}
+
+// "I will sign by hand after printing": the signature field stays empty on purpose.
+function doSignLater() {
+  if (!fillActive) return;
+  stopEverything();
+  storeAnswer('', '', true, { signature: true, signatureLater: true });
+  advance();
 }
 
 confirmButton.addEventListener('click', doConfirm);
-redoButton.addEventListener('click', doRedo);
+redoButton.addEventListener('click', doWrong);
+skipButton.addEventListener('click', doSkip);
 
-// ---------- Summary screen (task 6.5) ----------
+// ---------- Review screen ----------
+// Every field with its answer. "Edit" goes back to that one question and then returns here;
+// "All correct" goes on to the summary.
 
-const summaryLoading = document.getElementById('summary-loading');
+const reviewList = document.getElementById('review-list');
+const reviewAllCorrect = document.getElementById('review-all-correct');
+
+// Fill one list item with the answer of a row: text, a small picture (signature) or a note.
+function fillAnswerCell(cell, row) {
+  if (row.status === 'signature') {
+    const picture = document.createElement('img');
+    picture.className = 'signature-small';
+    picture.src = row.image;
+    picture.alt = t('spiritClerk.signatureAlt');
+    cell.appendChild(picture);
+  } else if (row.status === 'signLater') {
+    setI18nText(cell, 'spiritClerk.signByHand');
+  } else if (row.status === 'skipped') {
+    setI18nText(cell, 'spiritClerk.skippedAnswer');
+  } else {
+    cell.textContent = row.text; // the answer: plain text, never HTML
+  }
+}
+
+function showReview() {
+  stopEverything();
+  showScreen('review');
+  reviewList.textContent = '';
+  for (const row of reviewRows(state.fields, state.answers)) {
+    const item = document.createElement('li');
+    if (row.status === 'skipped') item.classList.add('summary-item--skipped');
+
+    const label = document.createElement('span');
+    label.className = 'summary-label';
+    label.textContent = row.label;
+    const value = document.createElement('span');
+    value.className = 'summary-answer';
+    fillAnswerCell(value, row);
+
+    const edit = document.createElement('button');
+    edit.type = 'button';
+    edit.className = 'btn btn--secondary review-edit';
+    edit.textContent = t('spiritClerk.edit');
+    edit.setAttribute('aria-label', `${t('spiritClerk.edit')}: ${row.label}`);
+    edit.addEventListener('click', () => editAnswer(row.index));
+
+    item.append(label, value, edit);
+    reviewList.appendChild(item);
+  }
+  reviewAllCorrect.focus();
+}
+
+// Go back to one question; after it, the review is shown again.
+function editAnswer(index) {
+  state.editing = index;
+  state.currentIndex = index;
+  fillActive = true;
+  showScreen('fill');
+  askCurrentQuestion();
+}
+
+reviewAllCorrect.addEventListener('click', () => showSummary());
+
+// ---------- Summary screen ----------
+
 const summaryList = document.getElementById('summary-list');
 const summarySkipped = document.getElementById('summary-skipped');
 const downloadPdfButton = document.getElementById('download-pdf');
 const fillOriginalButton = document.getElementById('fill-original');
 const summaryMessage = document.getElementById('summary-message');
 
-let summaryListenerAttached = false; // the Download click listener is added once
+let summaryListenerAttached = false; // the button listeners are added once
 
-// The text to show for an answer: English meaning, else what was heard.
-function answerText(answer) {
-  if (answer.skipped) return null; // the caller shows the translated '(skipped)'
-  return answer.englishMeaning || answer.heardText || '';
-}
-
-// The PDF always stays in English (Requirement 17.9), so these strings are
-// NOT translated. Only English text goes in (the default PDF font
-// cannot draw other scripts), so a missing translation is reported as unavailable.
-function pdfAnswerText(answer) {
-  // PDF stays English on purpose (Requirement 17.9): do not translate these.
-  if (answer.skipped) return '(skipped)';
-  return answerLine(answer); // the English meaning, or '(translation unavailable)'
+// The text of an answer for a PDF. The PDF always stays in English (Requirement 17.9), so these
+// words are NOT translated; the labels and answers are drawn as pictures, so any script shows.
+function pdfRowText(row) {
+  if (row.status === 'signature') return SIGNATURE_TEXT;
+  if (row.status === 'signLater') return '(to be signed by hand)';
+  if (row.status === 'skipped') return '(skipped)';
+  return row.text;
 }
 
 // Show the filled summary screen.
-async function showSummary() {
+function showSummary() {
   stopEverything();
   showScreen('summary');
 
@@ -886,56 +1218,33 @@ async function showSummary() {
   clearI18n(summarySkipped);
   summarySkipped.hidden = true;
 
-  // Attach the Download button listener only once.
+  // Attach the button listeners only once.
   if (!summaryListenerAttached) {
     downloadPdfButton.addEventListener('click', downloadPdf);
     fillOriginalButton.addEventListener('click', showOriginal);
     summaryListenerAttached = true;
   }
-
-  // Translate answers that have no English meaning yet (in parallel).
-  summaryLoading.hidden = false;
-  downloadPdfButton.disabled = true;
-  fillOriginalButton.disabled = true;
-  await Promise.all(
-    state.answers.map(async (answer) => {
-      if (!answer || answer.skipped || answer.englishMeaning) return;
-      try {
-        answer.englishMeaning = await englishFor(answer.heardText, answer.field);
-      } catch (err) {
-        // Ignore: the heard text is used as the fallback below.
-      }
-      // If this failed, englishMeaning stays '' (screen shows the heard text; the PDF says unavailable).
-
-    })
-  );
-  summaryLoading.hidden = true;
   downloadPdfButton.disabled = false;
   fillOriginalButton.disabled = state.pages.length === 0;
 
   // Render every field in document order.
   let skippedCount = 0;
-  state.fields.forEach((field, i) => {
-    const answer = state.answers[i] || { field, heardText: '', englishMeaning: '', skipped: true };
-    const li = document.createElement('li');
+  for (const row of reviewRows(state.fields, state.answers)) {
+    const item = document.createElement('li');
     const label = document.createElement('span');
     label.className = 'summary-label';
-    label.textContent = cleanLabel(field.label);
+    label.textContent = row.label;
     const value = document.createElement('span');
     value.className = 'summary-answer';
-    const shown = answerText(answer);
-    if (shown === null) {
-      setI18nText(value, 'spiritClerk.skippedAnswer');
-    } else {
-      value.textContent = shown;
-    }
-    li.append(label, value);
-    if (answer.skipped) {
-      li.classList.add('summary-item--skipped');
-      skippedCount += 1;
-    }
-    summaryList.appendChild(li);
-  });
+    fillAnswerCell(value, row);
+    item.append(label, value);
+
+    if (row.status === 'skipped' || row.status === 'signLater') item.classList.add('summary-item--skipped');
+    const answer = state.answers[row.index];
+    // A signature that is left for later is not a skipped question.
+    if (row.status === 'skipped' && !(answer && answer.signature)) skippedCount += 1;
+    summaryList.appendChild(item);
+  }
 
   if (skippedCount > 0) {
     if (skippedCount === 1) {
@@ -947,53 +1256,60 @@ async function showSummary() {
   }
 }
 
-// Build and download the PDF summary.
-function downloadPdf() {
+const PDF_JPEG_QUALITY = 0.92; // quality of the pages inside the downloaded PDFs
+
+// Add canvases to a PDF, one page each (the text is part of the picture). Starts the PDF if needed.
+function addCanvasesToPdf(doc, canvases) {
+  let pdf = doc;
+  for (const canvas of canvases) {
+    const size = pdfPageSize(canvas.width, canvas.height);
+    if (pdf === null) {
+      pdf = new window.jspdf.jsPDF({ orientation: size.orientation, unit: 'pt', format: [size.width, size.height] });
+    } else {
+      pdf.addPage([size.width, size.height], size.orientation);
+    }
+    pdf.addImage(canvas.toDataURL('image/jpeg', PDF_JPEG_QUALITY), 'JPEG', 0, 0, size.width, size.height);
+  }
+  return pdf;
+}
+
+// Load a picture once (the signatures are data URLs).
+async function loadPictures(dataUrls) {
+  const pictures = new Map();
+  for (const url of new Set(dataUrls.filter(Boolean))) pictures.set(url, await loadImage(url));
+  return pictures;
+}
+
+// Build and download the PDF summary. The text is drawn on canvases and added as pictures, like the
+// Form Translator PDF, so labels and answers in any script (Tamil, Arabic, Chinese...) are shown.
+async function downloadPdf() {
   clearI18n(summaryMessage);
   summaryMessage.hidden = true;
+  downloadPdfButton.disabled = true;
   try {
-    if (!window.jspdf || !window.jspdf.jsPDF) {
-      throw new Error('jsPDF is not loaded');
-    }
-    // The default jsPDF font only supports Latin text, so we print the
-    // English meaning (not the original script).
-    const doc = new window.jspdf.jsPDF();
-    const margin = 15;
-    const maxWidth = doc.internal.pageSize.getWidth() - margin * 2;
-    const pageBottom = doc.internal.pageSize.getHeight() - margin;
-    let y = margin;
+    if (!window.jspdf || !window.jspdf.jsPDF) throw new Error('jsPDF is not loaded');
 
-    doc.setFontSize(16);
+    const rows = reviewRows(state.fields, state.answers);
+    const pictures = await loadPictures(rows.map((row) => row.image));
+    const entries = rows.map((row) => ({
+      label: row.label,
+      text: pdfRowText(row),
+      image: row.image ? pictures.get(row.image) : undefined,
+    }));
     // The PDF stays English on purpose (Requirement 17.9): "Form: " is a literal.
-    doc.text(`Form: ${state.formName}`, margin, y);
-    y += 12;
-
-    doc.setFontSize(12);
-    const lineHeight = 7;
-    state.fields.forEach((field, i) => {
-      const answer = state.answers[i] || { skipped: true };
-      const lines = doc.splitTextToSize(`${cleanLabel(field.label)}: ${pdfAnswerText(answer)}`, maxWidth);
-      for (const line of lines) {
-        if (y + lineHeight > pageBottom) {
-          doc.addPage();
-          y = margin;
-        }
-        doc.text(line, margin, y);
-        y += lineHeight;
-      }
-      y += 2; // small gap between fields
-    });
-
+    const canvases = drawTextPages(entries, { title: `Form: ${state.formName}` });
+    const doc = addCanvasesToPdf(null, canvases);
+    for (const canvas of canvases) canvas.width = 0; // let the browser free the memory
     doc.save(pdfFilename(state.formName, new Date()));
   } catch (err) {
     setI18nText(summaryMessage, 'spiritClerk.pdfError');
     summaryMessage.hidden = false;
+  } finally {
+    downloadPdfButton.disabled = false;
   }
 }
 
-// ---------- Fill the original form (Requirement 24) ----------
-
-const PDF_JPEG_QUALITY = 0.92; // quality of the pages inside the downloaded PDF
+// ---------- Fill the original form ----------
 
 const originalNotices = document.getElementById('original-notices');
 const originalNoBox = document.getElementById('original-nobox');
@@ -1011,6 +1327,7 @@ const originalBack = document.getElementById('original-back');
 const original = {
   placement: null,  // { pages, unplaced } from placeAnswers
   figures: [],      // { canvas, image } for each page
+  pictures: new Map(), // the signatures: data URL -> loaded picture
   scaleOffset: 0,   // A- / A+ presses away from Auto
 };
 
@@ -1031,12 +1348,25 @@ async function showOriginal() {
 
   try {
     const images = await Promise.all(state.pages.map((page) => loadImage(page.dataUrl)));
-    // A form that already has printed or written answers: do not write on top of them.
-    // A box that already holds text is not used; its answer goes to the list of unplaced answers.
+
+    // Where does each answer go? A box that already holds text is not used (nothing is written on
+    // top of printed answers) and its answer is listed instead. A box divided into character cells
+    // is written cell by cell. A tick mark needs no check: its box holds a printed circle or square.
     const first = placeAnswers(state.fields, state.answers, state.pages.length);
-    const occupied = images.map((image, p) => findOccupiedBoxes(image, first.pages[p].map((entry) => entry.box)));
+    const occupied = images.map((image, p) => {
+      const entries = first.pages[p];
+      const analysis = analyzeBoxes(image, entries.map((entry) => entry.box));
+      entries.forEach((entry, i) => {
+        if (entry.type === 'text') entry.cells = analysis[i].cells;
+      });
+      return entries.map((entry, i) => entry.type !== 'tick' && analysis[i].occupied);
+    });
     original.placement = moveOccupied(first, occupied);
     original.scaleOffset = 0;
+
+    // The signatures, as loaded pictures.
+    const urls = [...original.placement.pages.flat(), ...original.placement.unplaced].map((entry) => entry.image);
+    original.pictures = await loadPictures(urls);
 
     // One canvas per page.
     originalPages.textContent = '';
@@ -1073,6 +1403,13 @@ async function showOriginal() {
     for (const entry of unplaced) {
       const item = document.createElement('li');
       item.textContent = `${entry.label}: ${entry.text}`; // the form's own words, plain text
+      if (entry.image) {
+        const picture = document.createElement('img');
+        picture.className = 'signature-small';
+        picture.src = entry.image;
+        picture.alt = t('spiritClerk.signatureAlt');
+        item.appendChild(picture);
+      }
       originalUnplacedList.appendChild(item);
     }
     originalUnplaced.hidden = unplaced.length === 0;
@@ -1086,11 +1423,17 @@ async function showOriginal() {
   }
 }
 
+// What to draw for one placed answer.
+function drawItem(entry) {
+  if (entry.type === 'tick') return { type: 'tick', box: entry.box };
+  if (entry.type === 'image') return { type: 'image', box: entry.box, image: original.pictures.get(entry.image) };
+  return { type: 'text', text: entry.text, box: entry.box, kind: entry.kind, cells: entry.cells };
+}
+
 // Draw every page again with the current text size. Nothing is sent to the server.
 function redrawOriginal() {
   original.figures.forEach(({ canvas, image }, index) => {
-    const items = original.placement.pages[index].map(({ text, box }) => ({ text, box }));
-    drawAnswers(canvas, image, items, { scaleOffset: original.scaleOffset });
+    drawAnswers(canvas, image, original.placement.pages[index].map(drawItem), { scaleOffset: original.scaleOffset });
   });
   // aria-disabled (not disabled) keeps the keyboard focus on the button.
   originalSmaller.setAttribute('aria-disabled', String(original.scaleOffset <= MIN_OFFSET));
@@ -1114,60 +1457,35 @@ originalBack.addEventListener('click', () => {
   showScreen('summary');
 });
 
-// Add a page of plain text lines to the PDF (used for the answers that could not be placed).
-function addListPage(doc, title, lines) {
-  doc.addPage('a4', 'portrait');
-  const margin = 40;
-  const maxWidth = doc.internal.pageSize.getWidth() - margin * 2;
-  const pageBottom = doc.internal.pageSize.getHeight() - margin;
-  let y = margin;
-
-  doc.setFontSize(16);
-  doc.text(title, margin, y);
-  y += 24;
-
-  doc.setFontSize(12);
-  const lineHeight = 16;
-  for (const text of lines) {
-    for (const line of doc.splitTextToSize(text, maxWidth)) {
-      if (y + lineHeight > pageBottom) {
-        doc.addPage('a4', 'portrait');
-        y = margin;
-      }
-      doc.text(line, margin, y);
-      y += lineHeight;
-    }
-    y += 4; // small gap between answers
-  }
-}
-
-// Download: one PDF page per page image (the answers are part of the picture), and an extra
-// last page for the answers that could not be placed. The PDF stays English (Requirement 17.9).
-originalDownload.addEventListener('click', () => {
+// Download: one PDF page per page image (the answers are part of the picture), and an extra last
+// page "Answers that could not be placed", drawn as a picture too so any script shows.
+// The PDF stays English (Requirement 17.9).
+originalDownload.addEventListener('click', async () => {
   clearOriginalMessage();
+  originalDownload.disabled = true;
   try {
     if (!window.jspdf || !window.jspdf.jsPDF) throw new Error('jsPDF is not loaded');
     if (original.figures.length === 0) return;
 
-    let doc = null;
-    for (const { canvas } of original.figures) {
-      const size = pdfPageSize(canvas.width, canvas.height);
-      if (doc === null) {
-        doc = new window.jspdf.jsPDF({ orientation: size.orientation, unit: 'pt', format: [size.width, size.height] });
-      } else {
-        doc.addPage([size.width, size.height], size.orientation);
-      }
-      doc.addImage(canvas.toDataURL('image/jpeg', PDF_JPEG_QUALITY), 'JPEG', 0, 0, size.width, size.height);
-    }
+    let doc = addCanvasesToPdf(null, original.figures.map(({ canvas }) => canvas));
 
     const { unplaced } = original.placement;
     if (unplaced.length > 0) {
-      addListPage(doc, 'Answers that could not be placed', unplaced.map((entry) => `${entry.label}: ${entry.text}`));
+      const entries = unplaced.map((entry) => ({
+        label: entry.label,
+        text: entry.text,
+        image: entry.image ? original.pictures.get(entry.image) : undefined,
+      }));
+      const canvases = drawTextPages(entries, { title: 'Answers that could not be placed' });
+      doc = addCanvasesToPdf(doc, canvases);
+      for (const canvas of canvases) canvas.width = 0;
     }
 
     doc.save(filledPdfFilename(state.formName, new Date()));
   } catch (err) {
     showOriginalMessage('spiritClerk.pdfError');
+  } finally {
+    originalDownload.disabled = false;
   }
 });
 

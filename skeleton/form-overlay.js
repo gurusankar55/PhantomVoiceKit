@@ -28,6 +28,9 @@ import {
   layoutAt,
   fitAnswer,
   boxHasInk,
+  detectCombCells,
+  layoutComb,
+  fitInBox,
   textHeight,
   sampleBackground,
   sampleDarkest,
@@ -299,14 +302,49 @@ export function findOccupiedBoxes(image, boxes) {
 }
 
 /**
- * Draw a page with answers written inside their answer boxes (Spirit Clerk: "Fill the original
- * form"). Nothing is covered or changed: the page is drawn as it is and the answers are written
- * on top, left-aligned and vertically centred, in dark blue. Cheap to call again for A- / A+.
+ * Look at the answer boxes of a page (reads the pixels once): is something already written in
+ * each box, and is it divided into character cells (a comb box)?
+ * @param {HTMLImageElement} image
+ * @param {number[][]} boxes  [ymin, xmin, ymax, xmax] on a 0 to 1000 scale
+ * @returns {{occupied:boolean, cells:{x:number, y:number, w:number, h:number}[]|null}[]}  one per box
+ */
+export function analyzeBoxes(image, boxes) {
+  if (boxes.length === 0) return [];
+  const width = image.naturalWidth || image.width;
+  const height = image.naturalHeight || image.height;
+
+  const scratch = document.createElement('canvas');
+  scratch.width = width;
+  scratch.height = height;
+  const ctx = scratch.getContext('2d', { willReadFrequently: true });
+  ctx.drawImage(image, 0, 0, width, height);
+  const pixels = ctx.getImageData(0, 0, width, height);
+
+  const result = boxes.map((box) => {
+    const rect = boxToPixels(box, width, height);
+    return { occupied: boxHasInk(pixels, rect), cells: detectCombCells(pixels, rect) };
+  });
+  scratch.width = 0; // let the browser free the memory
+  return result;
+}
+
+/**
+ * Draw a page with answers written on it (Spirit Clerk: "Fill the original form"). Nothing is
+ * covered or changed: the page is drawn as it is and the answers are put on top, in dark blue.
+ * Cheap to call again for A- / A+.
+ * Each item is one of:
+ *   { type: 'text', text, box, kind?, cells? }   the answer written left-aligned and vertically
+ *        centred in the box; when the box is divided into character cells (cells = their pixel
+ *        rectangles, see detectCombCells) and the answer fits them, ONE character per cell, centred
+ *   { type: 'tick', box }                         a tick mark in the box (an option, a tick box)
+ *   { type: 'image', image, box }                 a picture (the drawn signature) scaled to fit the box,
+ *        its shape kept (image = a loaded HTMLImageElement)
+ * (an item without a type is a text item). box = [ymin, xmin, ymax, xmax] on a 0 to 1000 scale.
  * @param {HTMLCanvasElement} canvas
  * @param {HTMLImageElement} image
- * @param {{text:string, box:number[]}[]} items  box = [ymin, xmin, ymax, xmax] on a 0 to 1000 scale
+ * @param {object[]} items
  * @param {{scaleOffset?:number}} options  scaleOffset = A- / A+ presses away from Auto (0 = auto-fit)
- * @returns {{text:string, lines:string[], size:number, fits:boolean}[]} what was drawn, one per item
+ * @returns {object[]} what was drawn, one per item: { type, text?, lines?, size?, fits?, comb? }
  */
 export function drawAnswers(canvas, image, items, { scaleOffset = 0 } = {}) {
   const width = image.naturalWidth || image.width;
@@ -322,6 +360,7 @@ export function drawAnswers(canvas, image, items, { scaleOffset = 0 } = {}) {
   ctx.textAlign = 'left';
   ctx.textBaseline = 'top';
   ctx.fillStyle = ANSWER_INK;
+  ctx.strokeStyle = ANSWER_INK;
 
   const memo = new Map(); // measuring is the slow part: remember every answer
   const measureAt = (text, size) => {
@@ -339,8 +378,53 @@ export function drawAnswers(canvas, image, items, { scaleOffset = 0 } = {}) {
   const maxSize = Math.max(10, Math.round(height * ANSWER_MAX_HEIGHT_SHARE));
   const lineHeight = 1.15;
 
+  // One character in each cell of a comb box, centred.
+  function drawComb(characters, cells) {
+    const cellW = Math.min(...cells.map((cell) => cell.w));
+    const base = Math.min(cells[0].h * 0.7, cellW * 0.8, maxSize * 1.3);
+    const size = Math.max(6, Math.round(base * scale));
+    ctx.font = `${size}px ${FONT_FAMILY}`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    characters.forEach((character, i) => {
+      if (character !== '') ctx.fillText(character, cells[i].x + cells[i].w / 2, cells[i].y + cells[i].h / 2);
+    });
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+    return size;
+  }
+
   return items.map((item) => {
     const rect = boxToPixels(item.box, width, height);
+
+    if (item.type === 'tick') {
+      // A check mark: a short stroke down to the bottom, then a long one up to the top right.
+      const size = Math.min(rect.w, rect.h);
+      ctx.lineWidth = Math.max(2, size * 0.16);
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      ctx.moveTo(rect.x + rect.w * 0.18, rect.y + rect.h * 0.55);
+      ctx.lineTo(rect.x + rect.w * 0.4, rect.y + rect.h * 0.8);
+      ctx.lineTo(rect.x + rect.w * 0.85, rect.y + rect.h * 0.2);
+      ctx.stroke();
+      return { type: 'tick' };
+    }
+
+    if (item.type === 'image') {
+      const picture = item.image;
+      if (!picture) return { type: 'image', drawn: false };
+      const fitted = fitInBox(picture.naturalWidth || picture.width, picture.naturalHeight || picture.height, rect);
+      ctx.drawImage(picture, fitted.x, fitted.y, fitted.w, fitted.h);
+      return { type: 'image', drawn: true };
+    }
+
+    // Text: cell by cell when the box is a comb box and the answer fits it.
+    if (Array.isArray(item.cells) && item.cells.length >= 4) {
+      const characters = layoutComb(item.text, item.cells.length, item.kind);
+      if (characters) return { type: 'text', text: item.text, comb: true, size: drawComb(characters, item.cells), fits: true };
+    }
+
     const boxW = Math.max(1, rect.w - ANSWER_PAD * 2);
     const { size, lines, fits } = fitAnswer({ text: item.text, boxW, boxH: rect.h, measureAt, maxSize, lineHeight, scale });
 
@@ -350,6 +434,6 @@ export function drawAnswers(canvas, image, items, { scaleOffset = 0 } = {}) {
     lines.forEach((line, i) => {
       ctx.fillText(line, rect.x + ANSWER_PAD, rect.y + offsetY + i * size * lineHeight);
     });
-    return { text: item.text, lines, size, fits };
+    return { type: 'text', text: item.text, lines, size, fits };
   });
 }

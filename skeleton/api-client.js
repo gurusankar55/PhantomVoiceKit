@@ -65,8 +65,16 @@ async function postJson(url, body, timeoutMs) {
 // Translate `text` into `targetLang` (a language code such as 'ta' or 'en').
 // With transliterate: true the text is a NAME: it is written in the target
 // letters (ஷங்கர் -> Shankar) and its meaning is not translated.
-export function translate({ text, targetLang, transliterate = false }) {
+// With kind (and label, pattern) the text is an ANSWER to a form field: the reply also has
+// "value", the form-ready English answer (date as DD/MM/YYYY, digits, e-mail, code...).
+export function translate({ text, targetLang, transliterate = false, kind, label, pattern, options }) {
   const body = transliterate ? { text, targetLang, transliterate: true } : { text, targetLang };
+  if (kind) {
+    body.kind = kind;
+    if (label) body.label = label;
+    if (pattern) body.pattern = pattern;
+    if (Array.isArray(options) && options.length > 0) body.options = options; // the labels of a choice field
+  }
   return postJson('/api/translate', body, TIMEOUT_TRANSLATE_MS);
 }
 
