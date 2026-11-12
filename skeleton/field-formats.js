@@ -148,13 +148,19 @@ function splitEvenly(length) {
 }
 
 /**
- * The groups a pattern is asked in: runs of the same kind of cell, fixed characters left out, long
- * runs cut into equal parts. PAN -> 5 letters, 4 digits, 1 letter. Aadhaar -> 6 digits, 6 digits.
+ * The groups a pattern is asked in: runs of the same kind of cell, fixed characters left out.
+ * A code that mixes letters and digits is asked group by group (PAN -> 5 letters, 4 digits,
+ * 1 letter; IFSC -> 4 letters, 6 letters or digits), long runs cut into equal parts of at most 6.
+ * A pattern with one kind of cell only (phone, PIN, Aadhaar: all digits) is ONE group: the whole
+ * number is said in one turn.
  * @param {{type:string}[]} cells
  * @returns {{type:'letters'|'digits'|'any', start:number, length:number}[]}  start = index of the first cell
  */
 export function chunksOf(cells) {
   const names = { letter: 'letters', digit: 'digits', any: 'any' };
+  // A number made only of digits (phone, PIN, Aadhaar) is said in ONE turn, not cut into parts.
+  // Only a code that mixes letters and digits (PAN, IFSC) is asked group by group.
+  const mixed = new Set(cells.filter((cell) => cell.type !== 'literal').map((cell) => cell.type)).size > 1;
   const chunks = [];
   let i = 0;
   while (i < cells.length) {
@@ -166,7 +172,7 @@ export function chunksOf(cells) {
     let end = i;
     while (end < cells.length && cells[end].type === type) end += 1;
     let start = i;
-    for (const size of splitEvenly(end - i)) {
+    for (const size of mixed ? splitEvenly(end - i) : [end - i]) {
       chunks.push({ type: names[type], start, length: size });
       start += size;
     }
@@ -362,6 +368,8 @@ export function parseSpokenDate(text) {
   } else {
     // "3 6 1990" or "03061990"
     let list = numbers;
+    // Said digit by digit ("1 3 0 5 1 9 8 7"): the eight digits are the day, month and year.
+    if (list.length === 8 && list.every((n) => n.length === 1)) list = [list.join('')];
     if (list.length === 1 && list[0].length === 8) list = [list[0].slice(0, 2), list[0].slice(2, 4), list[0].slice(4)];
     if (list.length !== 3 || list[2].length !== 4) return null;
     [day, month, year] = [Number(list[0]), Number(list[1]), Number(list[2])];

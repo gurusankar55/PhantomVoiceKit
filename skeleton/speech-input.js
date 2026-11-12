@@ -16,7 +16,7 @@
 //   start({ lang }) listens in another language for that answer (e.g. en-IN for a PAN code).
 //
 import { cleanAnswer } from './text-fallback-utils.js';
-import { SAFETY_SILENCE_MS, joinParts, transcriptFromResults, silenceElapsed, splitDoneWord } from './speech-utils.js';
+import { SAFETY_SILENCE_MS, joinParts, transcriptFromResults, silenceElapsed, splitDoneWord, stripPunctuation } from './speech-utils.js';
 
 // onResult(heardText)  -> called with the final transcript
 // onInterim(text)      -> (continuous only) called with everything heard so far, while speaking
@@ -242,7 +242,7 @@ export function createSpeechInput({ lang, onResult, onError, onInterim, doneWord
     const last = event.results[event.results.length - 1];
     if (!last || !last.isFinal) return;
     // cleanAnswer trims and removes trailing punctuation such as the full stop Edge adds.
-    const heardText = cleanAnswer(last[0] && last[0].transcript ? last[0].transcript : '');
+    const heardText = cleanAnswer(stripPunctuation(last[0] && last[0].transcript ? last[0].transcript : ''));
     if (heardText === '') return; // empty result: treated as an error by onend
     gotResult = true;
     clearTimer();

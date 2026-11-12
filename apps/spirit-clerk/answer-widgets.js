@@ -467,6 +467,14 @@ function createChoiceWidget(container, { options, onChange }) {
   return {
     type: 'choice',
     options,
+    // The buttons show the options in the chosen language (null = keep the printed label). The
+    // value of an option never changes: it is the printed label that goes on the form.
+    setDisplay(labels) {
+      buttons.forEach((button, i) => {
+        if (options[i].label === null) return; // Yes / No are translated by the page
+        button.textContent = labels[i] || options[i].label;
+      });
+    },
     getValue: () => selected,
     // The answer is the value of one option; any other text clears the choice.
     setValue(text) {

@@ -572,3 +572,7 @@ Build the Phantom Voice Kit from the ground up: project scaffolding → Express 
   ]
 }
 ```
+
+- [x] 20. Voice fixes from the Tamil test (Requirement 28)
+  - Punctuation stripping, native number words, letter names, whole-number phone/PIN/Aadhaar, translated option buttons
+  - Tests: `tests/unit/voiceTamil.test.js` and updated field format and spoken char tests

@@ -78,6 +78,12 @@ export function translate({ text, targetLang, transliterate = false, kind, label
   return postJson('/api/translate', body, TIMEOUT_TRANSLATE_MS);
 }
 
+// Translate the options of a choice field in one call: { list: ['Male', ...], targetLang }.
+// The reply is { translations: [{ label, aliases }] } in the same order (aliases = other ways to say it).
+export function translateList({ list, targetLang }) {
+  return postJson('/api/translate', { list, targetLang }, TIMEOUT_TRANSLATE_MS);
+}
+
 // Ask the server to read the form fields from a base64 PDF/image.
 // Either one file (fileBase64 + mimeType) or 1 to 5 page images
 // images: [{ mimeType, data }] (data = base64 without the "data:" prefix).

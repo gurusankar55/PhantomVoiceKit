@@ -11,7 +11,33 @@ export function createTranslateRouter(callGemini) {
   const router = Router();
 
   router.post('/', async (req, res) => {
-    const { text, targetLang, transliterate, kind, label, pattern, options } = req.body ?? {};
+    const { text, targetLang, transliterate, kind, label, pattern, options, list } = req.body ?? {};
+
+    // The options of a choice field, translated in ONE call: { list: [...], targetLang } gives
+    // { translations: [{ label, aliases }] } in the same order (aliases = other ways to say it).
+    if (Array.isArray(list)) {
+      const items = cleanOptions(list);
+      if (items.length === 0 || typeof targetLang !== 'string' || targetLang.trim() === '') {
+        return res.status(400).json({ error: 'invalid_input' });
+      }
+      try {
+        const result = await callGemini({ prompt: buildListPrompt(items, targetLang) });
+        const raw = Array.isArray(result?.translations) ? result.translations : [];
+        const translations = items.map((_, i) => {
+          const entry = raw[i];
+          const text = typeof entry === 'string' ? entry : typeof entry?.label === 'string' ? entry.label : '';
+          const aliases = Array.isArray(entry?.aliases)
+            ? entry.aliases.filter((a) => typeof a === 'string' && a.trim() !== '').map((a) => a.trim().slice(0, 80)).slice(0, 4)
+            : [];
+          return { label: text.trim().slice(0, 80), aliases };
+        });
+        return res.json({ translations });
+      } catch (err) {
+        if (err && err.code === 'timeout') return res.status(504).json({ error: 'timeout' });
+        if (err && err.code === 'rate_limit') return res.status(429).json({ error: 'busy' });
+        return res.status(502).json({ error: 'gemini_error' });
+      }
+    }
 
     // Reject missing, non-string, empty or whitespace-only text.
     if (typeof text !== 'string' || text.trim() === '') {
@@ -61,6 +87,17 @@ export function createTranslateRouter(callGemini) {
 }
 
 // The instruction for an answer to a form field: English meaning + form-ready value.
+// The instruction for translating the options of a choice field into the language of the user.
+function buildListPrompt(items, targetLang) {
+  return (
+    `These are the options of a form field: ${JSON.stringify(items)}. ` +
+    `Translate each option into the language with BCP-47 code or name "${targetLang}". ` +
+    'Reply with JSON only, in exactly this shape, with one item for each option in the SAME order: ' +
+    '{"translations": [{"label": "<natural translation>", "aliases": ["<up to 3 other ways a speaker says it aloud, ' +
+    'including the English word written in the letters of that language>"]}]}.'
+  );
+}
+
 // The options of a choice field, as a short list of plain strings (anything else is dropped).
 function cleanOptions(options) {
   if (!Array.isArray(options)) return [];

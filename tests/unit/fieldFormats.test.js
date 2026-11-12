@@ -142,15 +142,17 @@ describe('cells and chunks', () => {
     ]);
   });
 
-  test('chunks: IFSC skips the fixed 0; long runs are cut into equal parts', () => {
+  test('chunks: IFSC skips the fixed 0; phone, PIN and Aadhaar (digits only) are ONE group', () => {
     assert.deepEqual(chunksOf(IFSC), [
       { type: 'letters', start: 0, length: 4 },
       { type: 'any', start: 5, length: 6 },
     ]);
-    assert.deepEqual(chunksOf(parsePattern('999999999999')).map((c) => c.length), [6, 6]); // Aadhaar
-    assert.deepEqual(chunksOf(parsePattern('9999999999')).map((c) => c.length), [5, 5]); // mobile
+    assert.deepEqual(chunksOf(parsePattern('999999999999')).map((c) => c.length), [12]); // Aadhaar: the whole number in one turn
+    assert.deepEqual(chunksOf(parsePattern('9999999999')).map((c) => c.length), [10]); // mobile
     assert.deepEqual(chunksOf(parsePattern('999999')).map((c) => c.length), [6]); // PIN
-    assert.deepEqual(chunksOf(parsePattern('9999999')).map((c) => c.length), [4, 3]);
+    assert.deepEqual(chunksOf(parsePattern('9999999')).map((c) => c.length), [7]);
+    // a code that mixes letters and digits is still cut: a long run of one kind is split into equal parts
+    assert.deepEqual(chunksOf(parsePattern('AA9999999999')).map((c) => [c.type, c.length]), [['letters', 2], ['digits', 5], ['digits', 5]]);
   });
 
   test('property: the chunks cover every editable cell exactly once and never a fixed cell', () => {
@@ -160,7 +162,8 @@ describe('cells and chunks', () => {
         const cells = parsePattern(pattern);
         const covered = [];
         for (const chunk of chunksOf(cells)) {
-          assert.ok(chunk.length >= 1 && chunk.length <= 6);
+          assert.ok(chunk.length >= 1);
+          if (new Set(cells.filter((c) => c.type !== 'literal').map((c) => c.type)).size > 1) assert.ok(chunk.length <= 6);
           for (let i = chunk.start; i < chunk.start + chunk.length; i++) {
             assert.notEqual(cells[i].type, 'literal');
             covered.push(i);

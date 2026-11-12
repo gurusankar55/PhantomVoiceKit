@@ -11,7 +11,7 @@
 import { createLanguageDropdown, getCurrentLanguage } from '/skeleton/language-dropdown.js';
 import { createSpeechInput } from '/skeleton/speech-input.js';
 import { createSpeechOutput } from '/skeleton/speech-output.js';
-import { extractFields, translate } from '/skeleton/api-client.js';
+import { extractFields, translate, translateList } from '/skeleton/api-client.js';
 import { pdfFilename, cleanLabel } from '/apps/spirit-clerk/form-utils.js';
 import { renderPageImages } from '/skeleton/page-images.js';
 import { MAX_PAGES, pdfPageSize, splitDataUrl } from '/skeleton/page-images-utils.js';
@@ -19,7 +19,9 @@ import { loadImage, drawAnswers, analyzeBoxes } from '/skeleton/form-overlay.js'
 import { drawTextPages } from '/skeleton/text-pages.js';
 import { clampOffset, MIN_OFFSET, MAX_OFFSET } from '/skeleton/form-overlay-utils.js';
 import { answerLine, placeAnswers, moveOccupied, countPlaced, filledPdfFilename, reviewRows, SIGNATURE_TEXT } from '/apps/spirit-clerk/fill-original-utils.js';
-import { matchOption, optionsFor } from '/apps/spirit-clerk/option-utils.js';
+import { matchOptionWords, optionEntries, optionsFor } from '/apps/spirit-clerk/option-utils.js';
+import { localizedOption } from '/apps/spirit-clerk/choice-words.js';
+import { numbersToDigits } from '/apps/spirit-clerk/spoken-numbers.js';
 import { createNavMenu, createScreenHistory } from '/skeleton/nav-menu.js';
 import { initI18n, t, setI18nText, clearI18n } from '/skeleton/i18n.js';
 import { matchCommand, parseWords } from '/skeleton/voice-commands.js';
@@ -35,6 +37,7 @@ import {
   chunkPromptKeys,
   needsGemini,
   checkboxValue,
+  NUMERIC_KINDS,
   progressNumbers,
   lastAskableIndex,
   validationMessage,
@@ -124,6 +127,8 @@ let currentChunk = null;   // the group of characters that is being heard (boxes
 let heardParts = [];       // what the user said for this field, in order
 let charTarget = null;     // { type } while one character is being heard
 let helpActive = false;    // true while the help is being read
+let englishFallback = false; // the chosen language gave nothing for this field: the next try uses English (en-IN)
+let localizedOptions = []; // the options of the current choice field in the chosen language: { label, aliases } or null
 
 // ---------- Screen helper ----------
 
@@ -152,6 +157,7 @@ function onLanguageChanged() {
   helpText.hidden = true;
   clearFillMessage();
   showQuestion(askId);
+  if (currentField) loadOptionLabels(currentField, currentFormat, askId); // buttons in the new language
   updateButtons();
 }
 
@@ -582,6 +588,10 @@ function askCurrentQuestion(notice) {
     lang: state.language.bcp47,
   });
 
+  englishFallback = false;
+  localizedOptions = [];
+  loadOptionLabels(field, format, myId); // the options as buttons in the chosen language (choice fields)
+
   setI18nText(fillProgress, 'spiritClerk.progress', progressNumbers(state.fields, state.currentIndex));
   fillQuestion.textContent = field.question; // the original text until it is translated
   if (notice) showFillMessage(notice);
@@ -758,7 +768,7 @@ function beginListening(chunk, promptText) {
     listenMode = 'answer';
     liveText.textContent = '';
     liveText.hidden = true;
-    const plan = listeningPlan(currentFormat, state.language.bcp47);
+    const plan = listeningPlan(currentFormat, state.language.bcp47, englishFallback);
     const doneWords = [...parseWords(t('voice.doneWords')), ...ENGLISH_DONE_WORDS];
     setListening(true);
     speechInput.start({ continuous: true, lang: plan.lang, doneWords });
@@ -795,7 +805,8 @@ function startCharListening(index, type) {
   charTarget = { type: { letter: 'letters', digit: 'digits', any: 'any' }[type] || 'any' };
   listenMode = 'char';
   setListening(true);
-  speechInput.start({ continuous: false, lang: ENGLISH_RECOGNITION_LANG });
+  // One letter or digit: the chosen language first, English (en-IN) after it gave nothing.
+  speechInput.start({ continuous: false, lang: listeningPlan(currentFormat, state.language.bcp47, englishFallback).lang });
 }
 
 // One short word: "correct" / "wrong" (not an answer). Quiet: nothing heard means nothing happens.
@@ -857,9 +868,10 @@ function handleCommandHeard(text) {
 
 // One character said for a tapped box.
 function handleCharHeard(text) {
-  const chars = spokenToChars(text, charTarget ? charTarget.type : 'any');
+  const chars = spokenToChars(text, charTarget ? charTarget.type : 'any', state.language.bcp47);
   charTarget = null;
   if (chars === '' || !widget || widget.type !== 'cells') {
+    tryEnglishNext(); // the next try uses English
     showFillMessage('spiritClerk.nothingHeard');
     return;
   }
@@ -906,8 +918,9 @@ async function handleAnswerHeard(text) {
 
   // Boxes: the characters go into the boxes of this group (and the next ones if more were said).
   if (widget.type === 'cells') {
-    const chars = spokenToChars(heard, chunk ? chunk.type : 'any');
+    const chars = spokenToChars(heard, chunk ? chunk.type : 'any', state.language.bcp47);
     if (chars === '') {
+      tryEnglishNext(); // nothing could be read in the chosen language: the next try uses English
       showFillMessage('spiritClerk.nothingHeard');
       return;
     }
@@ -944,7 +957,13 @@ async function handleAnswerHeard(text) {
 
   // E-mail: the part before the @ (a whole address is kept as it is).
   if (currentFormat.kind === 'email') {
-    widget.setHeard(parseEmailSpeech(heard, emailWords()));
+    const name = parseEmailSpeech(heard, emailWords(), state.language.bcp47);
+    if (name === '') {
+      tryEnglishNext();
+      showFillMessage('spiritClerk.nothingHeard');
+      return;
+    }
+    widget.setHeard(name);
     afterAnswerReady();
     return;
   }
@@ -962,13 +981,66 @@ async function handleAnswerHeard(text) {
   afterAnswerReady();
 }
 
+// Nothing could be read from what the chosen language gave for letters, digits or an e-mail name:
+// the next listening for this field uses English (en-IN) instead.
+function tryEnglishNext() {
+  englishFallback = true;
+}
+
+// Show the options of a choice field in the chosen language and remember every way to say them.
+//   - Yes / No: the words of the page language
+//   - Male, Female, Other: the built-in words of the language (with colloquial forms)
+//   - other options: translated in ONE Gemini call (cached for the field and the language)
+// The value of an option stays the printed (English) label: that is what goes on the form and the PDF.
+async function loadOptionLabels(field, format, myId) {
+  if (!widget || widget.type !== 'choice') return;
+  const lang = state.language.bcp47;
+
+  if (format.kind === 'checkbox') {
+    localizedOptions = [
+      { label: t('spiritClerk.yes'), aliases: [] },
+      { label: t('spiritClerk.no'), aliases: [] },
+    ];
+    return;
+  }
+  if (lang.split('-')[0].toLowerCase() === 'en') {
+    localizedOptions = [];
+    widget.setDisplay(widget.options.map(() => null));
+    return;
+  }
+
+  field.optionLabels = field.optionLabels || {};
+  let local = field.optionLabels[lang];
+  if (!local) {
+    local = widget.options.map((option) => localizedOption(option.value, lang));
+    localizedOptions = local;
+    widget.setDisplay(local.map((entry) => (entry ? entry.label : null)));
+
+    const missing = local.map((entry, i) => (entry ? -1 : i)).filter((i) => i !== -1);
+    if (missing.length > 0) {
+      const result = await translateList({ list: missing.map((i) => widget.options[i].value), targetLang: state.language.label });
+      if (myId !== askId) return; // question or language changed while waiting
+      if (result && !result.error && Array.isArray(result.translations)) {
+        missing.forEach((optionIndex, k) => {
+          const translated = result.translations[k];
+          if (translated && translated.label) local[optionIndex] = { label: translated.label, aliases: translated.aliases ?? [] };
+        });
+      }
+    }
+    field.optionLabels[lang] = local; // kept for this field and language
+  }
+  localizedOptions = local;
+  widget.setDisplay(local.map((entry) => (entry ? entry.label : null)));
+}
+
 // Which option was said? The index in widget.options, or -1.
 //   1. the words of the option (or its Yes / No): found on this device
 //   2. a tick box: the "correct" / "wrong" words of the language mean Yes / No
 //   3. otherwise ONE Gemini call picks the option, whatever language was spoken
 async function findSpokenOption(heard) {
   const options = widget.options.map((option) => ({ label: option.value }));
-  let index = matchOption(heard, options);
+  // The printed label, the label in the chosen language and its colloquial forms ("மேல்", "ஃபீமேல்").
+  let index = matchOptionWords(heard, optionEntries(widget.options, localizedOptions));
   if (index !== -1) return index;
 
   if (currentFormat.kind === 'checkbox') {
@@ -987,7 +1059,10 @@ async function findSpokenOption(heard) {
     options: options.map((option) => option.label),
   });
   if (result && !result.error) {
-    index = matchOption(typeof result.value === 'string' && result.value !== '' ? result.value : result.translation, options);
+    index = matchOptionWords(
+      typeof result.value === 'string' && result.value !== '' ? result.value : result.translation,
+      optionEntries(widget.options)
+    );
   }
   return index;
 }
@@ -999,8 +1074,10 @@ async function interpretAnswer(heard, format) {
   const lang = state.language.bcp47;
   if (format.kind === 'checkbox' && lang === 'en-US') return { text: checkboxValue(heard) };
 
-  const local = cleanByKind(heard, format.kind, words, format.pattern);
-  if (!needsGemini(format, heard, local, lang)) return { text: local };
+  // Numbers said as words ("மூணு ஒண்ணு") become digits before the text is cleaned.
+  const prepared = NUMERIC_KINDS.includes(format.kind) ? numbersToDigits(heard, lang) : heard;
+  const local = cleanByKind(prepared, format.kind, words, format.pattern);
+  if (!needsGemini(format, prepared, local, lang)) return { text: local };
 
   const result = await translate({
     text: heard,

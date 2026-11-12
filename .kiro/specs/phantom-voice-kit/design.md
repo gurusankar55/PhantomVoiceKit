@@ -815,3 +815,12 @@ The server console gets one line per page: `[translate-layout] ta-IN received=6 
 - Screens: fill -> `review` -> summary -> original. `state.editing` is the index being changed from the review; `advance()` returns to the review when it is set; Back from an edit returns to the review.
 - Voice off: `setVoiceOff()` shows `spiritClerk.voiceOff` once (no speech recognition, a blocked microphone found with the Permissions API, or a failing microphone), hides Speak, Done, the how-to line and "say this character again", and every widget keeps working with typing and taps.
 - Gemini calls: still one call per upload (`extract-fields`, now with options), one per answer in another language (`translate` with kind, label, pattern, options).
+
+
+## Voice Fixes from the Tamil Test (Requirement 28)
+
+- `skeleton/speech-utils.js`: `stripPunctuation` is applied inside `joinParts` and to one-phrase results in `speech-input.js`.
+- `apps/spirit-clerk/spoken-numbers.js`: digit and "double" word tables for 20 locales; `numbersToDigits(text, lang)` is applied to number, phone, date and code answers.
+- `apps/spirit-clerk/letter-names.js`: letter-name tables; `spoken-chars.js` takes `lang`; `listeningPlan` returns the chosen language first and en-IN only after `englishFallback`.
+- `skeleton/field-formats.js`: `chunksOf` gives one chunk for pure phone, PIN and Aadhaar patterns; mixed patterns are split.
+- `apps/spirit-clerk/choice-words.js` and `option-utils.js`: offline Male/Female/Other tables, then one `translateList` call (server `translate` list mode) for other options, cached in `field.optionLabels`. Stored values stay English.

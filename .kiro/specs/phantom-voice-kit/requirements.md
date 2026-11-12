@@ -467,3 +467,16 @@ Phantom Voice Kit is a reusable skeleton for voice-first web applications with a
 7. THE summary PDF and the extra page "Answers that could not be placed" SHALL draw their text on canvases and add them to the PDF as pictures (like the Form Translator PDF), so labels and answers in every script, including right-to-left text, show correctly. Drawn signatures appear as pictures in these PDFs.
 8. IF speech recognition is not available in the browser, or the microphone is blocked or does not work, THEN THE Spirit_Clerk SHALL show ONE clear translated message (`spiritClerk.voiceOff`), hide the voice controls and continue with typing and the buttons; no screen is ever left without a way forward.
 9. THE System SHALL add every new UI string to `en.json` and the 19 other Locale_Files with the same keys.
+
+
+### Requirement 28: Voice Fixes from the Tamil Test (Spirit Clerk)
+
+**User Story:** As a Tamil speaker, I want my spoken numbers, letters and options understood in my own language, so that I can fill a form by voice.
+
+#### Acceptance Criteria
+
+1. THE speech input SHALL remove sentence punctuation (. , ? ! । ۔ 。 ، and similar) from every interim and final result, join parts with a single space, and keep only "@" and the "." made by the app's own at/dot conversion in emails. "13. 05. 1987" SHALL become 13/05/1987.
+2. THE app SHALL recognise spoken digits in the chosen language (including colloquial words, "double" words and native-script digits) for all 20 languages, and always accept English digit words. This SHALL apply to phone, number, date, PIN, Aadhaar, digit parts of PAN and IFSC, and the email name part.
+3. THE app SHALL accept letter names in the chosen language (tables for ta, hi, te, kn, ml, bn, ur; English names for the rest) as well as English letter names, trying the chosen language first.
+4. Phone, PIN and Aadhaar numbers SHALL be asked as one whole number. Only codes mixing letters and digits (PAN, IFSC) SHALL be split into chunks.
+5. Choice and checkbox buttons SHALL show each option translated into the chosen language. The form and the PDF SHALL keep the original option. Spoken words SHALL match either form, including colloquial words.

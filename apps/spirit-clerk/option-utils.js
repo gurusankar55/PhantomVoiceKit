@@ -43,6 +43,60 @@ export function matchOption(text, options) {
 }
 
 /**
+ * Find the option that was said when each option can be said in several ways (the printed English
+ * label, the translated label, colloquial forms). Same rules as matchOption, but the forms of one
+ * option never compete with each other.
+ * @param {string} text  what was said
+ * @param {{label:string, index:number}[]} entries  every way to say an option: label + the index of its option
+ * @returns {number}  the index of the option, or -1
+ */
+export function matchOptionWords(text, entries) {
+  const heard = normalize(text);
+  if (heard === '' || !Array.isArray(entries)) return -1;
+  const items = entries.map((entry) => ({ label: normalize(entry.label), index: entry.index })).filter((entry) => entry.label !== '');
+
+  const exact = items.find((entry) => entry.label === heard);
+  if (exact) return exact.index;
+
+  const padded = ` ${heard} `;
+  // A form appears inside what was said: the longest form of each option, the longest option wins.
+  const best = new Map();
+  for (const { label, index } of items) {
+    if (padded.includes(` ${label} `)) best.set(index, Math.max(best.get(index) ?? 0, label.length));
+  }
+  const ranked = [...best.entries()].sort((a, b) => b[1] - a[1]);
+  if (ranked.length === 1 || (ranked.length > 1 && ranked[0][1] > ranked[1][1])) return ranked[0][0];
+  if (ranked.length > 1) return -1;
+
+  // What was said is part of exactly one option.
+  if (heard.length >= 3) {
+    const part = new Set(items.filter(({ label }) => ` ${label} `.includes(padded)).map((entry) => entry.index));
+    if (part.size === 1) return [...part][0];
+  }
+  return -1;
+}
+
+/**
+ * Every way to say each option: the printed label and, in the chosen language, the translated
+ * label and its colloquial forms.
+ * @param {{value:string}[]} options  the options of the widget
+ * @param {({label:string, aliases:string[]}|null)[]} [localized]  one per option (same order), or nothing
+ * @returns {{label:string, index:number}[]}
+ */
+export function optionEntries(options, localized = []) {
+  const entries = [];
+  options.forEach((option, index) => {
+    entries.push({ label: option.value, index });
+    const local = localized[index];
+    if (local) {
+      entries.push({ label: local.label, index });
+      for (const alias of local.aliases ?? []) entries.push({ label: alias, index });
+    }
+  });
+  return entries;
+}
+
+/**
  * The option with this label (the answer that was stored), or null.
  * @param {{label:string}[]|undefined} options
  * @param {string} label

@@ -151,13 +151,15 @@ describe('answer flow decisions', () => {
     assert.equal(usesCells({ kind: 'name', pattern: 'AAAA' }), false);
   });
 
-  test('codes with a pattern and e-mail are heard in English; the rest in the language of the user', () => {
+  test('codes with a pattern and e-mail are heard in the chosen language first (English is the fallback)', () => {
     assert.equal(ENGLISH_RECOGNITION_LANG, 'en-IN');
-    assert.deepEqual(listeningPlan(PAN, 'ta-IN'), { lang: 'en-IN', english: true });
-    assert.deepEqual(listeningPlan({ kind: 'email' }, 'hi-IN'), { lang: 'en-IN', english: true });
-    assert.deepEqual(listeningPlan({ kind: 'name' }, 'ta-IN'), { lang: 'ta-IN', english: false });
-    assert.deepEqual(listeningPlan({ kind: 'date' }, 'ta-IN'), { lang: 'ta-IN', english: false });
-    assert.deepEqual(listeningPlan({ kind: 'code', pattern: '' }, 'ta-IN'), { lang: 'ta-IN', english: false });
+    assert.deepEqual(listeningPlan(PAN, 'ta-IN'), { lang: 'ta-IN', characters: true }); // the chosen language first
+    assert.deepEqual(listeningPlan(PAN, 'ta-IN', true), { lang: 'en-IN', characters: true }); // English as the fallback
+    assert.deepEqual(listeningPlan(PAN, 'en-US'), { lang: 'en-IN', characters: true });
+    assert.deepEqual(listeningPlan({ kind: 'email' }, 'hi-IN'), { lang: 'hi-IN', characters: true });
+    assert.deepEqual(listeningPlan({ kind: 'name' }, 'ta-IN'), { lang: 'ta-IN', characters: false });
+    assert.deepEqual(listeningPlan({ kind: 'date' }, 'ta-IN'), { lang: 'ta-IN', characters: false });
+    assert.deepEqual(listeningPlan({ kind: 'code', pattern: '' }, 'ta-IN'), { lang: 'ta-IN', characters: false });
     assert.ok(ENGLISH_DONE_WORDS.includes('done'));
   });
 

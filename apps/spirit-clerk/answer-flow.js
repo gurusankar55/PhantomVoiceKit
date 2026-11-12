@@ -20,18 +20,30 @@ export function usesCells(format) {
   return PATTERN_KINDS.includes(format.kind) && parsePattern(format.pattern).length > 0;
 }
 
+/** Is this the English language (en-US, en-IN...)? */
+export function isEnglishLang(lang) {
+  return String(lang ?? '').split('-')[0].toLowerCase() === 'en';
+}
+
+// Kinds whose answer is made of digits: number words are changed into digits before cleaning.
+export const NUMERIC_KINDS = ['number', 'phone', 'date', 'code'];
+
 /**
  * How to listen for the answer of a field.
- *   - boxes (code / number with a pattern): English recognition, one group at a time
- *   - e-mail: English recognition, the part before the @
+ *   - boxes (code / number with a pattern) and e-mail: the characters are Latin, but people say
+ *     them in their own language ("மூணு", "பி"), so the CHOSEN language is tried first, and English
+ *     (en-IN) is the fallback when nothing could be understood (`useEnglish`)
  *   - everything else: the language of the user
+ * An English speaker always uses en-IN, which understands Indian English best.
  * @param {{kind:string, pattern?:string}} format
  * @param {string} uiLang  BCP-47 code of the chosen language
- * @returns {{lang:string, english:boolean}}
+ * @param {boolean} [useEnglish]  true after the chosen language gave nothing for this field
+ * @returns {{lang:string, characters:boolean}}  characters = letters, digits and e-mail names are expected
  */
-export function listeningPlan(format, uiLang) {
-  const english = usesCells(format) || format.kind === 'email';
-  return { lang: english ? ENGLISH_RECOGNITION_LANG : uiLang, english };
+export function listeningPlan(format, uiLang, useEnglish = false) {
+  const characters = usesCells(format) || format.kind === 'email';
+  if (!characters) return { lang: uiLang, characters };
+  return { lang: useEnglish || isEnglishLang(uiLang) ? ENGLISH_RECOGNITION_LANG : uiLang, characters };
 }
 
 /**
@@ -61,7 +73,8 @@ export function needsGemini(format, heardText, localValue, uiLang) {
   const { kind } = format;
   if (kind === 'signature') return false;
   if (kind === 'date') return !isValidDate(cleanDate(heardText));
-  if (kind === 'number' || kind === 'phone') return false;
+  // Digits are cleaned on the device. Only when nothing could be read from the words (a number said in a way the tables do not know) Gemini helps.
+  if (kind === 'number' || kind === 'phone') return String(localValue ?? '').trim() === '' && uiLang !== 'en-US' && String(heardText ?? '').trim() !== '';
   if (kind === 'code' || kind === 'email') return hasNonLatinLetters(localValue);
   return uiLang !== 'en-US' && String(heardText ?? '').trim() !== '';
 }

@@ -18,9 +18,29 @@ export const SAFETY_SILENCE_MS = 15000;
  */
 export function joinParts(parts) {
   return (parts ?? [])
-    .map((part) => String(part ?? '').trim())
+    .map((part) => stripPunctuation(part))
     .filter((part) => part !== '')
     .join(' ');
+}
+
+// Sentence punctuation that speech recognition adds after every pause (Edge writes "13." and
+// "13. 05. 1987"): full stops, commas, question and exclamation marks, semicolons, colons, the
+// Devanagari danda (।, ॥), the Urdu full stop (۔), Arabic marks (، ؛ ؟), Chinese and Japanese marks
+// (。、，！？；：), the ellipsis and Spanish inverted marks. Apostrophes, hyphens, slashes and @ stay.
+const SENTENCE_PUNCTUATION = /[.,?!;:\u3002\u3001\uFF0C\uFF01\uFF1F\uFF1B\uFF1A\u2026\u2025\u0964\u0965\u06D4\u060C\u061B\u061F\u00BF\u00A1]+/gu;
+
+/**
+ * Take the sentence punctuation out of recognised speech and make it one tidy line: every mark
+ * becomes a space, repeated spaces become one, and the ends are trimmed.
+ * "13. 05. 1987" -> "13 05 1987"; "98765, 43210?" -> "98765 43210".
+ * @param {unknown} text
+ * @returns {string}
+ */
+export function stripPunctuation(text) {
+  return String(text ?? '')
+    .replace(SENTENCE_PUNCTUATION, ' ')
+    .replace(/\s+/gu, ' ')
+    .trim();
 }
 
 /**
