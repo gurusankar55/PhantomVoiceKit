@@ -175,6 +175,7 @@
   "spiritClerk.dateYear": "Año",
   "spiritClerk.sayChar": "Di este carácter otra vez",
   "spiritClerk.tapBox": "Toca una casilla para cambiar ese carácter.",
+  "spiritClerk.keypadHowTo": "Toca las teclas para llenar las casillas. También puedes pulsar Hablar y decirlo.",
   "spiritClerk.cellLabel": "Carácter {n} de {total}",
   "spiritClerk.invalidFormat": "Todavía no coincide con el formato. Revisa las casillas rojas.",
   "spiritClerk.invalidEmail": "Escribe un correo electrónico válido.",

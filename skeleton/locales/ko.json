@@ -175,6 +175,7 @@
   "spiritClerk.dateYear": "년",
   "spiritClerk.sayChar": "이 글자를 다시 말하기",
   "spiritClerk.tapBox": "칸을 눌러 그 글자를 바꾸세요.",
+  "spiritClerk.keypadHowTo": "키를 눌러 칸을 채우세요. 말하기를 눌러 말할 수도 있어요.",
   "spiritClerk.cellLabel": "{total}자 중 {n}번째 글자",
   "spiritClerk.invalidFormat": "아직 형식에 맞지 않아요. 빨간 칸을 확인하세요.",
   "spiritClerk.invalidEmail": "올바른 이메일 주소를 입력하세요.",

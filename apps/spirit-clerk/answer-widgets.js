@@ -2,7 +2,9 @@
 // The editable answer area of Spirit Clerk. One widget for each kind of field:
 //   cells   one box per character for a code or a number with a pattern (PAN, IFSC, Aadhaar, mobile, PIN),
 //           letter boxes and digit boxes in different colours, a wrong character turns red, a tap on a
-//           box opens "say this character" and a big on-screen keypad
+//           box opens "say this character" and a big on-screen keypad. For codes (keypadFirst) the
+//           keypad is open from the start and is the main way to answer
+//   code    a code without a known pattern: a box for capital letters and digits with the keypad below
 //   email   the part before the @ and big buttons for @gmail.com, @yahoo.com, @outlook.com and Other
 //   date    day, month and year pickers (DD/MM/YYYY)
 //   digits  a box that accepts digits only (a number or a phone number without a known pattern)
@@ -85,38 +87,63 @@ function createTextWidget(container, { multiline, onChange }) {
 // Digits only
 // ---------------------------------------------------------------------------
 
-function createDigitsWidget(container, { onChange, kind }) {
+// keypadFirst (a bank account number): big digit keys below the box, always open.
+function createDigitsWidget(container, { onChange, kind, keypadFirst = false }) {
   const box = el('input', 'answer-input');
   box.type = 'text';
   box.inputMode = 'numeric';
   box.maxLength = 30;
   box.id = nextId('answer-digits');
   box.setAttribute('autocomplete', 'off');
+  const clean = (text) => String(text ?? '').replace(/\D/g, '').slice(0, box.maxLength);
   box.addEventListener('input', () => {
-    const digits = box.value.replace(/\D/g, '');
+    const digits = clean(box.value);
     if (digits !== box.value) box.value = digits;
     onChange();
   });
   container.appendChild(box);
+  const extra = keypadFirst ? addTypingKeypad(container, DIGITS, (key) => {
+    box.value = clean(box.value + key);
+    onChange();
+  }) : null;
 
   return {
     type: 'digits',
+    keypadFirst,
     element: box,
     getValue: () => box.value,
     setValue(text) {
-      box.value = String(text ?? '').replace(/\D/g, '');
+      box.value = clean(text);
       onChange();
     },
     validate: () => validateAnswer(box.value, { kind }),
     focus: () => box.focus(),
-    destroy: () => box.remove(),
+    destroy: () => {
+      box.remove();
+      if (extra) extra.remove();
+    },
   };
+}
+
+// The keypad under a typing box (a code or account number without boxes): a short hint and big keys.
+// Returns the element that holds both (to remove it later).
+function addTypingKeypad(container, keys, onKey) {
+  const wrap = el('div', 'cell-panel');
+  const hint = el('p', 'cell-hint');
+  setI18nText(hint, 'spiritClerk.keypadHowTo');
+  const keypad = el('div', 'keypad');
+  keypad.setAttribute('role', 'group');
+  fillKeypad(keypad, keys, onKey);
+  wrap.append(hint, keypad);
+  container.appendChild(wrap);
+  return wrap;
 }
 
 // ---------------------------------------------------------------------------
 // A code without a known pattern: capital letters and digits only
 // ---------------------------------------------------------------------------
 
+// A code is always keypad-first: big letter and digit keys below the box, always open.
 function createCodeWidget(container, { onChange }) {
   const box = el('input', 'answer-input');
   box.type = 'text';
@@ -125,16 +152,21 @@ function createCodeWidget(container, { onChange }) {
   box.setAttribute('autocomplete', 'off');
   box.setAttribute('autocapitalize', 'characters');
   box.spellcheck = false;
-  const clean = (text) => String(text ?? '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+  const clean = (text) => String(text ?? '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, box.maxLength);
   box.addEventListener('input', () => {
     const next = clean(box.value);
     if (next !== box.value) box.value = next;
     onChange();
   });
   container.appendChild(box);
+  const extra = addTypingKeypad(container, [...LETTERS, ...DIGITS], (key) => {
+    box.value = clean(box.value + key);
+    onChange();
+  });
 
   return {
     type: 'code',
+    keypadFirst: true,
     element: box,
     getValue: () => box.value,
     setValue(text) {
@@ -143,7 +175,10 @@ function createCodeWidget(container, { onChange }) {
     },
     validate: () => validateAnswer(box.value, { kind: 'code' }),
     focus: () => box.focus(),
-    destroy: () => box.remove(),
+    destroy: () => {
+      box.remove();
+      extra.remove();
+    },
   };
 }
 
@@ -296,7 +331,26 @@ function createDateWidget(container, { onChange, lang }) {
 const LETTERS = Array.from('ABCDEFGHIJKLMNOPQRSTUVWXYZ');
 const DIGITS = Array.from('0123456789');
 
-function createCellsWidget(container, { pattern, kind, onChange, onSayChar }) {
+// Fill a keypad element with one big button per key. onKey(key) is called on a press.
+function fillKeypad(keypad, keys, onKey) {
+  keypad.textContent = '';
+  for (const key of keys) {
+    const button = el('button', `key ${/[0-9]/.test(key) ? 'key--digit' : 'key--letter'}`, key);
+    button.type = 'button';
+    button.addEventListener('click', () => onKey(key));
+    keypad.appendChild(button);
+  }
+}
+
+// The keys of a keypad for one kind of box.
+function keysFor(type) {
+  return type === 'letter' ? LETTERS : type === 'digit' ? DIGITS : [...LETTERS, ...DIGITS];
+}
+
+// keypadFirst: the keypad is the main way to answer (codes, account numbers). It is open from
+// the start on the first empty box and stays open; "say this character" is not offered (voice
+// is the small Speak button, which hears the whole code at once).
+function createCellsWidget(container, { pattern, kind, onChange, onSayChar, keypadFirst = false }) {
   const cells = parsePattern(pattern);
   const chunks = chunksOf(cells);
   let values = emptyValues(cells);
@@ -322,35 +376,47 @@ function createCellsWidget(container, { pattern, kind, onChange, onSayChar }) {
     if (selected >= 0 && typeof onSayChar === 'function') onSayChar(selected, cells[selected].type);
   });
   const hint = el('p', 'cell-hint');
-  setI18nText(hint, 'spiritClerk.tapBox');
+  setI18nText(hint, keypadFirst ? 'spiritClerk.keypadHowTo' : 'spiritClerk.tapBox');
   const keypad = el('div', 'keypad');
   keypad.setAttribute('role', 'group');
+  if (keypadFirst) sayButton.hidden = true;
   panel.append(sayButton, keypad);
   container.append(hint, grid, panel);
 
+  // The first box that can be typed in and is still empty (-1 when every box is filled).
+  const firstEmptyAfter = (from) => values.findIndex((v, i) => i > from && cells[i].type !== 'literal' && v === '');
+  const firstEditable = () => cells.findIndex((cell) => cell.type !== 'literal');
+
   function buildKeypad(type) {
-    keypad.textContent = '';
-    const keys = type === 'letter' ? LETTERS : type === 'digit' ? DIGITS : [...LETTERS, ...DIGITS];
-    for (const key of keys) {
-      const button = el('button', `key ${/[0-9]/.test(key) ? 'key--digit' : 'key--letter'}`, key);
-      button.type = 'button';
-      button.addEventListener('click', () => {
-        const at = selected;
-        values = setCell(values, cells, at, key);
-        // After a character, go to the next box that is still empty (or close the panel).
-        const nextEmpty = values.findIndex((v, i) => i > at && cells[i].type !== 'literal' && v === '');
-        if (nextEmpty !== -1) select(nextEmpty);
-        else closePanel();
-        render();
-        onChange();
-      });
-      keypad.appendChild(button);
-    }
+    fillKeypad(keypad, keysFor(type), (key) => {
+      const at = selected;
+      values = setCell(values, cells, at, key);
+      // After a character, go to the next box that is still empty. When none is left the panel
+      // closes, but a keypad-first field keeps the keypad open on the box just filled.
+      const nextEmpty = firstEmptyAfter(at);
+      if (nextEmpty !== -1) select(nextEmpty);
+      else if (keypadFirst) select(at);
+      else closePanel();
+      render();
+      onChange();
+    });
   }
 
   function closePanel() {
     selected = -1;
     panel.hidden = true;
+  }
+
+  // Keypad-first: open the keypad on the first empty box (or the first box). Otherwise close it.
+  function resetPanel() {
+    if (!keypadFirst) {
+      closePanel();
+      return;
+    }
+    const empty = firstEmptyAfter(-1);
+    const index = empty !== -1 ? empty : firstEditable();
+    if (index === -1) closePanel();
+    else select(index);
   }
 
   function select(index) {
@@ -374,8 +440,10 @@ function createCellsWidget(container, { pattern, kind, onChange, onSayChar }) {
     });
   }
   render();
+  resetPanel(); // keypad-first: the keypad is open from the start
 
   return {
+    keypadFirst,
     type: 'cells',
     cells,
     chunks,
@@ -383,7 +451,7 @@ function createCellsWidget(container, { pattern, kind, onChange, onSayChar }) {
     getValues: () => [...values],
     setValue(text) {
       values = stringToValues(text, cells);
-      closePanel();
+      resetPanel();
       render();
       onChange();
     },
@@ -391,28 +459,35 @@ function createCellsWidget(container, { pattern, kind, onChange, onSayChar }) {
     putChars(startIndex, chars) {
       const result = fillFrom(values, cells, startIndex, chars);
       values = result.values;
+      if (keypadFirst) resetPanel(); // the keypad moves on to the next empty box
       render();
       onChange();
       return result.used;
+    },
+    // Where a spoken code starts: the first empty box (the first box when all are filled).
+    firstEmptyIndex() {
+      const empty = firstEmptyAfter(-1);
+      return empty !== -1 ? empty : Math.max(0, firstEditable());
     },
     // One character for the tapped box (used by "say this character").
     putCharAtSelected(chars) {
       if (selected < 0) return;
       const at = selected;
       values = setCell(values, cells, at, chars);
-      closePanel();
+      resetPanel();
       render();
       onChange();
     },
-    // "Say this character again" needs the microphone: it is hidden when voice cannot be used.
+    // "Say this character again" needs the microphone: it is hidden when voice cannot be used
+    // (and always on a keypad-first field).
     setVoiceAvailable(available) {
-      sayButton.hidden = !available;
+      sayButton.hidden = keypadFirst || !available;
     },
     // Is there a wrong character (a letter in a digit box or a digit in a letter box)?
     hasBad: () => cellStates(values, cells).includes('bad'),
     clear() {
       values = emptyValues(cells);
-      closePanel();
+      resetPanel();
       render();
       onChange();
     },
@@ -691,18 +766,19 @@ function setI18nAltText(image) {
  * @param {HTMLElement} container  an empty element
  * @param {{kind:string, pattern?:string}} format  from resolveFormat
  * @param {{onChange:()=>void, onSayChar?:(index:number, type:string)=>void, onSignLater?:()=>void, options?:{label:string|null, value:string}[], lang?:string}} options
- *   options = the buttons of a choice or tick box field (see optionsFor); onSignLater = "I will sign by hand" was pressed
+ *   options = the buttons of a choice or tick box field (see optionsFor); onSignLater = "I will sign by hand" was pressed;
+ *   keypadFirst = the big keypad is the main input (codes, account numbers: see isKeypadFirst)
  */
-export function createAnswerWidget(container, format, { onChange, onSayChar, onSignLater, options = [], lang }) {
+export function createAnswerWidget(container, format, { onChange, onSayChar, onSignLater, options = [], lang, keypadFirst = false }) {
   const { kind, pattern } = format;
   if (kind === 'signature') return createSignatureWidget(container, { onChange, onLater: onSignLater || (() => {}) });
   if ((kind === 'choice' || kind === 'checkbox') && options.length > 0) return createChoiceWidget(container, { options, onChange });
   if (['code', 'number', 'phone'].includes(kind) && parsePattern(pattern).length > 0) {
-    return createCellsWidget(container, { pattern, kind, onChange, onSayChar });
+    return createCellsWidget(container, { pattern, kind, onChange, onSayChar, keypadFirst });
   }
   if (kind === 'code') return createCodeWidget(container, { onChange });
   if (kind === 'email') return createEmailWidget(container, { onChange });
   if (kind === 'date') return createDateWidget(container, { onChange, lang });
-  if (kind === 'number' || kind === 'phone') return createDigitsWidget(container, { onChange, kind });
+  if (kind === 'number' || kind === 'phone') return createDigitsWidget(container, { onChange, kind, keypadFirst });
   return createTextWidget(container, { multiline: kind === 'address' || kind === 'text' || kind === 'choice', onChange });
 }

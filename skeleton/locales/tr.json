@@ -175,6 +175,7 @@
   "spiritClerk.dateYear": "Yıl",
   "spiritClerk.sayChar": "Bu karakteri tekrar söyleyin",
   "spiritClerk.tapBox": "Karakteri değiştirmek için kutuya dokunun.",
+  "spiritClerk.keypadHowTo": "Kutuları doldurmak için tuşlara dokunun. Konuş düğmesine basıp söyleyebilirsiniz de.",
   "spiritClerk.cellLabel": "Karakter {n} / {total}",
   "spiritClerk.invalidFormat": "Henüz biçime uymuyor. Kırmızı kutulara bakın.",
   "spiritClerk.invalidEmail": "Geçerli bir e-posta adresi girin.",

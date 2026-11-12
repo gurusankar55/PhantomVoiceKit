@@ -175,6 +175,7 @@
   "spiritClerk.dateYear": "Tahun",
   "spiritClerk.sayChar": "Ucapkan karakter ini lagi",
   "spiritClerk.tapBox": "Ketuk kotak untuk mengubah karakter itu.",
+  "spiritClerk.keypadHowTo": "Ketuk tombol untuk mengisi kotak. Anda juga bisa menekan Bicara dan mengucapkannya.",
   "spiritClerk.cellLabel": "Karakter {n} dari {total}",
   "spiritClerk.invalidFormat": "Belum sesuai format. Periksa kotak merah.",
   "spiritClerk.invalidEmail": "Masukkan alamat email yang valid.",

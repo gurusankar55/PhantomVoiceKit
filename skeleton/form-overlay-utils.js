@@ -899,8 +899,8 @@ const LINE_COLUMN_SHARE = 0.95;
  * Is there already something written or printed inside an empty answer box? Used before the
  * answers are written on the original form, so a new answer is never drawn on top of old text.
  * The edge of the box is skipped (its border), the background colour is the median colour inside,
- * and long straight lines (the line to write on, the borders and dividers of the box) are not
- * counted. What is left is ink: letters, digits, stamps.
+ * and long straight lines (the line to write on, solid or made of dashes, dots or underscores; the
+ * borders and dividers of the box) are not counted. What is left is ink: letters, digits, stamps.
  * @param {{data: Uint8ClampedArray|number[], width:number, height:number}} image  RGBA pixels
  * @param {{x:number, y:number, w:number, h:number}} rect  the answer box in pixels
  * @param {{inset?:number}} [options]  pixels to skip on every side (default: 20% of the box height, at least 2)
@@ -935,7 +935,6 @@ export function boxHasInk(image, rect, { inset } = {}) {
 
   // Which pixels differ clearly from the background?
   const mask = new Uint8Array(w * h);
-  const rowCount = new Array(h).fill(0);
   const columnCount = new Array(w).fill(0);
   for (let row = 0; row < h; row++) {
     for (let column = 0; column < w; column++) {
@@ -944,21 +943,207 @@ export function boxHasInk(image, rect, { inset } = {}) {
       const pixel = { r: data[i], g: data[i + 1], b: data[i + 2] };
       if (colorDistance(pixel, background) >= INK_DISTANCE) {
         mask[row * w + column] = 1;
-        rowCount[row] += 1;
         columnCount[column] += 1;
       }
     }
   }
 
+  // Rows that belong to a line to write on: a solid line, or a thin line of dashes, dots or underscores.
+  const ruled = ruledRows(mask, w, h, maxLineThickness(rect.h));
+
   // Count the ink that is not part of a long straight line.
   let ink = 0;
   for (let row = 0; row < h; row++) {
-    if (rowCount[row] >= LINE_ROW_SHARE * w) continue; // a line to write on
+    if (ruled.rows[row]) continue; // a line to write on
     for (let column = 0; column < w; column++) {
-      if (mask[row * w + column] === 1 && columnCount[column] < LINE_COLUMN_SHARE * h) ink += 1;
+      if (mask[row * w + column] !== 1 || columnCount[column] >= LINE_COLUMN_SHARE * h) continue;
+      // The soft edge of a dashed line (the row just above or below it, under its marks) is not ink.
+      if (ruled.edge[row] && ruled.edgeColumns[row][column]) continue;
+      ink += 1;
     }
   }
   return ink >= Math.max(8, Math.round(0.002 * w * h));
+}
+
+// ---------------------------------------------------------------------------
+// Lines to write on: solid, dashed, dotted, underscores
+// ---------------------------------------------------------------------------
+
+// A row of repeated short marks (dashes, dots, underscores) is a line when it has at least this many marks ...
+const DASH_MIN_MARKS = 5;
+// ... they reach across at least this share of the row ...
+const DASH_SPAN_SHARE = 0.6;
+// ... each mark is at most this share of the row long ...
+const DASH_MAX_MARK_SHARE = 0.12;
+// ... and at most this share of the marks and gaps may be much shorter or longer than the usual one.
+const DASH_ODD_SHARE = 0.15;
+
+// A line of dashes or dots is thin: at most this share of the box height (and at least 4 pixels).
+function maxLineThickness(boxHeight) {
+  return Math.max(4, Math.round(boxHeight * 0.15));
+}
+
+// The runs of ink in one row: [{start, end}] (end not included).
+function rowRuns(row) {
+  const runs = [];
+  for (let i = 0; i < row.length; ) {
+    if (!row[i]) {
+      i += 1;
+      continue;
+    }
+    let end = i;
+    while (end < row.length && row[end]) end += 1;
+    runs.push({ start: i, end });
+    i = end;
+  }
+  return runs;
+}
+
+// Are (nearly) all the numbers about the same as the usual one (from half of it to twice it)?
+function mostlyRegular(values) {
+  if (values.length === 0) return true;
+  const typical = median([...values]);
+  const odd = values.filter((v) => v > 2 * typical + 2 || 2 * v + 2 < typical).length;
+  return odd <= Math.max(1, Math.floor(values.length * DASH_ODD_SHARE));
+}
+
+/**
+ * Is one row of pixels a ruled line? Either solid (ink almost all along it) or a row of repeated
+ * short marks: dashes "- - - -", dots ". . . .", underscores "____" (with tiny gaps).
+ * @param {ArrayLike<number>} row  1 = ink, 0 = background, one entry per pixel
+ * @returns {'solid'|'dashed'|null}
+ */
+export function rowIsRuled(row) {
+  const w = row.length;
+  if (w === 0) return null;
+  let count = 0;
+  for (let i = 0; i < w; i++) if (row[i]) count += 1;
+  if (count >= LINE_ROW_SHARE * w) return 'solid';
+
+  const runs = rowRuns(row);
+  if (runs.length < DASH_MIN_MARKS) return null;
+  if (runs[runs.length - 1].end - runs[0].start < DASH_SPAN_SHARE * w) return null;
+  const lengths = runs.map((run) => run.end - run.start);
+  const gaps = runs.slice(1).map((run, i) => run.start - runs[i].end);
+  if (median([...lengths]) > Math.max(4, DASH_MAX_MARK_SHARE * w)) return null; // long marks are words, not dashes
+  // The first and the last mark may be cut by the edge of the box: only the marks between are compared.
+  return mostlyRegular(lengths.slice(1, -1)) && mostlyRegular(gaps) ? 'dashed' : null;
+}
+
+/**
+ * Which rows of an ink mask are lines to write on? Solid rows always count. Rows of repeated
+ * marks count only in a thin band (a few rows): a word written in even letters is many rows high.
+ * The rows just above and below a dashed band are its soft edge: there only the columns under
+ * the marks are skipped.
+ * @param {Uint8Array|number[]} mask  w * h entries, 1 = ink
+ * @param {number} w
+ * @param {number} h
+ * @param {number} maxThickness  the most rows a dashed line may have
+ * @returns {{rows:boolean[], edge:boolean[], edgeColumns:(Uint8Array|null)[], bands:{top:number, bottom:number}[]}}
+ *   bands = every line, top and bottom row (bottom included), from top to bottom
+ */
+export function ruledRows(mask, w, h, maxThickness) {
+  const kinds = [];
+  for (let row = 0; row < h; row++) kinds.push(rowIsRuled(mask.slice(row * w, row * w + w)));
+
+  const rows = new Array(h).fill(false);
+  const edge = new Array(h).fill(false);
+  const edgeColumns = new Array(h).fill(null);
+  const bands = [];
+
+  for (let row = 0; row < h; ) {
+    if (kinds[row] === null) {
+      row += 1;
+      continue;
+    }
+    let end = row;
+    while (end < h && kinds[end] !== null) end += 1;
+    const solid = kinds.slice(row, end).every((kind) => kind === 'solid');
+    if (solid || end - row <= maxThickness) {
+      for (let r = row; r < end; r++) rows[r] = true;
+      bands.push({ top: row, bottom: end - 1 });
+      // The columns that are ink anywhere in the band: its soft edge above and below stays under them.
+      const columns = new Uint8Array(w);
+      for (let r = row; r < end; r++) {
+        for (let c = 0; c < w; c++) if (mask[r * w + c]) columns[c] = 1;
+      }
+      for (const r of [row - 1, end]) {
+        if (r < 0 || r >= h || rows[r]) continue;
+        edge[r] = true;
+        edgeColumns[r] = columns;
+      }
+    }
+    row = end;
+  }
+  return { rows, edge, edgeColumns, bands };
+}
+
+/**
+ * The line to write on inside (or just below) an answer box, if there is one. A box with a line
+ * at its top AND one at its bottom is a closed box: then null (the answer is centred in it).
+ * @param {{data: Uint8ClampedArray|number[], width:number, height:number}} image  RGBA pixels
+ * @param {{x:number, y:number, w:number, h:number}} rect  the answer box in pixels
+ * @returns {{top:number, bottom:number} | null}  the line's top and bottom row in page pixels
+ */
+export function findWritingLine(image, rect) {
+  const { data, width, height } = image;
+  const side = Math.max(2, Math.round(rect.w * 0.04)); // skip the side borders of a box
+  const x0 = Math.max(0, rect.x + side);
+  const x1 = Math.min(width, rect.x + rect.w - side);
+  const y0 = Math.max(0, rect.y);
+  const y1 = Math.min(height, Math.round(rect.y + rect.h * 1.25)); // the line is often just below the box
+  const w = x1 - x0;
+  const h = y1 - y0;
+  if (w < 10 || h < 4) return null;
+
+  // The background: the middle colour of the area.
+  const reds = [];
+  const greens = [];
+  const blues = [];
+  for (let py = y0; py < y1; py++) {
+    for (let px = x0; px < x1; px++) {
+      const i = (py * width + px) * 4;
+      if (data[i + 3] < 128) continue;
+      reds.push(data[i]);
+      greens.push(data[i + 1]);
+      blues.push(data[i + 2]);
+    }
+  }
+  if (reds.length === 0) return null;
+  const background = { r: median(reds), g: median(greens), b: median(blues) };
+
+  const mask = new Uint8Array(w * h);
+  for (let row = 0; row < h; row++) {
+    for (let column = 0; column < w; column++) {
+      const i = ((y0 + row) * width + (x0 + column)) * 4;
+      if (data[i + 3] >= 128 && colorDistance({ r: data[i], g: data[i + 1], b: data[i + 2] }, background) >= INK_DISTANCE) {
+        mask[row * w + column] = 1;
+      }
+    }
+  }
+
+  const { bands } = ruledRows(mask, w, h, maxLineThickness(rect.h));
+  const upper = bands.filter((band) => band.bottom < rect.h * 0.3);
+  const lower = bands.filter((band) => band.top >= rect.h * 0.35);
+  if (lower.length === 0 || upper.length > 0) return null; // no line, or a closed box
+  const line = lower[lower.length - 1]; // the lowest line
+  return { top: y0 + line.top, bottom: y0 + line.bottom };
+}
+
+// The space between the lowest point of the letters and the line, as a share of the text size.
+// The letters' descent (g, p, y) is about 0.25 of the size; the gap is on top of that.
+export const DESCENT_SHARE = 0.25;
+export const LINE_GAP_PX = 3;
+
+/**
+ * Where the lines of an answer go when it is written ABOVE a line (never on it): the baseline
+ * (alphabetic) of each line, the last line just above the line to write on.
+ * @param {{lineTop:number, size:number, lineCount:number, lineHeight:number}} options
+ * @returns {number[]}  the baseline y of each line, from top to bottom
+ */
+export function baselinesAboveLine({ lineTop, size, lineCount, lineHeight }) {
+  const lastBaseline = lineTop - LINE_GAP_PX - Math.ceil(size * DESCENT_SHARE);
+  return Array.from({ length: lineCount }, (_, i) => lastBaseline - (lineCount - 1 - i) * size * lineHeight);
 }
 
 // A column of the middle band counts as a divider of a comb box when ink fills this share of it.

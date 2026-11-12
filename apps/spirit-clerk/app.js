@@ -38,6 +38,7 @@ import {
   needsGemini,
   checkboxValue,
   NUMERIC_KINDS,
+  isKeypadFirst,
   progressNumbers,
   lastAskableIndex,
   validationMessage,
@@ -129,6 +130,7 @@ let charTarget = null;     // { type } while one character is being heard
 let helpActive = false;    // true while the help is being read
 let englishFallback = false; // the chosen language gave nothing for this field: the next try uses English (en-IN)
 let localizedOptions = []; // the options of the current choice field in the chosen language: { label, aliases } or null
+let keypadMode = false;    // codes and account numbers: the keypad is the main input, voice a small extra
 
 // ---------- Screen helper ----------
 
@@ -415,8 +417,12 @@ function updateButtons() {
   // A signature is drawn on a pad, never spoken: no "Speak" for it.
   const spoken = currentFormat.kind !== 'signature';
   micButton.hidden = answering || !voiceOk || !spoken;
+  // Codes and account numbers: the keypad is the main input, so "Speak" is a small extra button
+  // and the keypad shows its own short hint.
+  micButton.classList.toggle('btn--large', !keypadMode);
+  micButton.classList.toggle('btn--small', keypadMode);
   doneButton.hidden = listenMode !== 'answer';
-  howTo.hidden = !voiceOk || !spoken;
+  howTo.hidden = !voiceOk || !spoken || keypadMode;
   if (widget && typeof widget.setVoiceAvailable === 'function') widget.setVoiceAvailable(voiceOk);
   setI18nText(micButton, 'spiritClerk.speak');
 
@@ -580,12 +586,14 @@ function askCurrentQuestion(notice) {
   renderHeard();
 
   destroyWidget();
+  keypadMode = isKeypadFirst(format, field.label);
   widget = createAnswerWidget(answerArea, format, {
     onChange: onAnswerChanged,
     onSayChar: startCharListening,
     onSignLater: doSignLater,
     options: optionsFor({ kind: format.kind, options: field.options }),
     lang: state.language.bcp47,
+    keypadFirst: keypadMode,
   });
 
   englishFallback = false;
@@ -740,7 +748,10 @@ function startAnswerListening() {
 
   let chunk = null;
   let promptText = '';
-  if (widget.type === 'cells') {
+  if (widget.type === 'cells' && keypadMode) {
+    // A code: the whole code in one turn from the first empty box, no "First: letters (5)".
+    chunk = { type: 'any', start: widget.firstEmptyIndex(), length: widget.cells.length };
+  } else if (widget.type === 'cells') {
     // The next group that is still empty; when everything is filled, start again from the first.
     chunk = widget.nextChunk() || { ...widget.chunks[0] };
     promptText = chunkPromptText(chunk);
@@ -925,7 +936,7 @@ async function handleAnswerHeard(text) {
       return;
     }
     widget.putChars(chunk ? chunk.start : 0, chars);
-    const next = widget.nextChunk();
+    const next = keypadMode ? null : widget.nextChunk(); // a code is never asked group by group
     if (next) {
       // Go on with the next group, as long as something was heard (so this always ends).
       currentChunk = next;
@@ -1177,8 +1188,9 @@ function doWrong() {
   if (widget.type === 'cells') widget.clear();
   else widget.setValue('');
   updateButtons();
-  // A signature is drawn again (no listening); everything else is listened to again.
-  if (currentFormat.kind !== 'signature' && speechInput && speechInput.supported && !voiceDisabled) startAnswerListening();
+  // A signature is drawn again and a code is typed again on the keypad (no listening); everything
+  // else is listened to again.
+  if (currentFormat.kind !== 'signature' && !keypadMode && speechInput && speechInput.supported && !voiceDisabled) startAnswerListening();
   else widget.focus();
 }
 
@@ -1428,13 +1440,17 @@ async function showOriginal() {
 
     // Where does each answer go? A box that already holds text is not used (nothing is written on
     // top of printed answers) and its answer is listed instead. A box divided into character cells
-    // is written cell by cell. A tick mark needs no check: its box holds a printed circle or square.
+    // is written cell by cell. A box with a line to write on (solid, dashed, dotted) gets the text
+    // just above the line. A tick mark needs no check: its box holds a printed circle or square.
     const first = placeAnswers(state.fields, state.answers, state.pages.length);
     const occupied = images.map((image, p) => {
       const entries = first.pages[p];
       const analysis = analyzeBoxes(image, entries.map((entry) => entry.box));
       entries.forEach((entry, i) => {
-        if (entry.type === 'text') entry.cells = analysis[i].cells;
+        if (entry.type === 'text') {
+          entry.cells = analysis[i].cells;
+          entry.line = analysis[i].line;
+        }
       });
       return entries.map((entry, i) => entry.type !== 'tick' && analysis[i].occupied);
     });
@@ -1504,7 +1520,7 @@ async function showOriginal() {
 function drawItem(entry) {
   if (entry.type === 'tick') return { type: 'tick', box: entry.box };
   if (entry.type === 'image') return { type: 'image', box: entry.box, image: original.pictures.get(entry.image) };
-  return { type: 'text', text: entry.text, box: entry.box, kind: entry.kind, cells: entry.cells };
+  return { type: 'text', text: entry.text, box: entry.box, kind: entry.kind, cells: entry.cells, line: entry.line };
 }
 
 // Draw every page again with the current text size. Nothing is sent to the server.

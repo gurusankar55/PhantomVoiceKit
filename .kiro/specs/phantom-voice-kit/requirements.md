@@ -480,3 +480,13 @@ Phantom Voice Kit is a reusable skeleton for voice-first web applications with a
 3. THE app SHALL accept letter names in the chosen language (tables for ta, hi, te, kn, ml, bn, ur; English names for the rest) as well as English letter names, trying the chosen language first.
 4. Phone, PIN and Aadhaar numbers SHALL be asked as one whole number. Only codes mixing letters and digits (PAN, IFSC) SHALL be split into chunks.
 5. Choice and checkbox buttons SHALL show each option translated into the chosen language. The form and the PDF SHALL keep the original option. Spoken words SHALL match either form, including colloquial words.
+
+### Requirement 29: Fill Original Fixes and Keypad-First Codes (Spirit Clerk)
+
+**User Story:** As a user filling the original form, I want answers written neatly above the lines, empty dashed lines treated as empty, and codes typed on a keypad, so that the filled form is readable and correct.
+
+#### Acceptance Criteria
+
+1. WHEN the answer area has a line to write on (solid, dashed or dotted), THE app SHALL place the text's baseline a few pixels above the line so the letters (including descenders) never touch it. Inside a closed box THE text SHALL stay vertically centred.
+2. THE "already has text" check SHALL ignore horizontal lines made of repeated short marks (dashes, dots, underscores) as well as solid lines.
+3. FOR codes (PAN, IFSC and every other code kind) and bank account numbers, THE big on-screen keypad SHALL be the main input, open from the start with the character boxes. Voice SHALL be an optional small "Speak" button that hears the whole code in one turn. Codes SHALL NOT be asked chunk by chunk by voice.

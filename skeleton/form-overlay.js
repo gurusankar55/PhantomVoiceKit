@@ -28,6 +28,9 @@ import {
   layoutAt,
   fitAnswer,
   boxHasInk,
+  findWritingLine,
+  baselinesAboveLine,
+  LINE_GAP_PX,
   detectCombCells,
   layoutComb,
   fitInBox,
@@ -303,10 +306,11 @@ export function findOccupiedBoxes(image, boxes) {
 
 /**
  * Look at the answer boxes of a page (reads the pixels once): is something already written in
- * each box, and is it divided into character cells (a comb box)?
+ * each box, is it divided into character cells (a comb box), and is there a line to write on
+ * (solid, dashed or dotted)?
  * @param {HTMLImageElement} image
  * @param {number[][]} boxes  [ymin, xmin, ymax, xmax] on a 0 to 1000 scale
- * @returns {{occupied:boolean, cells:{x:number, y:number, w:number, h:number}[]|null}[]}  one per box
+ * @returns {{occupied:boolean, cells:{x:number, y:number, w:number, h:number}[]|null, line:{top:number, bottom:number}|null}[]}  one per box
  */
 export function analyzeBoxes(image, boxes) {
   if (boxes.length === 0) return [];
@@ -322,7 +326,7 @@ export function analyzeBoxes(image, boxes) {
 
   const result = boxes.map((box) => {
     const rect = boxToPixels(box, width, height);
-    return { occupied: boxHasInk(pixels, rect), cells: detectCombCells(pixels, rect) };
+    return { occupied: boxHasInk(pixels, rect), cells: detectCombCells(pixels, rect), line: findWritingLine(pixels, rect) };
   });
   scratch.width = 0; // let the browser free the memory
   return result;
@@ -333,9 +337,11 @@ export function analyzeBoxes(image, boxes) {
  * covered or changed: the page is drawn as it is and the answers are put on top, in dark blue.
  * Cheap to call again for A- / A+.
  * Each item is one of:
- *   { type: 'text', text, box, kind?, cells? }   the answer written left-aligned and vertically
- *        centred in the box; when the box is divided into character cells (cells = their pixel
- *        rectangles, see detectCombCells) and the answer fits them, ONE character per cell, centred
+ *   { type: 'text', text, box, kind?, cells?, line? }   the answer written left-aligned: just ABOVE
+ *        the line to write on when there is one (line = its top and bottom in pixels, see
+ *        findWritingLine; the letters never touch it), otherwise vertically centred in the box;
+ *        when the box is divided into character cells (cells = their pixel rectangles, see
+ *        detectCombCells) and the answer fits them, ONE character per cell, centred
  *   { type: 'tick', box }                         a tick mark in the box (an option, a tick box)
  *   { type: 'image', image, box }                 a picture (the drawn signature) scaled to fit the box,
  *        its shape kept (image = a loaded HTMLImageElement)
@@ -426,9 +432,24 @@ export function drawAnswers(canvas, image, items, { scaleOffset = 0 } = {}) {
     }
 
     const boxW = Math.max(1, rect.w - ANSWER_PAD * 2);
+
+    // A line to write on (solid, dashed, dotted): the text stands on it, a few pixels ABOVE it, so
+    // it never looks crossed out. The space for the text ends just above the line.
+    const lineTop = item.line && Number.isFinite(item.line.top) ? item.line.top : null;
+    if (lineTop !== null) {
+      const room = Math.max(lineTop - LINE_GAP_PX - rect.y, rect.h * 0.6);
+      const fitted = fitAnswer({ text: item.text, boxW, boxH: room, measureAt, maxSize, lineHeight, scale });
+      const baselines = baselinesAboveLine({ lineTop, size: fitted.size, lineCount: fitted.lines.length, lineHeight });
+      ctx.font = `${fitted.size}px ${FONT_FAMILY}`;
+      ctx.textBaseline = 'alphabetic';
+      fitted.lines.forEach((line, i) => ctx.fillText(line, rect.x + ANSWER_PAD, baselines[i]));
+      ctx.textBaseline = 'top';
+      return { type: 'text', text: item.text, lines: fitted.lines, size: fitted.size, fits: fitted.fits, aboveLine: true };
+    }
+
     const { size, lines, fits } = fitAnswer({ text: item.text, boxW, boxH: rect.h, measureAt, maxSize, lineHeight, scale });
 
-    // Centre the lines up and down when they fit; otherwise start at the top edge of the box.
+    // Inside a box: centre the lines up and down when they fit; otherwise start at the top edge.
     const offsetY = fits ? (rect.h - textHeight(lines.length, size, lineHeight)) / 2 : 0;
     ctx.font = `${size}px ${FONT_FAMILY}`;
     lines.forEach((line, i) => {

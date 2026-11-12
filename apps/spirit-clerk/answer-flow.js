@@ -20,6 +20,24 @@ export function usesCells(format) {
   return PATTERN_KINDS.includes(format.kind) && parsePattern(format.pattern).length > 0;
 }
 
+// A label that names a bank account number ("Account No.", "A/c number", "Acct"), not the PAN.
+const ACCOUNT_LABEL = /\b(account|acct)\b|\ba\s*\/\s*c\b/i;
+
+/**
+ * Is the big on-screen keypad the MAIN way to answer this field? For codes (PAN, IFSC, GSTIN,
+ * passport...) and bank account numbers: spoken letters and digits are too often misheard, so the
+ * keypad opens by itself with the boxes, and voice is only an optional small "Speak" button that
+ * hears the whole code in one turn (never group by group).
+ * Phone, PIN and Aadhaar numbers stay voice-first (one whole number in one turn).
+ * @param {{kind:string}} format  from resolveFormat
+ * @param {string} [label]  the field label
+ */
+export function isKeypadFirst(format, label = '') {
+  if (format.kind === 'code') return true;
+  const text = String(label ?? '');
+  return format.kind === 'number' && ACCOUNT_LABEL.test(text) && !/permanent\s+account/i.test(text);
+}
+
 /** Is this the English language (en-US, en-IN...)? */
 export function isEnglishLang(lang) {
   return String(lang ?? '').split('-')[0].toLowerCase() === 'en';

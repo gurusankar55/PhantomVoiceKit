@@ -175,6 +175,7 @@
   "spiritClerk.dateYear": "বছর",
   "spiritClerk.sayChar": "এই অক্ষরটি আবার বলুন",
   "spiritClerk.tapBox": "সেই অক্ষর বদলাতে একটি ঘরে ট্যাপ করুন।",
+  "spiritClerk.keypadHowTo": "ঘরগুলো পূরণ করতে কী-তে ট্যাপ করুন। বলুন চেপে বলেও দিতে পারেন।",
   "spiritClerk.cellLabel": "অক্ষর {n} / {total}",
   "spiritClerk.invalidFormat": "এখনও ফরম্যাটের সঙ্গে মেলেনি। লাল ঘরগুলো দেখুন।",
   "spiritClerk.invalidEmail": "একটি সঠিক ইমেইল ঠিকানা লিখুন।",

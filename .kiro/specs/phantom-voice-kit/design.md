@@ -824,3 +824,11 @@ The server console gets one line per page: `[translate-layout] ta-IN received=6 
 - `apps/spirit-clerk/letter-names.js`: letter-name tables; `spoken-chars.js` takes `lang`; `listeningPlan` returns the chosen language first and en-IN only after `englishFallback`.
 - `skeleton/field-formats.js`: `chunksOf` gives one chunk for pure phone, PIN and Aadhaar patterns; mixed patterns are split.
 - `apps/spirit-clerk/choice-words.js` and `option-utils.js`: offline Male/Female/Other tables, then one `translateList` call (server `translate` list mode) for other options, cached in `field.optionLabels`. Stored values stay English.
+
+## Fill Original Fixes and Keypad-First Codes (Requirement 29)
+
+- `skeleton/form-overlay-utils.js`: `rowIsRuled(row)` says 'solid', 'dashed' (at least 5 regular short marks across 60% of the row) or null; `ruledRows` keeps dashed bands only when thin (at most 15% of the box height) and skips their soft edge rows under the marks. `boxHasInk` ignores these rows. `findWritingLine(image, rect)` returns the lowest line in the box (or up to 25% below it), or null for a closed box. `baselinesAboveLine` puts the last baseline `LINE_GAP_PX + 0.25 * size` above the line.
+- `skeleton/form-overlay.js`: `analyzeBoxes` returns `line`; `drawAnswers` writes text items with a `line` above it (alphabetic baseline), otherwise centred as before.
+- `apps/spirit-clerk/answer-flow.js`: `isKeypadFirst(format, label)` is true for kind code and for number fields whose label names an account (not "Permanent Account").
+- `apps/spirit-clerk/answer-widgets.js`: cells widget `keypadFirst` opens the keypad on the first empty box and keeps it open; code and account-number widgets get a keypad under the box. New string `spiritClerk.keypadHowTo` (20 locales).
+- `apps/spirit-clerk/app.js`: `keypadMode` makes Speak small (`btn--small`), hides the voice how-to, hears the whole code in one turn from the first empty box, and does not restart listening after Wrong.

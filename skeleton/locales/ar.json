@@ -175,6 +175,7 @@
   "spiritClerk.dateYear": "السنة",
   "spiritClerk.sayChar": "قل هذا الحرف مرة أخرى",
   "spiritClerk.tapBox": "اضغط على مربع لتغيير ذلك الحرف.",
+  "spiritClerk.keypadHowTo": "اضغط على المفاتيح لملء المربعات. يمكنك أيضًا الضغط على تكلّم وقوله.",
   "spiritClerk.cellLabel": "الحرف {n} من {total}",
   "spiritClerk.invalidFormat": "لا يطابق الشكل المطلوب بعد. تحقق من المربعات الحمراء.",
   "spiritClerk.invalidEmail": "أدخل عنوان بريد إلكتروني صحيحًا.",

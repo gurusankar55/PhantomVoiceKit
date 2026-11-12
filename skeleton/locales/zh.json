@@ -175,6 +175,7 @@
   "spiritClerk.dateYear": "年",
   "spiritClerk.sayChar": "再说一遍这个字符",
   "spiritClerk.tapBox": "点一下方框，修改那个字符。",
+  "spiritClerk.keypadHowTo": "点按键来填写方框。也可以按“说话”说出来。",
   "spiritClerk.cellLabel": "第 {n} 个字符，共 {total} 个",
   "spiritClerk.invalidFormat": "还不符合格式。请检查红色方框。",
   "spiritClerk.invalidEmail": "请输入有效的电子邮件地址。",

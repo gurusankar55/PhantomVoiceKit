@@ -175,6 +175,7 @@
   "spiritClerk.dateYear": "Năm",
   "spiritClerk.sayChar": "Nói lại ký tự này",
   "spiritClerk.tapBox": "Chạm vào một ô để đổi ký tự đó.",
+  "spiritClerk.keypadHowTo": "Chạm các phím để điền vào ô. Bạn cũng có thể nhấn Nói và nói ra.",
   "spiritClerk.cellLabel": "Ký tự {n} trên {total}",
   "spiritClerk.invalidFormat": "Chưa đúng định dạng. Hãy xem các ô màu đỏ.",
   "spiritClerk.invalidEmail": "Hãy nhập địa chỉ email hợp lệ.",
