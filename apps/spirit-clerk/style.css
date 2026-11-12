@@ -293,6 +293,51 @@
   min-width: 0;
 }
 
+/* Two big buttons: green "✓ Correct" and red "✗ Wrong" (white text, contrast above 5:1) */
+#confirm-controls > .btn--correct,
+#confirm-controls > .btn--wrong {
+  min-height: 4.5rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.btn--correct {
+  background-color: #1f7a45;
+  border-color: #145a31;
+}
+
+.btn--wrong {
+  background-color: #b3261e;
+  border-color: #801a14;
+}
+
+.btn--correct:hover,
+.btn--correct:focus-visible {
+  background-color: #279152;
+}
+
+.btn--wrong:hover,
+.btn--wrong:focus-visible {
+  background-color: #cf3027;
+}
+
+/* The text heard so far, shown while the user speaks */
+.live-text {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  font-size: 1.25rem;
+  color: var(--color-ghost);
+  background-color: var(--color-surface);
+  border: 2px dashed var(--color-orange-light);
+  border-radius: var(--radius);
+  overflow-wrap: anywhere;
+}
+
+#done-button {
+  width: 100%;
+}
+
 /* ---------- Summary screen ---------- */
 #summary-list {
   display: flex;
@@ -344,8 +389,112 @@
   color: var(--color-ghost-dim);
 }
 
-#download-pdf {
+/* The two summary buttons ("Download PDF" and "Fill the original form") sit side by side
+   when there is room and one above the other on a phone */
+.summary-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.summary-actions > .btn {
+  flex: 1 1 12rem;
+}
+
+#download-pdf,
+#original-download {
   width: 100%;
+}
+
+/* ---------- "Fill the original form" screen ---------- */
+/* Notes and the list of answers that could not be placed */
+.notices {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  list-style: none;
+  font-size: 0.95rem;
+  color: var(--color-ghost);
+  background-color: var(--color-surface);
+  border-inline-start: 4px solid var(--color-orange-light);
+  border-radius: var(--radius);
+}
+
+.notices li + li {
+  margin-top: var(--space-1);
+}
+
+#original-unplaced h3 {
+  margin-bottom: var(--space-1);
+}
+
+#original-unplaced p {
+  margin: 0 0 var(--space-2);
+  font-size: 0.95rem;
+  color: var(--color-ghost-dim);
+}
+
+/* Rows of buttons: they wrap on narrow screens */
+.toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.toolbar-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.toolbar-label {
+  font-weight: 700;
+  color: var(--color-ghost-dim);
+}
+
+/* A- and A+ are square; Auto is a little wider */
+.size-button {
+  min-width: var(--touch-min);
+  padding-inline: var(--space-2);
+  font-size: 1.1rem;
+  /* The letters A- and A+ always read left to right, even in Arabic and Urdu */
+  direction: ltr;
+}
+
+.size-auto {
+  min-width: 4.5rem;
+}
+
+#original-back {
+  width: 100%;
+}
+
+/* The form pages */
+.pages {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.page-figure {
+  margin: 0;
+}
+
+.page-figure figcaption {
+  margin-bottom: var(--space-1);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--color-orange-light);
+}
+
+/* The canvas keeps its sharp full size but is shown as wide as the screen */
+.page-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  background-color: #ffffff;
+  border: 2px solid var(--color-border);
+  border-radius: 4px;
 }
 
 /* ---------- Tablet and up ---------- */
@@ -358,11 +507,25 @@
     font-size: 1.75rem;
   }
 
-  #download-pdf,
-  #upload-confirm {
+  #upload-confirm,
+  #original-back {
     width: auto;
     align-self: flex-start;
     min-width: 12rem;
+  }
+
+  .summary-actions > .btn,
+  #original-download {
+    width: auto;
+    flex: 0 0 auto;
+    min-width: 12rem;
+  }
+
+  .toolbar {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
   }
 }
 

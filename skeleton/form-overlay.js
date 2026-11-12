@@ -26,6 +26,8 @@ import {
   describeOriginal,
   planTextLayout,
   layoutAt,
+  fitAnswer,
+  boxHasInk,
   textHeight,
   sampleBackground,
   sampleDarkest,
@@ -46,6 +48,12 @@ const TEXT_PAD = 1;
 const SOLID_TEXT_MAX_SIZE = 22;
 // Free space beside a block is used up to this share of the page width away from the page edge.
 const PAGE_MARGIN_SHARE = 0.03;
+// Answers written on the original form (see drawAnswers): dark blue like pen ink ...
+const ANSWER_INK = '#14267b';
+// ... starting this many pixels from the left edge of the answer box ...
+const ANSWER_PAD = 2;
+// ... and never taller than this share of the page height (a big empty box does not get huge letters).
+const ANSWER_MAX_HEIGHT_SHARE = 0.02;
 // Languages written from right to left.
 const RTL_LANGS = ['ar', 'ur'];
 
@@ -264,4 +272,84 @@ export function drawOverlay(canvas, image, prepared, { lang = '', scaleOffset = 
     drawn.push({ text: base.text, lines, size, usedShort: base.usedShort, group: base.group, align: rtl ? 'right' : 'left', x, area: item.area, fits });
   });
   return drawn;
+}
+
+/**
+ * Which answer boxes of a page already hold text or other ink? (A form that was already partly
+ * filled in.) Reads the pixels of the page once.
+ * @param {HTMLImageElement} image
+ * @param {number[][]} boxes  [ymin, xmin, ymax, xmax] on a 0 to 1000 scale
+ * @returns {boolean[]} one answer per box: true = something is already written there
+ */
+export function findOccupiedBoxes(image, boxes) {
+  if (boxes.length === 0) return [];
+  const width = image.naturalWidth || image.width;
+  const height = image.naturalHeight || image.height;
+
+  const scratch = document.createElement('canvas');
+  scratch.width = width;
+  scratch.height = height;
+  const ctx = scratch.getContext('2d', { willReadFrequently: true });
+  ctx.drawImage(image, 0, 0, width, height);
+  const pixels = ctx.getImageData(0, 0, width, height);
+
+  const occupied = boxes.map((box) => boxHasInk(pixels, boxToPixels(box, width, height)));
+  scratch.width = 0; // let the browser free the memory
+  return occupied;
+}
+
+/**
+ * Draw a page with answers written inside their answer boxes (Spirit Clerk: "Fill the original
+ * form"). Nothing is covered or changed: the page is drawn as it is and the answers are written
+ * on top, left-aligned and vertically centred, in dark blue. Cheap to call again for A- / A+.
+ * @param {HTMLCanvasElement} canvas
+ * @param {HTMLImageElement} image
+ * @param {{text:string, box:number[]}[]} items  box = [ymin, xmin, ymax, xmax] on a 0 to 1000 scale
+ * @param {{scaleOffset?:number}} options  scaleOffset = A- / A+ presses away from Auto (0 = auto-fit)
+ * @returns {{text:string, lines:string[], size:number, fits:boolean}[]} what was drawn, one per item
+ */
+export function drawAnswers(canvas, image, items, { scaleOffset = 0 } = {}) {
+  const width = image.naturalWidth || image.width;
+  const height = image.naturalHeight || image.height;
+
+  // Changing the size also clears the canvas and resets its settings.
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(image, 0, 0, width, height);
+
+  ctx.direction = 'ltr'; // answers are English
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
+  ctx.fillStyle = ANSWER_INK;
+
+  const memo = new Map(); // measuring is the slow part: remember every answer
+  const measureAt = (text, size) => {
+    const key = `${size}|${text}`;
+    let value = memo.get(key);
+    if (value === undefined) {
+      ctx.font = `${size}px ${FONT_FAMILY}`;
+      value = ctx.measureText(text).width;
+      memo.set(key, value);
+    }
+    return value;
+  };
+
+  const scale = scaleFromOffset(scaleOffset);
+  const maxSize = Math.max(10, Math.round(height * ANSWER_MAX_HEIGHT_SHARE));
+  const lineHeight = 1.15;
+
+  return items.map((item) => {
+    const rect = boxToPixels(item.box, width, height);
+    const boxW = Math.max(1, rect.w - ANSWER_PAD * 2);
+    const { size, lines, fits } = fitAnswer({ text: item.text, boxW, boxH: rect.h, measureAt, maxSize, lineHeight, scale });
+
+    // Centre the lines up and down when they fit; otherwise start at the top edge of the box.
+    const offsetY = fits ? (rect.h - textHeight(lines.length, size, lineHeight)) / 2 : 0;
+    ctx.font = `${size}px ${FONT_FAMILY}`;
+    lines.forEach((line, i) => {
+      ctx.fillText(line, rect.x + ANSWER_PAD, rect.y + offsetY + i * size * lineHeight);
+    });
+    return { text: item.text, lines, size, fits };
+  });
 }

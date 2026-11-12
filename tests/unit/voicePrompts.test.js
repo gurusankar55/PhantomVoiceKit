@@ -12,7 +12,7 @@ import { matchCommand, parseWords, normalize } from '../../skeleton/voice-comman
 const LOCALES_DIR = path.join(process.cwd(), 'skeleton', 'locales');
 const load = (code) => JSON.parse(fs.readFileSync(path.join(LOCALES_DIR, code + '.json'), 'utf8'));
 
-// The yes word and the "again" word named in spiritClerk.confirmPrompt of each locale
+// The yes word and the "again" word of each locale (used by Ghost Tutor; Spirit Clerk uses correct / wrong)
 // ({ yes } is also named in ghostTutor.confirmTopic).
 const PROMPT_WORDS = {
   ar: { yes: 'نعم', redo: 'مرة أخرى' },
@@ -51,8 +51,7 @@ describe('words named in the spoken prompts are accepted by matchCommand', () =>
       const named = PROMPT_WORDS[code];
 
       // The word really is named in the prompt text (so the test checks what users hear).
-      assert.ok(normalize(data['spiritClerk.confirmPrompt']).includes(normalize(named.yes)), 'yes word not in prompt');
-      assert.ok(normalize(data['spiritClerk.confirmPrompt']).includes(normalize(named.redo)), 'redo word not in prompt');
+      // (spiritClerk.confirmPrompt now names "correct" / "wrong": see voiceConfirm.test.js)
       assert.ok(normalize(data['ghostTutor.confirmTopic']).includes(normalize(named.yes)), 'yes word not in topic prompt');
 
       // matchCommand accepts them, also with punctuation, capitals and a question mark.

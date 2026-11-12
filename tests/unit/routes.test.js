@@ -57,7 +57,7 @@ const routes = [
       { fileBase64: 'QUJD', mimeType: 'text/plain', lang: 'en-US' },
     ],
     fakeResult: { fields: [{ label: 'Name', inputType: 'text', question: 'Your name?', help: ' Full name ' }] },
-    expected: { fields: [{ label: 'Name', inputType: 'text', question: 'Your name?', help: 'Full name', kind: 'text' }] },
+    expected: { fields: [{ label: 'Name', inputType: 'text', question: 'Your name?', help: 'Full name', kind: 'text', answerBox: null, page: 0 }] },
   },
   {
     name: 'lesson',
@@ -185,7 +185,20 @@ describe('POST /api/extract-fields kind', () => {
   const path = '/api/extract-fields';
   const body = { fileBase64: 'QUJD', mimeType: 'application/pdf', lang: 'en-US' };
 
-  test('keeps the five known kinds and turns missing or unknown kinds into "text"', async () => {
+  test('"code" (PAN, IFSC...) is a known kind, and the prompt explains it', async () => {
+    let seen;
+    const app = makeApp(path, createExtractFieldsRouter(async (args) => {
+      seen = args;
+      return { fields: [{ label: 'PAN', kind: 'code' }, { label: 'Phone', kind: 'number' }] };
+    }));
+    const res = await request(app).post(path).send(body);
+    assert.deepEqual(res.body.fields.map((f) => f.kind), ['code', 'number']);
+    assert.match(seen.prompt, /"code"/);
+    assert.match(seen.prompt, /PAN/);
+    assert.match(seen.prompt, /IFSC/);
+  });
+
+  test('keeps the six known kinds and turns missing or unknown kinds into "text"', async () => {
     const fakeFields = [
       { label: 'Last name', kind: 'name' },
       { label: 'Email', kind: 'email' },

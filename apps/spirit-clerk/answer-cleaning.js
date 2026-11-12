@@ -1,0 +1,136 @@
+// answer-cleaning.js
+// Pure functions that tidy a heard or typed answer according to the kind of field.
+// Speech recognition adds full stops, spaces and capital letters that spoil a phone number, a PAN
+// code or an e-mail address. No browser or DOM access here, so they are easy to test.
+//
+// Kinds: "number" (digits only), "code" (PAN, IFSC...: capital letters and digits),
+//        "email" (lower case, spoken "at" / "dot" become @ and .), "name", "date", "text".
+
+import { cleanAnswer } from '../../skeleton/text-fallback-utils.js';
+import { toTitleCase } from './form-utils.js';
+
+// Kinds that are cleaned by their own rules (everything else just loses its trailing full stop).
+const STRICT_KINDS = ['number', 'code', 'email'];
+
+// Spoken "at" and "dot" in English are always understood, whatever the language of the form.
+const ENGLISH_AT = ['at', 'at the rate', 'at sign'];
+const ENGLISH_DOT = ['dot', 'period'];
+
+// The digit 0 of each script that has its own digits: a digit in that script is its offset + 0..9.
+const DIGIT_ZEROS = [0x0660, 0x06f0, 0x0966, 0x09e6, 0x0a66, 0x0ae6, 0x0b66, 0x0be6, 0x0c66, 0x0ce6, 0x0d66, 0xff10];
+
+// English digit words, for when the recognizer writes "one two three" instead of "1 2 3".
+const DIGIT_WORDS = { zero: '0', one: '1', two: '2', three: '3', four: '4', five: '5', six: '6', seven: '7', eight: '8', nine: '9' };
+
+/**
+ * Turn digits of other scripts (Tamil ௯, Arabic ٩, Devanagari ९, full-width ９ ...) into 0-9 and
+ * English digit words ("nine") into digits.
+ * @param {string} text
+ * @returns {string}
+ */
+export function normalizeDigits(text) {
+  let result = '';
+  for (const character of String(text ?? '')) {
+    const code = character.codePointAt(0);
+    const zero = DIGIT_ZEROS.find((start) => code >= start && code <= start + 9);
+    result += zero === undefined ? character : String(code - zero);
+  }
+  return result.replace(/(?<![\p{L}\p{N}])(zero|one|two|three|four|five|six|seven|eight|nine)(?![\p{L}\p{N}])/giu, (word) => DIGIT_WORDS[word.toLowerCase()]);
+}
+
+// Escape the characters that have a meaning in a regular expression.
+function escapeRegExp(text) {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// Replace each spoken word of `words` (whole words only) by `symbol`. Longer words go first so
+// "at the rate" is found before "at".
+function replaceSpoken(text, words, symbol) {
+  const unique = [...new Set(words.map((word) => String(word).trim().toLowerCase()).filter((word) => word !== ''))];
+  unique.sort((a, b) => b.length - a.length);
+  let result = text;
+  for (const word of unique) {
+    const pattern = new RegExp(`(?<![\\p{L}\\p{N}\\p{M}])${escapeRegExp(word)}(?![\\p{L}\\p{N}\\p{M}])`, 'gu');
+    result = result.replace(pattern, ` ${symbol} `);
+  }
+  return result;
+}
+
+// Remove punctuation and spaces at the end (and the start) of an e-mail address.
+function trimEmail(text) {
+  return text.replace(/^[\s.,;:!?\u3002\u0964-]+/u, '').replace(/[\s.,;:!?\u3002\u0964-]+$/u, '');
+}
+
+/**
+ * Digits only: "98765 43210." -> "9876543210"; "९८७" -> "987".
+ * @param {string} text
+ */
+export function cleanNumber(text) {
+  return normalizeDigits(String(text ?? '').normalize('NFKC')).replace(/[^0-9]/g, '');
+}
+
+/**
+ * A code such as PAN or IFSC: capital letters and digits only, no spaces, dots or dashes.
+ * "abcde 1234 f." -> "ABCDE1234F".
+ * @param {string} text
+ */
+export function cleanCode(text) {
+  return normalizeDigits(String(text ?? '').normalize('NFKC'))
+    .replace(/[^\p{L}\p{M}\p{N}]/gu, '')
+    .toUpperCase();
+}
+
+/**
+ * An e-mail address: lower case, no spaces, spoken "at" / "dot" (English and the words of the
+ * language) become @ and ".". "John dot Doe at Gmail dot com." -> "john.doe@gmail.com".
+ * @param {string} text
+ * @param {{atWords?:string[], dotWords?:string[]}} [words]  the words of the language (see voice.atWords)
+ */
+export function cleanEmail(text, { atWords = [], dotWords = [] } = {}) {
+  let result = String(text ?? '').normalize('NFKC').toLowerCase();
+  result = replaceSpoken(result, [...atWords, ...ENGLISH_AT], '@');
+  result = replaceSpoken(result, [...dotWords, ...ENGLISH_DOT], '.');
+  return trimEmail(result.replace(/\s+/gu, ''));
+}
+
+/**
+ * Clean an answer by the kind of its field.
+ *   number -> digits only            code  -> UPPERCASE letters and digits, nothing else
+ *   email  -> lower case, @ and .    name  -> no trailing full stop, Title Case
+ *   others -> no trailing full stop
+ * @param {string} text
+ * @param {string} kind
+ * @param {{atWords?:string[], dotWords?:string[]}} [words]
+ * @returns {string}  may be empty
+ */
+export function cleanByKind(text, kind, words = {}) {
+  if (kind === 'number') return cleanNumber(text);
+  if (kind === 'code') return cleanCode(text);
+  if (kind === 'email') return cleanEmail(text, words);
+  const plain = cleanAnswer(text);
+  return kind === 'name' ? toTitleCase(plain) : plain;
+}
+
+/**
+ * The text to keep as "what was heard". Number, code and e-mail answers are cleaned at once, so
+ * the user sees "9876543210" and not "98765 43210." Other answers only lose their trailing full stop.
+ */
+export function cleanHeard(text, kind, words = {}) {
+  return STRICT_KINDS.includes(kind) ? cleanByKind(text, kind, words) : cleanAnswer(text);
+}
+
+/**
+ * Does this text still hold letters of a script other than Latin? A code or an e-mail address
+ * heard in Tamil letters has to be written in Latin letters (transliterated) first.
+ * @param {string} text
+ */
+export function hasNonLatinLetters(text) {
+  return /(?!\p{Script=Latin})\p{L}/u.test(String(text ?? ''));
+}
+
+/**
+ * Is this a kind that is cleaned on this device instead of being translated?
+ */
+export function isStrictKind(kind) {
+  return STRICT_KINDS.includes(kind);
+}

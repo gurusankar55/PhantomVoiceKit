@@ -51,6 +51,9 @@
       <button id="mic-button" type="button" class="btn" data-i18n="spiritClerk.speak">Speak</button>
       <p id="mic-message" hidden></p>
       <p id="listening-indicator" class="listening-indicator" role="status" hidden><span class="listening-dot" aria-hidden="true"></span><span data-i18n="common.listening">Listening... please speak now.</span></p>
+      <!-- What is heard so far, shown while the user speaks -->
+      <p id="live-text" class="live-text" aria-live="polite" hidden></p>
+      <button id="done-button" type="button" class="btn btn--secondary" hidden data-i18n="spiritClerk.done">Done</button>
 
       <!-- Typed-answer fallback is rendered here by app.js -->
       <div id="text-fallback-container"></div>
@@ -60,8 +63,8 @@
 
       <div id="confirm-controls" hidden>
         <p id="confirm-prompt" hidden></p>
-        <button id="confirm-button" type="button" class="btn" data-i18n="spiritClerk.confirm">Confirm</button>
-        <button id="redo-button" type="button" class="btn btn--secondary" data-i18n="spiritClerk.redo">Redo</button>
+        <button id="confirm-button" type="button" class="btn btn--correct" data-i18n="spiritClerk.confirm">✓ Correct</button>
+        <button id="redo-button" type="button" class="btn btn--wrong" data-i18n="spiritClerk.redo">✗ Wrong</button>
       </div>
 
       <p id="fill-message" role="alert" hidden></p>
@@ -74,14 +77,48 @@
       <div id="summary-loading" hidden><span class="spinner"></span> <span data-i18n="spiritClerk.preparing">Preparing your summary...</span></div>
       <ul id="summary-list"></ul>
       <p id="summary-skipped" hidden></p>
-      <button id="download-pdf" type="button" class="btn" data-i18n="spiritClerk.downloadPdf">Download PDF</button>
+      <div class="summary-actions">
+        <button id="download-pdf" type="button" class="btn" data-i18n="spiritClerk.downloadPdf">Download PDF</button>
+        <button id="fill-original" type="button" class="btn btn--secondary" data-i18n="fillOriginal.button">Fill the original form</button>
+      </div>
       <p id="summary-message" class="error-message" role="alert" hidden></p>
+    </section>
+
+    <!-- Screen 4: the original form with the answers written on it -->
+    <section id="screen-original" class="screen" hidden>
+      <h2 data-i18n="fillOriginal.heading">Your original form, filled in</h2>
+      <p data-i18n="fillOriginal.hint">Your answers are written on your form in English. Check that each one is in the right place.</p>
+      <ul id="original-notices" class="notices" hidden></ul>
+      <p id="original-nobox" hidden data-i18n="fillOriginal.noBoxes">We could not find the empty spaces on this form. Your answers are listed below.</p>
+      <div class="toolbar">
+        <!-- Text size: A- / Auto / A+ (the letters are the same in every language) -->
+        <div class="toolbar-group" role="group" aria-labelledby="original-size-label">
+          <span id="original-size-label" class="toolbar-label" data-i18n="formTranslator.textSize">Text size</span>
+          <button id="original-smaller" type="button" class="btn btn--secondary size-button" data-i18n-attr="aria-label:formTranslator.smallerLabel" aria-label="Make text smaller">A-</button>
+          <button id="original-auto" type="button" class="btn btn--secondary size-auto" data-i18n-attr="aria-label:formTranslator.autoLabel" aria-label="Fit the text automatically"><span data-i18n="formTranslator.auto">Auto</span></button>
+          <button id="original-bigger" type="button" class="btn btn--secondary size-button" data-i18n-attr="aria-label:formTranslator.biggerLabel" aria-label="Make text bigger">A+</button>
+        </div>
+        <div class="toolbar-group">
+          <button id="original-download" type="button" class="btn" data-i18n="spiritClerk.downloadPdf">Download PDF</button>
+        </div>
+      </div>
+      <p id="original-message" class="error-message" role="alert" hidden></p>
+      <!-- Answers that have no empty space on the form -->
+      <div id="original-unplaced" hidden>
+        <h3 data-i18n="fillOriginal.unplacedTitle">Answers that could not be placed</h3>
+        <p data-i18n="fillOriginal.unplacedHint">There was no empty space for these answers on the form. They are listed on the last page of the PDF.</p>
+        <ul id="original-unplaced-list" class="notices"></ul>
+      </div>
+      <!-- One canvas per page is added here by app.js -->
+      <div id="original-pages" class="pages"></div>
+      <button id="original-back" type="button" class="btn btn--secondary" data-i18n="fillOriginal.backToSummary">Back to my answers</button>
     </section>
 
   </main>
 
-  <!-- jsPDF must load BEFORE app.js so window.jspdf exists -->
+  <!-- jsPDF (download) and pdf.js (reads PDF pages) must load BEFORE app.js -->
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
   <script type="module" src="/apps/spirit-clerk/app.js"></script>
 </body>
 </html>

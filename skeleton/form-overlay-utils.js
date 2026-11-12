@@ -288,6 +288,35 @@ export function fitText({ text, boxW, boxH, measureAt, lang = '', minSize = 6, m
 }
 
 // ---------------------------------------------------------------------------
+// An answer written inside its box (Spirit Clerk: "Fill the original form")
+// ---------------------------------------------------------------------------
+
+/**
+ * Size and lines of ONE answer written inside its (empty) answer box.
+ * The size is the largest whole size at which the answer fits (at most maxSize), never below
+ * minSize. Words are never split: a line breaks only between words, and a word that is wider
+ * than the box stays whole (then fits is false). A- / A+ change the size afterwards (scale).
+ * @param {object} options
+ *   text        the answer
+ *   boxW, boxH  size of the area the text may use, in pixels
+ *   measureAt   (s, size) => width of string s at that size
+ *   maxSize     largest size (default: the box height)
+ *   minSize     smallest size (default 6)
+ *   lineHeight  line height as a multiple of the size (default 1.15)
+ *   scale       multiplier from the A- / A+ buttons (1 = Auto)
+ * @returns {{size:number, lines:string[], fits:boolean, auto:number}}
+ *   auto = the size before scale was applied
+ */
+export function fitAnswer({ text, boxW, boxH, measureAt, maxSize, minSize = 6, lineHeight = 1.15, scale = 1 }) {
+  const cap = Math.max(minSize, Math.floor(Math.min(maxSize ?? boxH, boxH)));
+  // 0 means "does not fit even at the smallest size": use the smallest size anyway.
+  const auto = maxFitSize({ text, boxW, boxH, measureAt, lineHeight, minSize, maxSize: cap }) || minSize;
+  const size = scale === 1 ? auto : Math.max(minSize, Math.round(auto * scale));
+  const { lines, fits } = layoutAt({ text, boxW, boxH, measureAt, size, lineHeight });
+  return { size, lines, fits, auto };
+}
+
+// ---------------------------------------------------------------------------
 // One font size per group of similar lines
 // ---------------------------------------------------------------------------
 
@@ -841,6 +870,77 @@ export function insetRect(rect, amount) {
   const dx = Math.min(amount, Math.floor((rect.w - 1) / 2));
   const dy = Math.min(amount, Math.floor((rect.h - 1) / 2));
   return { x: rect.x + dx, y: rect.y + dy, w: rect.w - 2 * dx, h: rect.h - 2 * dy };
+}
+
+// A row of the box counts as a ruled line (not text) when ink fills this share of it ...
+const LINE_ROW_SHARE = 0.85;
+// ... and a column counts as a border or a divider of a comb box when ink fills this share of it.
+const LINE_COLUMN_SHARE = 0.95;
+
+/**
+ * Is there already something written or printed inside an empty answer box? Used before the
+ * answers are written on the original form, so a new answer is never drawn on top of old text.
+ * The edge of the box is skipped (its border), the background colour is the median colour inside,
+ * and long straight lines (the line to write on, the borders and dividers of the box) are not
+ * counted. What is left is ink: letters, digits, stamps.
+ * @param {{data: Uint8ClampedArray|number[], width:number, height:number}} image  RGBA pixels
+ * @param {{x:number, y:number, w:number, h:number}} rect  the answer box in pixels
+ * @param {{inset?:number}} [options]  pixels to skip on every side (default: 20% of the box height, at least 2)
+ * @returns {boolean}
+ */
+export function boxHasInk(image, rect, { inset } = {}) {
+  const { data, width, height } = image;
+  const pad = inset ?? Math.max(2, Math.round(rect.h * 0.2));
+  const x0 = Math.max(0, rect.x + pad);
+  const y0 = Math.max(0, rect.y + pad);
+  const x1 = Math.min(width, rect.x + rect.w - pad);
+  const y1 = Math.min(height, rect.y + rect.h - pad);
+  const w = x1 - x0;
+  const h = y1 - y0;
+  if (w < 4 || h < 3) return false; // too small to hold anything
+
+  // The background: the middle colour of all the pixels inside (most of them are background).
+  const reds = [];
+  const greens = [];
+  const blues = [];
+  for (let py = y0; py < y1; py++) {
+    for (let px = x0; px < x1; px++) {
+      const i = (py * width + px) * 4;
+      if (data[i + 3] < 128) continue;
+      reds.push(data[i]);
+      greens.push(data[i + 1]);
+      blues.push(data[i + 2]);
+    }
+  }
+  if (reds.length === 0) return false;
+  const background = { r: median(reds), g: median(greens), b: median(blues) };
+
+  // Which pixels differ clearly from the background?
+  const mask = new Uint8Array(w * h);
+  const rowCount = new Array(h).fill(0);
+  const columnCount = new Array(w).fill(0);
+  for (let row = 0; row < h; row++) {
+    for (let column = 0; column < w; column++) {
+      const i = ((y0 + row) * width + (x0 + column)) * 4;
+      if (data[i + 3] < 128) continue;
+      const pixel = { r: data[i], g: data[i + 1], b: data[i + 2] };
+      if (colorDistance(pixel, background) >= INK_DISTANCE) {
+        mask[row * w + column] = 1;
+        rowCount[row] += 1;
+        columnCount[column] += 1;
+      }
+    }
+  }
+
+  // Count the ink that is not part of a long straight line.
+  let ink = 0;
+  for (let row = 0; row < h; row++) {
+    if (rowCount[row] >= LINE_ROW_SHARE * w) continue; // a line to write on
+    for (let column = 0; column < w; column++) {
+      if (mask[row * w + column] === 1 && columnCount[column] < LINE_COLUMN_SHARE * h) ink += 1;
+    }
+  }
+  return ink >= Math.max(8, Math.round(0.002 * w * h));
 }
 
 /**

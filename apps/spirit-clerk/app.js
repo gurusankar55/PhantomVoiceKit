@@ -10,10 +10,17 @@ import { createTextFallback } from '/skeleton/text-fallback.js';
 import { extractFields, translate } from '/skeleton/api-client.js';
 import { nextRedoOrSkip, pdfFilename, cleanLabel, formatAnswerByKind } from '/apps/spirit-clerk/form-utils.js';
 import { cleanAnswer } from '/skeleton/text-fallback-utils.js';
+import { renderPageImages } from '/skeleton/page-images.js';
+import { MAX_PAGES, pdfPageSize, splitDataUrl } from '/skeleton/page-images-utils.js';
+import { loadImage, drawAnswers, findOccupiedBoxes } from '/skeleton/form-overlay.js';
+import { clampOffset, MIN_OFFSET, MAX_OFFSET } from '/skeleton/form-overlay-utils.js';
+import { answerLine, placeAnswers, moveOccupied, countPlaced, filledPdfFilename } from '/apps/spirit-clerk/fill-original-utils.js';
 import { createNavMenu, createScreenHistory } from '/skeleton/nav-menu.js';
 import { initI18n, t, setI18nText, clearI18n } from '/skeleton/i18n.js';
 import { matchCommand, parseWords } from '/skeleton/voice-commands.js';
 import { createRetryCounter, LISTEN_DELAY_MS } from '/skeleton/voice-retry.js';
+import { silenceMsForKind } from '/skeleton/speech-utils.js';
+import { cleanHeard, cleanByKind, hasNonLatinLetters, isStrictKind } from '/apps/spirit-clerk/answer-cleaning.js';
 
 // Load the translations BEFORE the nav and language dropdown are created.
 await initI18n();
@@ -34,6 +41,8 @@ const state = {
   fieldsLang: null,    // { label, bcp47 } the questions were generated in
   language: getCurrentLanguage(), // { label, bcp47 }
   selectedFile: null,  // the valid file chosen by the user (kept for retries)
+  pages: [],           // page images of the uploaded form: { dataUrl } (up to 5), kept for the preview
+  pagesSkipped: 0,     // pages ignored because of the page limit
 };
 
 // ---------- DOM references ----------
@@ -42,6 +51,7 @@ const screens = {
   upload: document.getElementById('screen-upload'),
   fill: document.getElementById('screen-fill'),
   summary: document.getElementById('screen-summary'),
+  original: document.getElementById('screen-original'),
 };
 const fileInput = document.getElementById('file-input');
 const fileName = document.getElementById('file-name');
@@ -66,7 +76,11 @@ const helpButton = document.getElementById('help-button');
 const helpText = document.getElementById('help-text');
 const confirmPrompt = document.getElementById('confirm-prompt');
 const listeningIndicator = document.getElementById('listening-indicator');
-const notUnderstood = createRetryCounter(); // "I did not understand" retries (max 2)
+const liveText = document.getElementById('live-text');
+const doneButton = document.getElementById('done-button');
+// "I did not understand" is said ONCE. After that the heard text goes into the editable box.
+const notUnderstood = createRetryCounter(1);
+let lastHeard = ''; // the live text of the answer being spoken (shown again in the editable box)
 // ---------- Form-fill state ----------
 
 let fillActive = false;   // true while the form-fill screen is running
@@ -259,19 +273,6 @@ fileInput.addEventListener('change', () => {
   uploadConfirm.disabled = false;
 });
 
-// Read a file and resolve with its base64 text (without the data: prefix).
-function readFileAsBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = String(reader.result);
-      resolve(result.slice(result.indexOf(',') + 1));
-    };
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(file);
-  });
-}
-
 // "My Form.final.pdf" -> "My_Form_final" (letters, digits, - and _ only).
 function makeFormName(fileName) {
   const withoutExtension = fileName.replace(/\.[^.]*$/, '');
@@ -289,9 +290,11 @@ uploadConfirm.addEventListener('click', async () => {
   uploadLoading.hidden = false;
 
   try {
-    const fileBase64 = await readFileAsBase64(file);
+    // The form (photo or PDF) becomes up to 5 page images. They are sent to the server, and the
+    // same pictures are shown later, so the answer boxes the AI finds match them.
+    const { images, skipped } = await renderPageImages(file);
     const lang = getCurrentLanguage().bcp47;
-    const result = await extractFields({ fileBase64, mimeType: file.type, lang });
+    const result = await extractFields({ images: images.map(({ dataUrl }) => splitDataUrl(dataUrl)), lang });
 
     if (result.error) {
       showUploadMessage(friendlyError(result.error));
@@ -315,10 +318,13 @@ uploadConfirm.addEventListener('click', async () => {
     }));
     state.answers = [];
     state.currentIndex = 0;
+    state.pages = images;
+    state.pagesSkipped = skipped;
     state.formName = makeFormName(file.name);
     startFormFill();
   } catch (err) {
-    showUploadMessage('spiritClerk.errReadFile');
+    if (err && err.message === 'pdf_failed') showUploadMessage('formTranslator.errPdf');
+    else showUploadMessage('spiritClerk.errReadFile');
   } finally {
     // Always hide the spinner; keep the file so the user can retry.
     uploadLoading.hidden = true;
@@ -348,6 +354,31 @@ function setListening(isListening) {
   setI18nText(micButton, isListening ? 'spiritClerk.stop' : 'spiritClerk.speak');
   micButton.setAttribute('aria-pressed', String(isListening));
   listeningIndicator.hidden = !isListening; // clear "Listening..." sign
+  // "Done" finishes an answer early; it is only needed while an answer (not a command) is heard.
+  doneButton.hidden = !(isListening && listenMode === 'answer');
+  if (!isListening) {
+    liveText.hidden = true;
+    liveText.textContent = '';
+  }
+}
+
+// The words of the current language for "at" and "dot" in an e-mail address.
+function emailWords() {
+  return { atWords: parseWords(t('voice.atWords')), dotWords: parseWords(t('voice.dotWords')) };
+}
+
+// The text of an answer as it is kept, cleaned for the kind of the current field
+// (digits only for a number, UPPERCASE for a code, lower case with @ for an e-mail...).
+function cleanForField(text, field) {
+  return cleanHeard(text, field ? field.kind : 'text', emailWords());
+}
+
+// Live text while the user speaks.
+function handleInterim(text) {
+  if (listenMode !== 'answer') return;
+  lastHeard = text;
+  liveText.textContent = text;
+  liveText.hidden = text === '';
 }
 
 // Stop any speech that is playing and any microphone that is listening.
@@ -379,6 +410,9 @@ function createSpeechEngines() {
     },
     onError: (info) => {
       if (speechInput === created) handleVoiceError(info);
+    },
+    onInterim: (text) => {
+      if (speechInput === created) handleInterim(text);
     },
   });
   speechInput = created;
@@ -432,6 +466,7 @@ function askCurrentQuestion(notice) {
   phase = 'asking';
   pendingAnswer = null;
   autoListenTried = false;
+  lastHeard = '';
   notUnderstood.reset();
 
   // Reset the screen for this question.
@@ -534,8 +569,12 @@ function startAnswerListening() {
   if (phase !== 'asking' || micListening || voiceDisabled) return;
   if (!speechInput || !speechInput.supported) return;
   listenMode = 'answer';
+  lastHeard = '';
   setListening(true); // set first: start() may report an error right away
-  speechInput.start();
+  // Keep listening through short pauses: the answer ends after 2.5 s of silence (4 s for a
+  // number, a code or an e-mail address, which people read out slowly), or when "Done" is pressed.
+  const field = state.fields[state.currentIndex];
+  speechInput.start({ continuous: true, silenceMs: silenceMsForKind(field ? field.kind : 'text') });
 }
 
 // Open the microphone ONCE for a command ("yes" / "again").
@@ -545,7 +584,7 @@ function startCommandListening() {
   if (!speechInput || !speechInput.supported) return;
   listenMode = 'command';
   setListening(true);
-  speechInput.start();
+  speechInput.start({ continuous: false }); // one short word: "correct" / "wrong"
 }
 
 // Stop command listening (if it is on). Used before Confirm / Redo run.
@@ -612,13 +651,20 @@ micButton.addEventListener('click', () => {
   }
 });
 
+// "Done": finish the answer now with what was heard so far (no need to wait for the silence).
+doneButton.addEventListener('click', () => {
+  if (listenMode === 'answer' && speechInput && speechInput.supported) speechInput.finish();
+});
+
 // A voice result arrived.
 function handleVoiceResult(text) {
   if (!micListening) return; // we already stopped listening: stale result
   if (listenMode === 'command') {
     handleCommandResult(text);
   } else if (listenMode === 'answer') {
-    if (cleanAnswer(text) === '') handleNotUnderstood(); // nothing usable was heard
+    lastHeard = text;
+    // Nothing usable was heard (for a number: no digits at all)
+    if (cleanForField(text, state.fields[state.currentIndex]) === '') handleNotUnderstood();
     else handleAnswer(text);
   }
 }
@@ -626,12 +672,13 @@ function handleVoiceResult(text) {
 // A spoken command while confirming. It is never stored as an answer.
 function handleCommandResult(text) {
   if (phase !== 'confirming') return;
+  // "correct" / "wrong" (the words of the current language; see the confirm prompt)
   const command = matchCommand(text, {
-    yes: parseWords(t('voice.yesWords')),
-    redo: parseWords(t('voice.redoWords')),
+    yes: parseWords(t('voice.correctWords')),
+    redo: parseWords(t('voice.wrongWords')),
   });
   if (command === null) {
-    handleNotUnderstood(); // neither "yes" nor "again"
+    handleNotUnderstood(); // neither "correct" nor "wrong"
     return;
   }
   listenMode = '';
@@ -658,14 +705,17 @@ function handleVoiceError(info) {
 
 // Nothing was heard, or it was unclear, or the mic failed once.
 // Say and show "I did not understand. Please say it once more." and listen
-// again by itself, at most 2 times. After that listening stops and the
-// buttons and the type box stay ready.
+// again by itself, ONCE. After that listening stops: for an answer the heard text is put in the
+// editable box (so one wrong letter can be fixed by typing), and the buttons stay ready.
 function handleNotUnderstood() {
   const mode = listenMode || (phase === 'confirming' ? 'command' : 'answer');
   listenMode = '';
   setListening(false);
   if (speechInput && speechInput.supported) speechInput.stop();
-  if (!notUnderstood.next()) return; // both retries used: stop here
+  if (!notUnderstood.next()) {
+    if (mode === 'answer' && phase === 'asking') offerEditableText();
+    return;
+  }
 
   const myId = askId;
   const myToken = voiceToken;
@@ -685,12 +735,35 @@ function handleNotUnderstood() {
   speechOutput.speak(t('common.notUnderstood'), { onEnd: listenAgain, onError: listenAgain });
 }
 
+// Put what was heard (as far as it went) into the typed-answer box and ask the user to fix it.
+function offerEditableText() {
+  const field = state.fields[state.currentIndex];
+  const typedBox = textFallbackContainer.querySelector('textarea');
+  if (typedBox) {
+    typedBox.value = cleanForField(lastHeard, field);
+    typedBox.focus();
+  }
+  showFillMessage('spiritClerk.fixHeard');
+}
+
 // The English text for something the user said.
 // Names (field.kind === 'name') are NOT translated: they are written in English
 // letters (ஷங்கர் -> Shankar) and then put in Title Case. Other fields are translated.
+// Numbers, codes and e-mail addresses are cleaned on this device (digits only, UPPERCASE letters
+// and digits, lower case with @); only letters of another script are written in Latin letters.
 // Returns '' when the server could not do it.
 async function englishFor(heardText, field) {
   const kind = field ? field.kind : 'text';
+  if (isStrictKind(kind)) {
+    const words = emailWords();
+    const local = cleanByKind(heardText, kind, words);
+    if (kind === 'number' || !hasNonLatinLetters(local)) return local;
+    const spelled = await translate({ text: heardText, targetLang: 'en', transliterate: true });
+    if (spelled && !spelled.error && typeof spelled.translation === 'string') {
+      return cleanByKind(spelled.translation, kind, words);
+    }
+    return '';
+  }
   const result = await translate({ text: heardText, targetLang: 'en', transliterate: kind === 'name' });
   if (result && !result.error && typeof result.translation === 'string') {
     return formatAnswerByKind(cleanAnswer(result.translation), kind);
@@ -701,17 +774,17 @@ async function englishFor(heardText, field) {
 // An answer (voice or typed) arrived for the current question.
 async function handleAnswer(text) {
   if (phase !== 'asking') return; // ignore late or duplicate answers
-  const heardText = cleanAnswer(text); // also covers typed and spoken text
-  if (heardText === '') return;
-
   const myId = askId;
   const field = state.fields[state.currentIndex];
+  // Cleaned for the kind of field (also covers typed and spoken text).
+  const heardText = cleanForField(text, field);
+  if (heardText === '') return;
   phase = 'translating';
   stopEverything();
   clearFillMessage();
 
-  // Already English: only names are tidied (Title Case).
-  let englishMeaning = formatAnswerByKind(heardText, field.kind);
+  // Already English: names are tidied (Title Case); numbers, codes and e-mails are cleaned.
+  let englishMeaning = isStrictKind(field.kind) ? cleanByKind(heardText, field.kind, emailWords()) : formatAnswerByKind(heardText, field.kind);
   if (state.language.bcp47 !== 'en-US') {
     fillLoading.hidden = false;
     // On failure the English meaning stays '' (shown as unavailable).
@@ -782,6 +855,7 @@ const summaryLoading = document.getElementById('summary-loading');
 const summaryList = document.getElementById('summary-list');
 const summarySkipped = document.getElementById('summary-skipped');
 const downloadPdfButton = document.getElementById('download-pdf');
+const fillOriginalButton = document.getElementById('fill-original');
 const summaryMessage = document.getElementById('summary-message');
 
 let summaryListenerAttached = false; // the Download click listener is added once
@@ -798,7 +872,7 @@ function answerText(answer) {
 function pdfAnswerText(answer) {
   // PDF stays English on purpose (Requirement 17.9): do not translate these.
   if (answer.skipped) return '(skipped)';
-  return answer.englishMeaning || '(translation unavailable)';
+  return answerLine(answer); // the English meaning, or '(translation unavailable)'
 }
 
 // Show the filled summary screen.
@@ -815,12 +889,14 @@ async function showSummary() {
   // Attach the Download button listener only once.
   if (!summaryListenerAttached) {
     downloadPdfButton.addEventListener('click', downloadPdf);
+    fillOriginalButton.addEventListener('click', showOriginal);
     summaryListenerAttached = true;
   }
 
   // Translate answers that have no English meaning yet (in parallel).
   summaryLoading.hidden = false;
   downloadPdfButton.disabled = true;
+  fillOriginalButton.disabled = true;
   await Promise.all(
     state.answers.map(async (answer) => {
       if (!answer || answer.skipped || answer.englishMeaning) return;
@@ -835,6 +911,7 @@ async function showSummary() {
   );
   summaryLoading.hidden = true;
   downloadPdfButton.disabled = false;
+  fillOriginalButton.disabled = state.pages.length === 0;
 
   // Render every field in document order.
   let skippedCount = 0;
@@ -913,6 +990,186 @@ function downloadPdf() {
     summaryMessage.hidden = false;
   }
 }
+
+// ---------- Fill the original form (Requirement 24) ----------
+
+const PDF_JPEG_QUALITY = 0.92; // quality of the pages inside the downloaded PDF
+
+const originalNotices = document.getElementById('original-notices');
+const originalNoBox = document.getElementById('original-nobox');
+const originalMessage = document.getElementById('original-message');
+const originalUnplaced = document.getElementById('original-unplaced');
+const originalUnplacedList = document.getElementById('original-unplaced-list');
+const originalPages = document.getElementById('original-pages');
+const originalSmaller = document.getElementById('original-smaller');
+const originalAuto = document.getElementById('original-auto');
+const originalBigger = document.getElementById('original-bigger');
+const originalDownload = document.getElementById('original-download');
+const originalBack = document.getElementById('original-back');
+
+// What the preview shows now.
+const original = {
+  placement: null,  // { pages, unplaced } from placeAnswers
+  figures: [],      // { canvas, image } for each page
+  scaleOffset: 0,   // A- / A+ presses away from Auto
+};
+
+function showOriginalMessage(key) {
+  setI18nText(originalMessage, key);
+  originalMessage.hidden = false;
+}
+
+function clearOriginalMessage() {
+  clearI18n(originalMessage);
+  originalMessage.hidden = true;
+}
+
+// Open the preview: the uploaded pages with every confirmed answer written in its answer box.
+async function showOriginal() {
+  clearOriginalMessage();
+  if (state.pages.length === 0) return;
+
+  try {
+    const images = await Promise.all(state.pages.map((page) => loadImage(page.dataUrl)));
+    // A form that already has printed or written answers: do not write on top of them.
+    // A box that already holds text is not used; its answer goes to the list of unplaced answers.
+    const first = placeAnswers(state.fields, state.answers, state.pages.length);
+    const occupied = images.map((image, p) => findOccupiedBoxes(image, first.pages[p].map((entry) => entry.box)));
+    original.placement = moveOccupied(first, occupied);
+    original.scaleOffset = 0;
+
+    // One canvas per page.
+    originalPages.textContent = '';
+    original.figures = images.map((image, index) => {
+      const figure = document.createElement('figure');
+      figure.className = 'page-figure';
+
+      const caption = document.createElement('figcaption');
+      caption.id = `original-caption-${index}`;
+      setI18nText(caption, 'formTranslator.pageLabel', { n: index + 1, total: images.length });
+
+      const canvas = document.createElement('canvas');
+      canvas.className = 'page-canvas';
+      canvas.setAttribute('role', 'img');
+      canvas.setAttribute('aria-labelledby', caption.id);
+
+      figure.append(caption, canvas);
+      originalPages.appendChild(figure);
+      return { canvas, image };
+    });
+
+    // Notes: pages that were ignored (page limit).
+    originalNotices.textContent = '';
+    if (state.pagesSkipped > 0) {
+      const item = document.createElement('li');
+      setI18nText(item, 'formTranslator.pagesLimited', { max: MAX_PAGES });
+      originalNotices.appendChild(item);
+    }
+    originalNotices.hidden = originalNotices.childElementCount === 0;
+
+    // Answers that have no empty space on the form are listed, so none is lost.
+    const { unplaced } = original.placement;
+    originalUnplacedList.textContent = '';
+    for (const entry of unplaced) {
+      const item = document.createElement('li');
+      item.textContent = `${entry.label}: ${entry.text}`; // the form's own words, plain text
+      originalUnplacedList.appendChild(item);
+    }
+    originalUnplaced.hidden = unplaced.length === 0;
+    originalNoBox.hidden = !(unplaced.length > 0 && countPlaced(original.placement) === 0);
+
+    showScreen('original');
+    redrawOriginal();
+  } catch {
+    showOriginalMessage('spiritClerk.pdfError');
+    showScreen('original');
+  }
+}
+
+// Draw every page again with the current text size. Nothing is sent to the server.
+function redrawOriginal() {
+  original.figures.forEach(({ canvas, image }, index) => {
+    const items = original.placement.pages[index].map(({ text, box }) => ({ text, box }));
+    drawAnswers(canvas, image, items, { scaleOffset: original.scaleOffset });
+  });
+  // aria-disabled (not disabled) keeps the keyboard focus on the button.
+  originalSmaller.setAttribute('aria-disabled', String(original.scaleOffset <= MIN_OFFSET));
+  originalBigger.setAttribute('aria-disabled', String(original.scaleOffset >= MAX_OFFSET));
+  originalAuto.setAttribute('aria-disabled', String(original.scaleOffset === 0));
+}
+
+function changeOriginalSize(newOffset) {
+  const offset = clampOffset(newOffset);
+  if (offset === original.scaleOffset) return;
+  original.scaleOffset = offset;
+  redrawOriginal();
+}
+
+originalSmaller.addEventListener('click', () => changeOriginalSize(original.scaleOffset - 1));
+originalBigger.addEventListener('click', () => changeOriginalSize(original.scaleOffset + 1));
+originalAuto.addEventListener('click', () => changeOriginalSize(0));
+
+originalBack.addEventListener('click', () => {
+  screenHistory.back();
+  showScreen('summary');
+});
+
+// Add a page of plain text lines to the PDF (used for the answers that could not be placed).
+function addListPage(doc, title, lines) {
+  doc.addPage('a4', 'portrait');
+  const margin = 40;
+  const maxWidth = doc.internal.pageSize.getWidth() - margin * 2;
+  const pageBottom = doc.internal.pageSize.getHeight() - margin;
+  let y = margin;
+
+  doc.setFontSize(16);
+  doc.text(title, margin, y);
+  y += 24;
+
+  doc.setFontSize(12);
+  const lineHeight = 16;
+  for (const text of lines) {
+    for (const line of doc.splitTextToSize(text, maxWidth)) {
+      if (y + lineHeight > pageBottom) {
+        doc.addPage('a4', 'portrait');
+        y = margin;
+      }
+      doc.text(line, margin, y);
+      y += lineHeight;
+    }
+    y += 4; // small gap between answers
+  }
+}
+
+// Download: one PDF page per page image (the answers are part of the picture), and an extra
+// last page for the answers that could not be placed. The PDF stays English (Requirement 17.9).
+originalDownload.addEventListener('click', () => {
+  clearOriginalMessage();
+  try {
+    if (!window.jspdf || !window.jspdf.jsPDF) throw new Error('jsPDF is not loaded');
+    if (original.figures.length === 0) return;
+
+    let doc = null;
+    for (const { canvas } of original.figures) {
+      const size = pdfPageSize(canvas.width, canvas.height);
+      if (doc === null) {
+        doc = new window.jspdf.jsPDF({ orientation: size.orientation, unit: 'pt', format: [size.width, size.height] });
+      } else {
+        doc.addPage([size.width, size.height], size.orientation);
+      }
+      doc.addImage(canvas.toDataURL('image/jpeg', PDF_JPEG_QUALITY), 'JPEG', 0, 0, size.width, size.height);
+    }
+
+    const { unplaced } = original.placement;
+    if (unplaced.length > 0) {
+      addListPage(doc, 'Answers that could not be placed', unplaced.map((entry) => `${entry.label}: ${entry.text}`));
+    }
+
+    doc.save(filledPdfFilename(state.formName, new Date()));
+  } catch (err) {
+    showOriginalMessage('spiritClerk.pdfError');
+  }
+});
 
 // ---------- Start ----------
 

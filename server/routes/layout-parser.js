@@ -16,7 +16,7 @@ export const MAX_BLOCKS = 300;
 // Names a model may use for the list of blocks (the first one is the one we ask for).
 const LIST_KEYS = ['blocks', 'text_blocks', 'textBlocks', 'items', 'results', 'regions', 'elements', 'data'];
 // Names a model may use for the box.
-const BOX_KEYS = ['box_2d', 'box2d', 'box', 'bbox', 'bounding_box', 'boundingBox', 'bounding_box_2d', 'coordinates', 'coords'];
+export const BOX_KEYS = ['box_2d', 'box2d', 'box', 'bbox', 'bounding_box', 'boundingBox', 'bounding_box_2d', 'coordinates', 'coords'];
 // Names a model may use for the translated text and for the original text.
 const TRANSLATION_KEYS = ['translation', 'translated_text', 'translatedText', 'translated', 'translation_text'];
 const TEXT_KEYS = ['text', 'original_text', 'originalText', 'original', 'source_text', 'source'];
@@ -71,16 +71,18 @@ export function findBlockList(reply) {
 }
 
 /**
- * Read the box of one block.
+ * Read the box of one block (also used for the answer boxes of form fields).
+ * @param {object} item
+ * @param {string[]} [keys]  names the box may have (the first one is the one we ask for)
  * @returns {{box: number[], fixes: string[]} | {error: string}}
  *   box is [ymin, xmin, ymax, xmax] as whole numbers 0..1000
  */
-function readBox(item) {
+export function readBox(item, keys = BOX_KEYS) {
   const fixes = [];
 
-  const boxKey = firstKey(item, BOX_KEYS);
+  const boxKey = firstKey(item, keys);
   if (boxKey === undefined) return { error: 'missing_box' };
-  if (boxKey !== 'box_2d') fixes.push('box_key');
+  if (boxKey !== keys[0]) fixes.push('box_key');
 
   let raw = item[boxKey];
   let numbers;

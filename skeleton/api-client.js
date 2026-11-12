@@ -71,8 +71,12 @@ export function translate({ text, targetLang, transliterate = false }) {
 }
 
 // Ask the server to read the form fields from a base64 PDF/image.
-export function extractFields({ fileBase64, mimeType, lang }) {
-  return postJson('/api/extract-fields', { fileBase64, mimeType, lang }, TIMEOUT_EXTRACT_MS);
+// Either one file (fileBase64 + mimeType) or 1 to 5 page images
+// images: [{ mimeType, data }] (data = base64 without the "data:" prefix).
+// Each returned field has answerBox ([ymin, xmin, ymax, xmax] on a 0 to 1000 scale, or null) and page (0-based).
+export function extractFields({ fileBase64, mimeType, lang, images }) {
+  const body = Array.isArray(images) ? { images, lang } : { fileBase64, mimeType, lang };
+  return postJson('/api/extract-fields', body, TIMEOUT_EXTRACT_MS);
 }
 
 // Translate ONE page image. Returns { blocks: [{ text, translation, box_2d }] } where

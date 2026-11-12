@@ -478,6 +478,29 @@ Build the Phantom Voice Kit from the ground up: project scaffolding → Express 
     - _Requirements: R23.16, R23.17_
   - [x] 15.3 Unit tests: `formOverlayScan.test.js`, `translationRules.test.js`, additions to `layoutParser.test.js`; two real Gemini calls for the final check
 
+- [x] 16. Spirit Clerk: Fill the original form (Requirement 24)
+  - [x] 16.1 Server: `readBox` exported from `layout-parser.js`; new `answer-box-parser.js`; `extract-fields.js` accepts `images`, asks for `answerBox` and `page`, returns both for every field
+    - _Requirements: R24.1, R24.2, R24.3_
+  - [x] 16.2 Shared page rendering: `skeleton/page-images-utils.js` + `skeleton/page-images.js` (moved from the Form Translator, which uses them); `api-client.js` `extractFields({ images })`
+    - _Requirements: R24.4_
+  - [x] 16.3 Pure functions and drawing: `fitAnswer` in `form-overlay-utils.js`, `drawAnswers` in `form-overlay.js`, `apps/spirit-clerk/fill-original-utils.js`
+    - _Requirements: R24.6, R24.7, R24.9_
+  - [x] 16.4 Spirit Clerk UI: pdf.js script, upload sends images, summary button, preview screen with A- / Auto / A+, Download PDF with the extra page; styles
+    - _Requirements: R24.4, R24.5, R24.6, R24.7, R24.8_
+  - [x] 16.5 Locales: new `fillOriginal.*` keys in `en.json` and the 19 other files
+    - _Requirements: R24.10_
+  - [x] 16.6 Unit tests (`answerBoxParser.test.js`, `fillOriginal.test.js`, additions to `routes.test.js`); `npm test`; re-read every changed file; one real Gemini call checked the boxes on a drawn test form (all three matched); manual check in Edge with a real form is still to do
+    - _Requirements: R24.9_
+
+- [x] 17. Spirit Clerk: reliable voice answers (Requirement 25)
+  - [x] 17.1 `skeleton/speech-utils.js`, continuous listening in `skeleton/speech-input.js`, live text and "Done" button
+  - [x] 17.2 `apps/spirit-clerk/answer-cleaning.js`; kind `code` in `server/routes/extract-fields.js`
+  - [x] 17.3 Confirm with `voice.correctWords` / `voice.wrongWords`, two big buttons, one retry then the editable box
+  - [x] 17.4 `boxHasInk`, `findOccupiedBoxes`, `moveOccupied` for the original form
+  - [x] 17.5 New and changed strings in all 20 locale files
+  - [x] 17.6 Unit tests (`speechUtils`, `answerCleaning`, `voiceConfirm`, additions to `fillOriginal`, `routes`); `npm test`. Manual check by voice in Edge is still to do.
+    - _Requirements: R25_
+
 ## Notes
 
 - Tasks marked with `*` are optional and can be skipped for a faster MVP.
@@ -523,7 +546,10 @@ Build the Phantom Voice Kit from the ground up: project scaffolding → Express 
     { "id": 28, "tasks": ["14.1", "14.2"] },
     { "id": 29, "tasks": ["14.3"] },
     { "id": 30, "tasks": ["14.4", "14.5"] },
-    { "id": 31, "tasks": ["14.6"] }
+    { "id": 31, "tasks": ["14.6"] },
+    { "id": 32, "tasks": ["16.1", "16.2", "16.3"] },
+    { "id": 33, "tasks": ["16.4", "16.5"] },
+    { "id": 34, "tasks": ["16.6"] }
   ]
 }
 ```

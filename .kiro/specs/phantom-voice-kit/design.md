@@ -746,3 +746,50 @@ The server console gets one line per page: `[translate-layout] ta-IN received=6 
 - `fitText` never returns a size below its minimum and, when text fits at all, the wrapped height does not exceed the box.
 - `sampleBackground` ignores pixels outside the image and returns white if there is nothing to sample.
 - `validateBlocks` never returns a block with an out-of-range or empty box.
+
+## Fill the original form (Requirement 24)
+
+### New and changed files
+
+| File | Change |
+|---|---|
+| `server/routes/layout-parser.js` | `readBox(item, keys)` is exported and takes the list of key names to look for (default: the `box_2d` family). |
+| `server/routes/answer-box-parser.js` (new) | `parseAnswerBox(item, pageCount)`: tolerant reading of `answerBox` and `page`. |
+| `server/routes/extract-fields.js` | Accepts `images`; prompt asks for `answerBox` and `page`; every field in the answer has both keys. Logs counts only (`fields`, `withBox`). |
+| `skeleton/page-images-utils.js` (new) | Pure: `MAX_PAGES`, `limitPages`, `fitImageSize`, `pdfPageSize` (moved from `translator-utils.js`, which re-exports them). |
+| `skeleton/page-images.js` (new) | Browser: `renderPageImages(file)` turns a photo or PDF (pdf.js) into up to 5 JPEG data URLs (moved from the Form Translator, which now uses it too). |
+| `skeleton/form-overlay-utils.js` | Pure: `fitAnswer` (size, lines and fit of one answer in its box). |
+| `skeleton/form-overlay.js` | `drawAnswers(canvas, image, items, { scaleOffset })`: draws the page and writes answers in dark blue; no cover. |
+| `apps/spirit-clerk/fill-original-utils.js` (new) | Pure: `answerLine`, `placeAnswers(fields, answers, pageCount)`. |
+| `skeleton/api-client.js` | `extractFields` also takes `images`. |
+| `apps/spirit-clerk/*` | pdf.js script, upload sends images, summary button, preview screen. |
+
+### POST /api/extract-fields (additions)
+
+- Request: `{ images: [{ mimeType, data }], lang }` (1 to 5 images, in page order) or the old body. HTTP 400 for an empty list, more than 5 images, an unsupported type or empty data.
+- Prompt addition: "The form may be given as several page images in order. For each field also give `answerBox`: a FLAT list of four whole numbers `[ymin, xmin, ymax, xmax]` on a scale 0 to 1000 for both axes (the same rules as for text boxes) around the EMPTY space where the answer is written: the input box, the line to write on, or the free space right after the label. Do not include the label. Give `page`: the 0-based number of the image the field is on. If a field has no such space, set `answerBox` to null."
+- `parseAnswerBox(item, pageCount)` returns `{ answerBox: number[4] | null, page: number, status }`. Key names tried: `answerBox`, `answer_box`, `answerbox`, `answer_box_2d`, `input_box`, `inputBox`, `answer_area`, and the `box_2d` family; page keys: `page`, `page_index`, `pageIndex`, `page_number` (number or text). A box is usable when, after clamping, it is at least 10 units wide and 4 units high. `page` must be a whole number from 0 to `pageCount - 1`; a missing page is 0 when there is one image, otherwise the box is dropped. The route logs only counts.
+- The cache of Requirement 22/7 keys the request by a hash of all images, so the same form is not read twice.
+
+### Browser flow
+
+1. Upload: `renderPageImages(file)` (photo or PDF) gives up to 5 data URLs; `extractFields({ images: [{ mimeType: 'image/jpeg', data }], lang })`. The data URLs stay in memory as `state.pages`.
+2. Summary screen: buttons "Download PDF" (the old list PDF, unchanged) and "Fill the original form".
+3. Preview screen (`screen-original`): `placeAnswers(fields, answers, pageCount)` returns `{ pages: [[{ index, text, box }]], unplaced: [{ index, label, text }] }`. A field is placed when its `answerBox` is usable and its `page` exists; it is only placed when it was not skipped. `text` is `answerLine(answer)` = the English meaning, or "(translation unavailable)" (the same text as the summary PDF). Unplaced = answered fields that cannot be placed.
+4. `drawAnswers` loads nothing itself: for each item it converts the box with `boxToPixels`, calls `fitAnswer` and writes the lines at `x = box.x + 2`, vertically centred when they fit (top aligned otherwise), with colour `#14267b`. Nothing is covered. The largest size is `min(box height, 2% of the page height)`; the smallest is 6 px. If a word is wider than the box at the smallest size, the word stays whole and runs over the right edge (never split).
+5. A- / A+ / Auto use `scaleFromOffset` like the Form Translator and redraw all pages.
+6. Download PDF (jsPDF): one page per canvas (`pdfPageSize`, JPEG); if `unplaced` is not empty an extra A4 page "Answers that could not be placed" lists `label: text` lines in English.
+
+### Correctness notes
+
+- `parseAnswerBox` never throws and never returns a box outside 0..1000 or with a zero area.
+- `fitAnswer` never returns a size below its minimum, and when `fits` is true no line is wider than the box and the lines are not higher than the box.
+- `placeAnswers` loses nothing: every answered field is either in exactly one page list or in `unplaced`.
+
+## Reliable voice answers (Requirement 25)
+
+- `skeleton/speech-utils.js` (pure): `SILENCE_MS` 2500, `LONG_SILENCE_MS` 4000, `silenceMsForKind`, `joinParts`, `transcriptFromResults`, `silenceElapsed`.
+- `skeleton/speech-input.js`: `start({ continuous, silenceMs })` and `finish()`. Continuous mode sets `continuous` and `interimResults`, calls `onInterim(textSoFar)`, re-arms a silence timer on every result, restarts the recognition when the browser ends it early (at most 60 times, parts kept in order) and, on silence or `finish()`, calls `stop()`, waits for the last words (at most 1.5 s) and calls `onResult` once with the joined text. Nothing heard gives `{ noSpeech: true }`. One-phrase mode (default) is unchanged and still used by Ghost Tutor.
+- `apps/spirit-clerk/answer-cleaning.js` (pure): `cleanNumber`, `cleanCode`, `cleanEmail`, `cleanByKind`, `cleanHeard`, `normalizeDigits`, `hasNonLatinLetters`. Numbers, codes and e-mails are cleaned on the device; only letters of another script go through `translate({ transliterate: true })`.
+- Confirm step: words from `voice.correctWords` / `voice.wrongWords`; buttons `spiritClerk.confirm` ("✓ ...") and `spiritClerk.redo` ("✗ ..."). The retry counter of Spirit Clerk has limit 1; when it is used up for an answer, `offerEditableText()` fills the typed-answer box with the cleaned live text and shows `spiritClerk.fixHeard`.
+- `skeleton/form-overlay-utils.js` `boxHasInk(image, rect)`: skips an inset (20% of the box height), takes the median colour as background, marks pixels at least 40 colour units away, ignores rows filled to 85% (line to write on) and columns filled to 95% (borders, comb dividers), and says "ink" when at least max(8, 0.2% of the area) pixels are left. `form-overlay.js` `findOccupiedBoxes(image, boxes)` reads the page pixels once; `fill-original-utils.js` `moveOccupied(placement, occupied)` moves answers with a filled box to `unplaced`.
