@@ -18,6 +18,9 @@
   --color-orange: #ff7a1a;
   --color-orange-dark: #d85f00;
   --color-orange-light: #ffa24d;
+  /* Behind light text (pressed button, "listening"): dark enough for WCAG AA (4.8:1 or more,
+     also at the light top of the button sheen). #d85f00 with light text was only 3.4:1. */
+  --color-orange-deep: #a34400;
 
   /* Ghost white */
   --color-ghost: #f6f3ff;
@@ -40,6 +43,17 @@
   --space-3: 1rem;
   --space-4: 1.5rem;
   --radius: 12px;
+
+  /* Soft 3D depth (shadows only: cheap on old phones, and the colours under the text stay
+     exactly the same, so the contrast does not change). Light comes from above. */
+  --depth-btn: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 4px 0 rgba(8, 3, 20, 0.6), 0 6px 10px rgba(0, 0, 0, 0.3);
+  --depth-btn-pressed: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 0 rgba(8, 3, 20, 0.6), 0 2px 4px rgba(0, 0, 0, 0.3);
+  --depth-panel: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 6px 16px rgba(0, 0, 0, 0.35);
+  --depth-tile: inset 0 1px 0 rgba(255, 255, 255, 0.18), inset 0 -3px 0 rgba(0, 0, 0, 0.25), 0 5px 0 rgba(8, 3, 20, 0.55), 0 8px 14px rgba(0, 0, 0, 0.35);
+  --depth-tile-pressed: inset 0 3px 7px rgba(0, 0, 0, 0.45), inset 0 -1px 0 rgba(255, 255, 255, 0.2);
+  /* A soft sheen: a little light at the top and a little shade at the bottom of a button.
+     Weak on purpose so white or dark text keeps WCAG AA contrast on every button colour. */
+  --sheen: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 45%, rgba(0, 0, 0, 0.12) 100%);
 
   /* Ghost icon as an inline SVG data URI (used with CSS mask) */
   --icon-ghost: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M32 4C19 4 10 14 10 27v31l8-6 7 6 7-6 7 6 7-6 8 6V27C54 14 45 4 32 4zm-8 22a4 4 0 110 8 4 4 0 010-8zm16 0a4 4 0 110 8 4 4 0 010-8z' fill-rule='evenodd'/%3E%3C/svg%3E");
@@ -163,6 +177,22 @@ html:not(.i18n-ready) body {
   }
 }
 
+/* Colourful 3D app icons (skeleton/app-icons.js): the SVG fills the box */
+.app-icon-3d {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 3rem;
+  height: 3rem;
+  line-height: 0;
+}
+
+.app-icon-3d svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
 /* ---------- 5. Buttons ---------- */
 .btn,
 button {
@@ -193,6 +223,11 @@ button {
   overflow-wrap: normal;
   word-break: normal;
   hyphens: manual;
+  /* Raised 3D button: a darker bottom edge and a soft shadow; it presses down when tapped.
+     Only transform and box-shadow change, so nothing around it moves (no layout shift). */
+  background-image: var(--sheen);
+  box-shadow: var(--depth-btn);
+  transition: transform 0.08s ease, box-shadow 0.08s ease, background-color 0.15s ease;
 }
 /* Korean: keep each word whole too (the browser would otherwise break between syllables). */
 :lang(ko) .btn,
@@ -207,8 +242,15 @@ button:hover {
 
 .btn:active,
 button:active {
-  background-color: var(--color-orange-dark);
+  background-color: var(--color-orange-deep);
   color: var(--color-ghost);
+}
+
+/* Pressed: the button goes down onto its edge (3 px down, the 4 px edge shrinks to 1 px). */
+.btn:active:not(:disabled):not([aria-disabled="true"]),
+button:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: var(--depth-btn-pressed);
 }
 
 .btn:disabled,
@@ -216,6 +258,7 @@ button:disabled,
 .btn[aria-disabled="true"] {
   cursor: not-allowed;
   opacity: 0.55;
+  box-shadow: var(--depth-btn-pressed); /* flatter: it cannot be pressed */
 }
 
 /* Secondary (outlined) button */
@@ -300,6 +343,7 @@ textarea {
 .dual-display__section {
   margin-bottom: var(--space-3);
   padding: var(--space-3);
+  box-shadow: var(--depth-panel); /* layered depth; the text stays on a flat colour */
   background-color: var(--color-surface);
   border: 2px solid var(--color-border);
   border-inline-start: 6px solid var(--color-orange);
@@ -566,8 +610,19 @@ textarea {
   color: var(--color-ghost);
   text-decoration: none;
   overflow-wrap: normal; /* menu entries wrap between words only, like buttons */
-  border-inline-start: 5px solid transparent;
-  border-radius: var(--radius);
+  /* A raised 3D tile: light top edge, darker bottom edge, soft shadow */
+  background-color: var(--color-surface);
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(0, 0, 0, 0.12));
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  box-shadow: var(--depth-tile);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+/* The colourful 3D icon of the tile (skeleton/app-icons.js) */
+.nav-link .app-icon-3d {
+  width: 2.75rem;
+  height: 2.75rem;
 }
 
 /* "Listening..." indicator shown while the microphone is open */
@@ -636,18 +691,36 @@ textarea {
   min-width: 0;
 }
 
-.nav-link:hover {
-  background-color: var(--color-surface);
+/* Hover, keyboard focus: the tile lifts and tilts a little toward the reader (rotateX tilts
+   the same way in left-to-right and right-to-left languages). */
+.nav-link:hover,
+.nav-link:focus-visible {
+  background-color: var(--color-bg-alt);
+  transform: perspective(600px) translateY(-3px) rotateX(6deg);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), inset 0 -3px 0 rgba(0, 0, 0, 0.25), 0 8px 0 rgba(8, 3, 20, 0.5), 0 12px 18px rgba(0, 0, 0, 0.4);
 }
 
-.nav-link.is-current {
+/* Tap: the tile goes down */
+.nav-link:active {
+  transform: translateY(2px);
+  box-shadow: var(--depth-tile-pressed);
+}
+
+/* The page you are on: the tile is pressed in (orange, dark text: 5.7:1 or more) */
+.nav-link.is-current,
+.nav-link.is-current:hover,
+.nav-link.is-current:focus-visible {
   color: #1a0f2e;
   background-color: var(--color-orange);
-  border-inline-start-color: var(--color-ghost);
+  background-image: linear-gradient(180deg, rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.06));
+  border-color: var(--color-orange-dark);
+  transform: translateY(2px);
+  box-shadow: var(--depth-tile-pressed);
 }
 
-.nav-link.is-current .icon-ghost {
-  background-color: #1a0f2e;
+/* The small English name at full strength on orange (at 80 % it was just under 4.5:1) */
+.nav-link.is-current .brand-sub {
+  opacity: 1;
 }
 
 /* Dim layer behind the drawer */
@@ -689,6 +762,24 @@ body.nav-open {
     animation-duration: 3s;
   }
 
+  /* No lift, tilt or press movement: only the shadow changes, at once. */
+  .btn,
+  button,
+  .nav-link {
+    transition: none;
+  }
+
+  .btn:active:not(:disabled):not([aria-disabled="true"]),
+  button:active:not(:disabled),
+  .nav-link:hover,
+  .nav-link:focus-visible,
+  .nav-link:active,
+  .nav-link.is-current,
+  .nav-link.is-current:hover,
+  .nav-link.is-current:focus-visible {
+    transform: none;
+  }
+
   .nav-drawer,
   .nav-drawer.is-open,
   .nav-overlay,
@@ -727,6 +818,7 @@ body.nav-open {
   min-width: 0; /* lets the text wrap instead of widening the page */
   padding: var(--space-2) var(--space-3);
   background-color: var(--color-surface);
+  box-shadow: var(--depth-panel);
   border-inline-start: 6px solid var(--color-orange);
   border-radius: var(--radius);
   color: var(--color-ghost);
@@ -1125,6 +1217,7 @@ body.nav-open {
   flex-direction: column;
   gap: var(--space-2);
   padding: var(--space-3);
+  box-shadow: var(--depth-panel);
   background-color: var(--color-error-bg);
   border: 2px solid var(--color-error-border);
   border-radius: var(--radius);

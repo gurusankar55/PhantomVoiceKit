@@ -56,6 +56,7 @@
 }
 
 .math-card {
+  box-shadow: var(--depth-panel); /* soft 3D depth (theme.css) */
   display: flex;
   flex-direction: column;
   align-items: center;

@@ -258,6 +258,7 @@
 }
 
 .calm-item {
+  box-shadow: var(--depth-panel); /* soft 3D depth (theme.css) */
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
@@ -366,6 +367,7 @@
 }
 
 .calm-form {
+  box-shadow: var(--depth-panel); /* soft 3D depth (theme.css) */
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
@@ -403,6 +405,7 @@
 }
 
 .calm-help {
+  box-shadow: var(--depth-panel); /* soft 3D depth (theme.css) */
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
@@ -422,6 +425,7 @@
 
 /* A reminder due while the page is open */
 .calm-reminder {
+  box-shadow: var(--depth-panel); /* soft 3D depth (theme.css) */
   display: flex;
   flex-direction: column;
   gap: var(--space-2);

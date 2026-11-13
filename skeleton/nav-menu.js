@@ -1,14 +1,14 @@
 // nav-menu.js
 // Shared navigation header (Requirement 16):
 //   [ ☰ menu ] [ ← Back ] [ coins ] [ sound ]          [ language dropdown ]
-// plus a slide-in drawer with links to Home, Spirit Clerk, Ghost Tutor, Form Translator,
-// Ghost Echo, the Sticker book, My documents and Voice notes.
+// plus a slide-in drawer with a raised 3D tile (with its own icon) for Home and every app.
 //
 // Nothing here touches `document` or `window` when the file is loaded,
 // so createScreenHistory can be imported and tested in plain Node.
 
 import { setI18nText, setI18nAttr } from './i18n.js';
 import { createRewardsBar } from './celebrate.js';
+import { createAppIcon } from './app-icons.js';
 
 // ---------------------------------------------------------------------------
 // Screen history
@@ -154,9 +154,8 @@ export function createNavMenu(
     a.className = 'nav-link';
     a.href = item.href;
 
-    const icon = document.createElement('span');
-    icon.className = 'icon-ghost';
-    icon.setAttribute('aria-hidden', 'true');
+    // Each entry is a raised 3D tile with its own colourful icon (skeleton/app-icons.js).
+    const icon = createAppIcon(item.id);
 
     const text = document.createElement('span');
     setI18nText(text, item.labelKey);
