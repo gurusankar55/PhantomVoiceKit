@@ -601,3 +601,13 @@ Phantom Voice Kit is a reusable skeleton for voice-first web applications with a
 ### Requirement 42: Home and README
 
 1. `home.welcomeText` (all 20 languages) and the README SHALL list all apps.
+
+### Requirement 43: Calm Ghost (new app)
+1. THE new app SHALL live in `apps/calm-time` (big name Tamil "அமைதி நேரம்", small "Calm Ghost · Meditation and Routine"), with a Home card and a nav entry. No Gemini calls; all text in the 20 locale files.
+2. Meditation: 5 / 10 / 20 / 30 minutes; a big circular countdown; a soft Web Audio bell at the start and the end and an optional interval bell (every 1 or 5 minutes); optional spoken guidance from fixed locale phrases with a breathing circle that grows (4 s) and shrinks (6 s); Pause / Resume / Stop; the screen is kept awake when the Wake Lock API exists. Bells follow the shared sound on / off setting.
+3. THE timer SHALL be computed from timestamps (never by counting ticks), so it stays correct while the tab is hidden; marks passed while hidden play at most one bell and only the latest words.
+4. Activity timer: walking, running, exercise, reading or a custom name; 15 / 30 / 45 / 60 / custom minutes (1–240); spoken encouragement at halfway, with 5 minutes left (skipped when it would come within a minute of halfway) and at the end.
+5. Daily routine: items with activity, time, minutes and days of the week; tick done; today's list; a 7-day history; a streak of days with everything done (days with nothing planned are skipped). Saved in localStorage. A removed item stays in the history of earlier days.
+6. Rewards: a finished session or a ticked item calls `correct()`; the tick that completes the whole day calls `levelUp()` and `giftBox()`.
+7. Reminders: "Add reminder" downloads an `.ics` file (daily RRULE, or weekly BYDAY for chosen days, local floating time, an alarm at the time, lines folded at 75 bytes). While the page is open, a due item shows an in-page reminder and, if the user allowed it, a browser Notification. The page explains that phone reminders work through the calendar.
+8. `home.welcomeText` (all 20 languages) and the README SHALL mention the app.

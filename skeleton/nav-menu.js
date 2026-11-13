@@ -70,6 +70,7 @@ const MENU_LINKS = [
   { id: 'picture-book', labelKey: 'nav.pictureBook', href: '/apps/picture-book/index.html', subtitle: 'Picture Book · Talking Words' },
   { id: 'pumpkin-math', labelKey: 'nav.pumpkinMath', href: '/apps/pumpkin-math/index.html', subtitle: 'Pumpkin Math · Count and Add' },
   { id: 'story-time', labelKey: 'nav.storyTime', href: '/apps/story-time/index.html', subtitle: 'Story Time · Read Aloud' },
+  { id: 'calm-time', labelKey: 'nav.calmTime', href: '/apps/calm-time/index.html', subtitle: 'Calm Ghost · Meditation and Routine' },
 ];
 
 // Stop any speech that is currently playing (safe if unsupported).

@@ -1,0 +1,445 @@
+/* Calm Ghost: soft colours, a big round timer, big buttons (mobile first). */
+
+.calm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-width: 40rem;
+  margin: 0 auto;
+}
+
+.app-title {
+  text-align: center;
+  margin: var(--space-3) 0 0;
+}
+
+.screen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.screen[hidden],
+.calm-reminder[hidden],
+.calm-message[hidden],
+.calm-empty[hidden],
+.calm-field[hidden],
+.calm-breath[hidden],
+.calm-breath-label[hidden],
+.calm-row[hidden] {
+  display: none;
+}
+
+.calm-intro,
+.calm-summary {
+  margin: 0;
+  text-align: center;
+  font-size: 1.1rem;
+}
+
+.calm-summary {
+  font-weight: 700;
+  color: #9cff57;
+}
+
+.calm-heading {
+  margin: 0;
+  text-align: center;
+}
+
+.calm-heading:focus {
+  outline: none;
+}
+
+.calm-label {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 1.1rem;
+}
+
+/* The three big choices */
+.calm-choices {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
+  gap: var(--space-2);
+}
+
+.calm-choice {
+  flex-direction: column;
+  min-height: 7rem;
+  padding: var(--space-3);
+  font-size: 1.25rem;
+  color: var(--color-ghost);
+  background-color: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: 20px;
+}
+
+.calm-choice:hover {
+  color: var(--color-ghost);
+  border-color: var(--color-orange);
+  background-color: var(--color-bg-alt);
+}
+
+.calm-choice-icon {
+  font-size: 2.6rem;
+  line-height: 1;
+}
+
+/* Chips: minutes, bells, activities */
+.calm-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.calm-chip {
+  flex: 1 1 6.5rem;
+  min-height: 56px;
+  font-size: 1.15rem;
+  color: var(--color-ghost);
+  background-color: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: 999px;
+}
+
+.calm-chip[aria-pressed="true"] {
+  color: var(--color-bg);
+  background-color: var(--color-orange);
+  border-color: var(--color-orange-light);
+}
+
+.calm-switch {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch-min);
+  font-weight: 700;
+}
+
+.calm-switch input,
+.calm-item-check input,
+.calm-day-pick input {
+  flex-shrink: 0;
+  width: 1.6rem;
+  height: 1.6rem;
+}
+
+.calm-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-weight: 700;
+}
+
+.calm-field input,
+.calm-field select {
+  min-height: var(--touch-min);
+  font: inherit;
+  font-weight: 400;
+}
+
+.calm-field-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr));
+  gap: var(--space-2);
+}
+
+.calm-start {
+  min-height: 64px;
+  font-size: 1.35rem;
+}
+
+.calm-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr));
+  gap: var(--space-2);
+}
+
+.calm-row .btn {
+  min-height: 64px;
+  font-size: 1.25rem;
+}
+
+.calm-message {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  font-weight: 700;
+  background-color: var(--color-bg-alt);
+  border-inline-start: 6px solid var(--color-orange);
+  border-radius: var(--radius);
+}
+
+/* ---------- The round timer ---------- */
+.calm-dial {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: min(80vw, 20rem);
+  aspect-ratio: 1;
+  margin: 0 auto;
+}
+
+.calm-ring,
+.calm-breath,
+.calm-clock-wrap {
+  grid-area: 1 / 1;
+}
+
+.calm-ring {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg); /* the ring starts at the top */
+}
+
+.calm-ring-track,
+.calm-ring-left {
+  fill: none;
+  stroke-width: 10;
+}
+
+.calm-ring-track {
+  stroke: var(--color-surface);
+}
+
+.calm-ring-left {
+  stroke: #9fd8ff;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.25s linear;
+}
+
+.calm-breath {
+  width: 72%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(159, 216, 255, 0.55) 0%, rgba(159, 216, 255, 0.15) 70%, transparent 100%);
+  transform: scale(0.6);
+  transition: transform 0.25s linear;
+}
+
+.calm-clock-wrap {
+  position: relative;
+  margin: 0;
+}
+
+.calm-clock {
+  font-family: var(--font-body);
+  font-size: clamp(2.6rem, 14vw, 4rem);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  direction: ltr;
+  color: var(--color-ghost);
+}
+
+.calm-breath-label {
+  margin: 0;
+  min-height: 2rem;
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #9fd8ff;
+}
+
+/* ---------- Daily routine ---------- */
+.calm-streak {
+  margin: 0;
+  text-align: center;
+  font-weight: 700;
+  color: #ffd23f;
+}
+
+.calm-today {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.calm-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: 16px;
+}
+
+.calm-item--done {
+  border-color: #1f7a45;
+}
+
+.calm-item-check {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch-min);
+  cursor: pointer;
+}
+
+.calm-item-text {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: var(--space-2);
+  font-size: 1.2rem;
+}
+
+.calm-item-time {
+  font-weight: 800;
+}
+
+.calm-item-name {
+  font-weight: 700;
+}
+
+.calm-item--done .calm-item-name {
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+}
+
+.calm-item-minutes {
+  color: var(--color-ghost-dim);
+}
+
+.calm-item-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 8rem), 1fr));
+  gap: var(--space-2);
+}
+
+.calm-item-buttons .btn {
+  min-height: 52px;
+}
+
+.calm-remove {
+  color: #ffd6dd;
+  border-color: #ff6b86;
+}
+
+.calm-empty {
+  margin: 0;
+  color: var(--color-ghost-dim);
+}
+
+.calm-history {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.3rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.calm-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  min-width: 0;
+  padding: var(--space-1) 0;
+  background-color: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: 12px;
+}
+
+.calm-day--today {
+  border-color: var(--color-orange);
+}
+
+.calm-day--complete {
+  background-color: #1f7a45;
+  border-color: #9cff57;
+}
+
+.calm-day-name {
+  max-width: 100%;
+  font-size: clamp(0.65rem, 2.8vw, 0.85rem); /* 7 days must fit a 320 px screen */
+  font-weight: 700;
+  overflow-wrap: normal;
+}
+
+.calm-day-mark {
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.calm-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background-color: var(--color-bg-alt);
+  border-radius: var(--radius);
+}
+
+.calm-days {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.calm-days legend {
+  margin-bottom: var(--space-1);
+  font-weight: 700;
+}
+
+.calm-days-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.calm-day-pick {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: var(--touch-min);
+  padding: 0 var(--space-2);
+  background-color: var(--color-surface);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.calm-help {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background-color: var(--color-surface);
+  border-inline-start: 6px solid #9fd8ff;
+  border-radius: var(--radius);
+}
+
+.calm-help p {
+  margin: 0;
+}
+
+.calm-notify-status:empty {
+  display: none;
+}
+
+/* A reminder due while the page is open */
+.calm-reminder {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background-color: var(--color-bg-alt);
+  border: 3px solid #ffd23f;
+  border-radius: 16px;
+}
+
+.calm-reminder-text {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .calm-breath,
+  .calm-ring-left {
+    transition: none;
+  }
+}

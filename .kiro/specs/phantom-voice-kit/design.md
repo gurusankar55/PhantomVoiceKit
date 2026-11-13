@@ -910,3 +910,11 @@ The server console gets one line per page: `[translate-layout] ta-IN received=6 
 
 - `apps/story-time/story-utils.js`: `STORIES` (6 ids, 8 paragraphs each, keys `story.<id>.title` and `story.<id>.p1`…`p8`), progress `loadProgress` / `saveProgress` (key `phantomVoiceKit.storyTime`, `{ last, at: { id: index }, finished: [] }`), `clampParagraph`, font scale `FONT_STEPS` and `clampFontStep`, `storyCommand(text, words)` ('next' | 'back' | 'stop' | null).
 - The page: story list, the reader with highlighted paragraph, Play / Pause / Resume, Previous / Next, A- / A+, a voice-command button (listens once while reading is paused). Reading the last paragraph to its end calls `giftBox()`.
+
+## Calm Ghost (Requirement 43)
+- `apps/calm-time/calm-utils.js` (pure, tested):
+  - Timer `{ durationMs, startedAt, pausedAt, pausedMs }`: `startTimer`, `pauseTimer`, `resumeTimer`, `elapsedMs`, `remainingMs`, `fractionLeft`, `isFinished`, `formatClock`. Always computed from `Date.now()`.
+  - Marks `{ atMs, kind: 'bell' | 'say', key }`: `intervalMarks`, `guidanceMarks` (settle, 4 breath cycles, a calm phrase every 90 s, ending 30 s before the end), `activityMarks` (halfway, 5 minutes left), `crossedMarks(marks, from, to)`, `marksToPlay` (one bell, latest words). `breathPhase(elapsed)`: 4 s in, 6 s out, scale 0.6–1.
+  - Routine (key `phantomVoiceKit.calmTime.routine`): `{ items: [{ id, activity, name, time, minutes, days, from, until }], done: { dayKey: [ids] } }`; `itemProblem`, `addItem`, `removeItem` (sets `until`), `plannedOn`, `setDone` (forgets ticks after 120 days), `dayStatus`, `history`, `streak`, `completedNow`, `dueReminders(routine, fromMs, toMs)`.
+  - Calendar: `buildIcs` (VEVENT + RRULE + VALARM, CRLF, `foldIcsLine` by UTF-8 bytes), `icsFilename`.
+- The page: start screen (Meditate / Activity timer / My day), setup screens, a session screen (SVG ring, breathing circle, clock, Pause / Resume / Stop), the routine screen (today, 7 days, add form, reminders help, notification permission button). A 250 ms tick only redraws; `visibilitychange` catches up at once and asks for the wake lock again. Reminders are checked every 15 s while the page is open.

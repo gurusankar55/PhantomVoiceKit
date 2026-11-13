@@ -20,6 +20,7 @@ The project has a shared **skeleton/** (speech input and output, language dropdo
 | Picture book | `apps/picture-book` | 60 big pictures; hear the word, say it back, optionally in a second language too | No |
 | Pumpkin math | `apps/pumpkin-math` | Counting, adding and taking away with pumpkins, 5 levels, answer by tap or voice | No |
 | Story time | `apps/story-time` | 6 kind stories read aloud paragraph by paragraph, remembers where you stopped | No |
+| Calm Ghost (Calm time) | `apps/calm-time` | Meditation with a bell and breathing circle, activity timer, daily routine with reminders | No |
 
 The language you choose is remembered on this device, so every app and every new tab opens in it.
 
@@ -85,9 +86,20 @@ These three work fully offline from the server's AI: all words, numbers and stor
 - **Pumpkin math**: count the pumpkins, then add and take away. Answer with the number buttons (0 to 20) or say the number in your language. A wrong answer shows the pumpkins being counted one by one. 5 correct in a row moves you up a level.
 - **Story time**: pick a story; it is read aloud with the current paragraph highlighted. Use A- / A+ for text size, Pause / Resume, Back / Next, or the mic button and say next, back or stop. Finishing a story opens a gift box.
 
+## Calm Ghost
+
+Also fully offline from the AI: the calm phrases and messages are in the locale files in all 20 languages.
+
+- **Meditation**: 5, 10, 20 or 30 minutes. A big round countdown, a soft bell (made with Web Audio) at the start and the end, and an optional bell every 1 or 5 minutes. Optional spoken guidance ("breathe in", "relax your shoulders"…) with a breathing circle that grows and shrinks. Pause, Resume and Stop. The screen stays awake where the Wake Lock API exists.
+- **Activity timer**: walking, running, exercise, reading or your own name, for 15, 30, 45, 60 or any number of minutes. Spoken encouragement at halfway, with 5 minutes left and at the end.
+- **My day**: add items (activity, time, minutes, which days), tick them done, see today's list, the last 7 days and your streak of days with everything done. A finished session or tick gives coins; a full day gives a level-up and the gift box.
+- **Reminders**: "Add reminder" downloads an `.ics` calendar file with a repeating event at that time. Open it on your phone and the calendar app reminds you, even when this page is closed. While the page is open it also reminds you on the page and, if you allow it, with a browser notification.
+
+The timers are worked out from timestamps, so they stay right when the tab is hidden. A hidden tab may play the end bell a little late, because browsers slow down hidden pages.
+
 ## Privacy
 
-Nothing is saved on the server. Uploaded forms, answers, topics and lessons are only sent to Gemini to get a result, and are not stored in any file or database. Your chosen language, game levels, story positions, documents and notes are kept only in this browser (localStorage / IndexedDB). Your API key stays in `.env` and is never sent to the browser.
+Nothing is saved on the server. Uploaded forms, answers, topics and lessons are only sent to Gemini to get a result, and are not stored in any file or database. Your chosen language, game levels, story positions, daily routine, documents and notes are kept only in this browser (localStorage / IndexedDB). Your API key stays in `.env` and is never sent to the browser.
 
 ## Build your own voice app
 

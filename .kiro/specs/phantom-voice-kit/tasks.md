@@ -617,3 +617,7 @@ Build the Phantom Voice Kit from the ground up: project scaffolding → Express 
   - Tests: tests/unit/storyTime.test.js (all 54 story keys in 20 locales, progress, text size, voice words)
 - [x] 36. Home welcome text and README list all apps (Requirement 42)
   - Home cards and menu entries for Picture book, Pumpkin math, Story time
+
+- [x] 37. Calm Ghost: meditation, activity timer, daily routine, reminders (Requirement 43)
+  - Tests: tests/unit/calmTime.test.js (timer, marks, breath, routine, streak, reminders, .ics, strings in 20 locales)
+  - Home card, menu entry, welcome text in 20 languages, README
