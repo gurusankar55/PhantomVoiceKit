@@ -199,34 +199,40 @@ describe('fillFrom: spoken codes follow the same fixed-character rule', () => {
 const measureAt = (s, size) => s.length * size * 0.5;
 
 describe('answerSizeFromLabel: about 85% of the label, never below 70%', () => {
+  test('the label size is its ink height / 0.7 (so answers come out close to the label size)', () => {
+    assert.equal(LABEL_INK_SHARE, 0.7);
+  });
+
   test('a short answer gets 85% of the label size', () => {
-    const labelHeight = 20; // ink height in pixels: the label size is 20 / 0.8 = 25
+    const labelHeight = 14; // ink height in pixels: the label size is 14 / 0.7 = 20
     const result = answerSizeFromLabel({ text: 'Ravi Kumar', labelHeight, boxW: 600, measureAt });
-    assert.equal(result.size, Math.round((labelHeight / LABEL_INK_SHARE) * ANSWER_LABEL_SHARE)); // 21
+    assert.equal(result.size, 17); // 85% of 20
+    assert.equal(result.size, Math.round((labelHeight / LABEL_INK_SHARE) * ANSWER_LABEL_SHARE));
     assert.deepEqual(result.lines, ['Ravi Kumar']);
     assert.equal(result.fits, true);
   });
 
   test('a longer answer shrinks only down to 70%, then wraps', () => {
-    const labelHeight = 20;
-    // 20 characters: at size 21 it is 210 px, at 18 it is 180 px.
-    const shrunk = answerSizeFromLabel({ text: 'abcdefghij klmnopqrs', labelHeight, boxW: 190, measureAt });
-    assert.equal(shrunk.size, 19);
+    const labelHeight = 14; // label size 20: from 17 down to 14
+    // 20 characters: at size 17 it is 170 px, at 16 it is 160 px.
+    const shrunk = answerSizeFromLabel({ text: 'abcdefghij klmnopqrs', labelHeight, boxW: 160, measureAt });
+    assert.equal(shrunk.size, 16);
     assert.equal(shrunk.lines.length, 1);
 
-    const wrapped = answerSizeFromLabel({ text: 'abcdefghij klmnopqrs tuvwxyz', labelHeight, boxW: 190, measureAt });
-    assert.equal(wrapped.size, Math.round((labelHeight / LABEL_INK_SHARE) * ANSWER_LABEL_MIN_SHARE)); // 18
+    const wrapped = answerSizeFromLabel({ text: 'abcdefghij klmnopqrs tuvwxyz', labelHeight, boxW: 160, measureAt });
+    assert.equal(wrapped.size, 14); // 70% of 20
+    assert.equal(wrapped.size, Math.round((labelHeight / LABEL_INK_SHARE) * ANSWER_LABEL_MIN_SHARE));
     assert.ok(wrapped.lines.length >= 2);
   });
 
   test('inside a closed box the box height wins', () => {
-    const result = answerSizeFromLabel({ text: 'Ravi', labelHeight: 20, boxW: 600, measureAt, maxHeight: 12 });
+    const result = answerSizeFromLabel({ text: 'Ravi', labelHeight: 14, boxW: 600, measureAt, maxHeight: 12 });
     assert.equal(result.size, 12);
   });
 
   test('A- / A+ scale the label size', () => {
-    const result = answerSizeFromLabel({ text: 'Ravi', labelHeight: 20, boxW: 600, measureAt, scale: 1.2 });
-    assert.equal(result.size, Math.round(25 * 0.85 * 1.2));
+    const result = answerSizeFromLabel({ text: 'Ravi', labelHeight: 14, boxW: 600, measureAt, scale: 1.2 });
+    assert.equal(result.size, Math.round(20 * 0.85 * 1.2));
   });
 
   test('no usable label height: null (the old fitting is used)', () => {

@@ -26,7 +26,7 @@ import { createNavMenu, createScreenHistory } from '/skeleton/nav-menu.js';
 import { initI18n, t, setI18nText, clearI18n } from '/skeleton/i18n.js';
 import { matchCommand, parseWords } from '/skeleton/voice-commands.js';
 import { LISTEN_DELAY_MS } from '/skeleton/voice-retry.js';
-import { cleanByKind } from '/apps/spirit-clerk/answer-cleaning.js';
+import { cleanByKind, hasNonLatinLetters } from '/apps/spirit-clerk/answer-cleaning.js';
 import { spokenToChars, parseEmailSpeech } from '/apps/spirit-clerk/spoken-chars.js';
 import { createAnswerWidget } from '/apps/spirit-clerk/answer-widgets.js';
 import { resolveFormat, chunkPosition } from '/skeleton/field-formats.js';
@@ -42,6 +42,8 @@ import {
   progressNumbers,
   lastAskableIndex,
   validationMessage,
+  englishStep,
+  acceptEnglish,
 } from '/apps/spirit-clerk/answer-flow.js';
 
 // Load the translations BEFORE the nav and language dropdown are created.
@@ -96,6 +98,8 @@ const doneButton = document.getElementById('done-button');
 const chunkPrompt = document.getElementById('chunk-prompt');
 const heardLine = document.getElementById('heard-line');
 const heardTextEl = document.getElementById('heard-text');
+const englishLine = document.getElementById('english-line');
+const englishTextEl = document.getElementById('english-text');
 const answerArea = document.getElementById('answer-area');
 const answerHint = document.getElementById('answer-hint');
 const confirmControls = document.getElementById('confirm-controls');
@@ -131,6 +135,9 @@ let helpActive = false;    // true while the help is being read
 let englishFallback = false; // the chosen language gave nothing for this field: the next try uses English (en-IN)
 let localizedOptions = []; // the options of the current choice field in the chosen language: { label, aliases } or null
 let keypadMode = false;    // codes and account numbers: the keypad is the main input, voice a small extra
+// The English that will be written on the form for the text in the box: { source, english }.
+// source = the answer in the box it belongs to (it is shown only while the box still says that).
+let englishPreview = null;
 
 // ---------- Screen helper ----------
 
@@ -401,6 +408,31 @@ function renderHeard() {
   const text = heardParts.join(' ').trim();
   heardTextEl.textContent = text;
   heardLine.hidden = text === '';
+  renderEnglish();
+}
+
+// The English value under the heard text: shown while the box still holds the answer it belongs to.
+function renderEnglish() {
+  const current = widget && currentFormat.kind !== 'signature' ? finalAnswer(widget.getValue(), currentFormat.kind) : '';
+  const show = Boolean(englishPreview) && englishPreview.source === current && englishPreview.english !== '';
+  englishTextEl.textContent = show ? englishPreview.english : '';
+  englishLine.hidden = !show;
+}
+
+// Turn an answer (typed or spoken, any language) into its form-ready English value with ONE
+// Gemini call: a name transliterated in Title Case, an address or text translated, a date as
+// DD/MM/YYYY... Gives null when there is no usable English value (no reply, or still not English).
+async function toEnglish(text, format) {
+  const result = await translate({
+    text,
+    targetLang: 'en',
+    kind: format.kind,
+    label: cleanLabel(currentField.label),
+    pattern: format.pattern,
+  });
+  if (!result || result.error) return null;
+  const raw = typeof result.value === 'string' && result.value.trim() !== '' ? result.value : result.translation;
+  return acceptEnglish(raw, format, emailWords());
 }
 
 // Is the widget's answer valid right now?
@@ -572,6 +604,7 @@ function askCurrentQuestion(notice) {
   currentFormat = format;
   currentChunk = null;
   heardParts = [];
+  englishPreview = null;
   busy = false;
 
   // Reset the screen for this question.
@@ -721,6 +754,7 @@ function onAnswerChanged() {
     confirmPrompt.hidden = true;
     if (speechOutput) speechOutput.stop();
   }
+  renderEnglish(); // the English shown only belongs to the text it was made for
   showHint(liveHint());
   updateButtons();
 }
@@ -995,6 +1029,12 @@ async function handleAnswerHeard(text) {
   busy = false;
   fillLoading.hidden = true;
   widget.setValue(result.text);
+  // Said in another language: the English value is shown under what was heard.
+  if (result.text && hasNonLatinLetters(heard)) {
+    const shown = finalAnswer(widget.getValue(), currentFormat.kind);
+    englishPreview = { source: shown, english: shown };
+    renderEnglish();
+  }
   if (result.unavailable) showFillMessage('dualDisplay.unavailable');
   afterAnswerReady();
 }
@@ -1097,19 +1137,9 @@ async function interpretAnswer(heard, format) {
   const local = cleanByKind(prepared, format.kind, words, format.pattern);
   if (!needsGemini(format, prepared, local, lang)) return { text: local };
 
-  const result = await translate({
-    text: heard,
-    targetLang: 'en',
-    kind: format.kind,
-    label: cleanLabel(currentField.label),
-    pattern: format.pattern,
-  });
-  if (result && !result.error) {
-    const raw = typeof result.value === 'string' && result.value.trim() !== '' ? result.value : result.translation;
-    if (typeof raw === 'string' && raw.trim() !== '') {
-      return { text: cleanByKind(raw, format.kind, words, format.pattern) };
-    }
-  }
+  // The same conversion as for a typed answer (see doConfirm).
+  const english = await toEnglish(heard, format);
+  if (english !== null) return { text: english };
   // Gemini did not answer: an English speaker keeps the cleaned text; others type the English.
   return lang === 'en-US' ? { text: local } : { text: '', unavailable: true };
 }
@@ -1178,9 +1208,41 @@ function doConfirm() {
 
   // An e-mail address is kept in lower case and a name in Title Case, whatever the user typed.
   const value = finalAnswer(widget.getValue(), currentFormat.kind);
+  const step = englishStep(value, englishPreview);
+  if (step.action === 'convert') {
+    convertBeforeKeeping(value);
+    return;
+  }
   stopEverything();
-  storeAnswer(heardParts.join(' ').trim() || value, value, false);
+  storeAnswer(heardParts.join(' ').trim() || value, step.text, false);
   advance();
+}
+
+// The answer in the box is not English (typed in Tamil, for example): ONE Gemini call turns it
+// into the English value, which is shown under the heard text. The user checks it and presses
+// "✓ Correct" again to keep it. When it cannot be converted, the user stays on the question and
+// nothing that is not English is written on the form.
+async function convertBeforeKeeping(value) {
+  const myId = askId;
+  stopEverything();
+  busy = true;
+  fillLoading.hidden = false;
+  clearFillMessage();
+  updateButtons();
+  const english = await toEnglish(value, currentFormat);
+  if (myId !== askId) return; // question changed while waiting
+  busy = false;
+  fillLoading.hidden = true;
+  if (english === null) {
+    englishPreview = null;
+    renderEnglish();
+    showFillMessage('spiritClerk.englishFailed');
+  } else {
+    englishPreview = { source: value, english };
+    renderEnglish();
+    showFillMessage('spiritClerk.checkEnglish');
+  }
+  updateButtons();
 }
 
 // "✗ Wrong" (button or word): clear the answer and listen again.
@@ -1188,6 +1250,7 @@ function doWrong() {
   if (!fillActive || busy || !widget) return;
   stopEverything();
   heardParts = [];
+  englishPreview = null;
   renderHeard();
   clearFillMessage();
   showHint(null);

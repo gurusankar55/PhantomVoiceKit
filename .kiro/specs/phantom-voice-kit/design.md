@@ -840,3 +840,10 @@ The server console gets one line per page: `[translate-layout] ta-IN received=6 
 - `skeleton/field-formats.js`: `typeKey`, `deleteKey`, `cursorCell` (keypad cursor that may stand on a fixed cell); `fillFrom` consumes a spoken fixed character when the text is not exactly as long as the boxes to fill.
 - `apps/spirit-clerk/form-utils.js`: `finalAnswer(text, kind)` (name Title Case, e-mail lower case) used on Correct; `previousAnswerValue(answer)` used when editing. The name text box title-cases on change and on setValue; the signature widget accepts a data URL in `setValue`.
 - New string `spiritClerk.deleteKey` (20 locales). Speak button CSS: full width, 64 px, radius 14 px.
+
+## Every Answer in English (Requirement 31)
+
+- `apps/spirit-clerk/answer-flow.js`: `englishStep(value, preview)` decides on Correct: Latin text is stored; non-Latin text with an English preview for exactly that text stores the English; otherwise `convert`. `acceptEnglish(raw, format, words)` tidies the reply for its kind (`cleanByKind` + `finalAnswer`) and refuses empty or still non-English values.
+- `apps/spirit-clerk/app.js`: `toEnglish(text, format)` (ONE `translate` call with kind, label and pattern) is used for spoken answers (`interpretAnswer`) and typed ones (`convertBeforeKeeping`). `englishPreview = { source, english }` is shown in `#english-line` under the heard text while the box still holds `source`; it resets on a new question, Wrong, or any change of the box.
+- New strings `spiritClerk.englishValue`, `spiritClerk.checkEnglish`, `spiritClerk.englishFailed` (20 locales).
+- `skeleton/form-overlay-utils.js`: `LABEL_INK_SHARE` 0.8 -> 0.7.

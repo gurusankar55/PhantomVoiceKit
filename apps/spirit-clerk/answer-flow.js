@@ -2,7 +2,8 @@
 // Pure decisions of the Spirit Clerk answer flow (what to ask, in which language, when Gemini is
 // needed, which message to show). No browser or DOM access here, so they are easy to test.
 
-import { hasNonLatinLetters, cleanDate } from './answer-cleaning.js';
+import { hasNonLatinLetters, cleanDate, cleanByKind } from './answer-cleaning.js';
+import { finalAnswer } from './form-utils.js';
 import { isValidDate, PATTERN_KINDS, parsePattern } from '../../skeleton/field-formats.js';
 
 // Characters (letters and digits) and e-mail names are English, so they are heard with English
@@ -131,4 +132,43 @@ export function validationMessage(result) {
   if (result.reason === 'date') return { key: 'spiritClerk.invalidDate' };
   if (result.reason === 'digits' && result.count > 0) return { key: 'spiritClerk.invalidDigits', params: { count: result.count } };
   return { key: 'spiritClerk.invalidFormat' };
+}
+
+// ---------------------------------------------------------------------------
+// Every answer in English before it is kept (typed or spoken, any language)
+// ---------------------------------------------------------------------------
+
+/**
+ * What "✓ Correct" does with the answer in the box (already tidied by finalAnswer):
+ *   - only English (Latin) letters: keep it                                  -> { action: 'store', text }
+ *   - other letters, and its English was already shown for EXACTLY this text -> { action: 'store', text: english }
+ *   - other letters, no English shown yet: convert it first (one Gemini call),
+ *     show the English and wait for a second "Correct"                       -> { action: 'convert' }
+ * So nothing that is not English is ever written on the form or in the PDFs.
+ * @param {string} value  the answer in the box
+ * @param {{source:string, english:string}|null} preview  the English shown under the heard text
+ * @returns {{action:'store'|'convert', text?:string}}
+ */
+export function englishStep(value, preview) {
+  const text = String(value ?? '');
+  if (!hasNonLatinLetters(text)) return { action: 'store', text };
+  const shown = preview && preview.source === text ? String(preview.english ?? '').trim() : '';
+  if (shown !== '' && !hasNonLatinLetters(shown)) return { action: 'store', text: shown };
+  return { action: 'convert' };
+}
+
+/**
+ * The English value from Gemini's reply, tidied for its kind (a name in Title Case, an address
+ * with its parts...). Null when it is empty or still has letters that are not English: then the
+ * answer is not accepted and the user stays on the question.
+ * @param {unknown} raw  the reply's value (or translation)
+ * @param {{kind:string, pattern?:string}} format
+ * @param {{atWords?:string[], dotWords?:string[]}} [words]  e-mail words
+ * @returns {string|null}
+ */
+export function acceptEnglish(raw, format, words = {}) {
+  if (typeof raw !== 'string' || raw.trim() === '') return null;
+  const cleaned = finalAnswer(cleanByKind(raw, format.kind, words, format.pattern ?? ''), format.kind);
+  if (cleaned === '' || hasNonLatinLetters(cleaned)) return null;
+  return cleaned;
 }

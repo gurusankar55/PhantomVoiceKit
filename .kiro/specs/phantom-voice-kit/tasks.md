@@ -582,3 +582,6 @@ Build the Phantom Voice Kit from the ground up: project scaffolding → Express 
 
 - [x] 22. Spirit Clerk polish: answer size, signature placement, title case, code keypad, edit keeps value, Speak button (Requirement 30)
   - Tests: `tests/unit/polish.test.js`
+
+- [x] 23. Typed answers converted to English, larger answer text (Requirement 31)
+  - Tests: `tests/unit/englishAnswers.test.js`, `tests/unit/polish.test.js` (label factor 0.7)

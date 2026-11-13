@@ -1152,7 +1152,8 @@ export function baselinesAboveLine({ lineTop, size, lineCount, lineHeight }) {
 
 // The ink of a printed label (from the top of the capitals to the bottom of g, p, y) is about this
 // share of its font size, so the label's font size is about its ink height / LABEL_INK_SHARE.
-export const LABEL_INK_SHARE = 0.8;
+// (0.8 gave answers that looked smaller than the labels in a real test; 0.7 matches them closely.)
+export const LABEL_INK_SHARE = 0.7;
 // The answer's size is this share of the label's size ...
 export const ANSWER_LABEL_SHARE = 0.85;
 // ... and never below this share (a long answer wraps instead of shrinking further).

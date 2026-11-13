@@ -503,3 +503,14 @@ Phantom Voice Kit is a reusable skeleton for voice-first web applications with a
 4. ON the code keypad, a key equal to a fixed character at the cursor (the "0" of IFSC) SHALL step over it; after a box is replaced the cursor SHALL move to the next box; a big delete key (⌫) SHALL clear the current box (or, when it is empty, go back one box and clear that). Spoken codes SHALL follow the same fixed-character rule.
 5. Edit from the review SHALL reopen the question with the earlier answer filled in (text, boxes, date, option, signature).
 6. THE Speak button SHALL be a large rounded rectangle (about 14 px radius), full width, about 64 px tall, like Done.
+
+### Requirement 31: Every Answer in English (Spirit Clerk)
+
+**User Story:** As a user who types in my own language, I want my answers written on the form in English, just like my spoken answers.
+
+#### Acceptance Criteria
+
+1. WHEN Correct is pressed and the answer (typed or spoken, any language) contains letters that are not English, THE app SHALL convert it with the same conversion as spoken answers (names transliterated in Title Case, addresses and text translated) and show the English value under the heard text; a second Correct keeps the English value.
+2. ONLY the English value SHALL be used in the review, the summary, the summary PDF and the filled original form.
+3. IF the conversion fails or the reply is still not English, THE app SHALL keep the user on the question with a clear message and SHALL NOT keep the non-English text.
+4. THE label size used to size answers on the original form SHALL be the label's ink height / 0.7.
