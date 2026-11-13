@@ -9,6 +9,7 @@ import { createSpeechOutput } from '/skeleton/speech-output.js';
 import { translateLayout } from '/skeleton/api-client.js';
 import { createNavMenu, createScreenHistory } from '/skeleton/nav-menu.js';
 import { initI18n, t, setI18nText, clearI18n } from '/skeleton/i18n.js';
+import { keepPdf } from '/skeleton/documents-store.js';
 import { loadImage, prepareOverlay, drawOverlay } from '/skeleton/form-overlay.js';
 import { clampOffset, readingOrder, MIN_OFFSET, MAX_OFFSET } from '/skeleton/form-overlay-utils.js';
 import { MAX_PAGES, pdfPageSize } from '/skeleton/page-images-utils.js';
@@ -350,7 +351,9 @@ downloadButton.addEventListener('click', () => {
       doc.addImage(picture, 'JPEG', 0, 0, size.width, size.height);
     }
 
-    doc.save(translatedFilename(state.selectedFile ? state.selectedFile.name : '', state.resultLang, new Date()));
+    const name = translatedFilename(state.selectedFile ? state.selectedFile.name : '', state.resultLang, new Date());
+    doc.save(name);
+    keepPdf(doc, name, 'form-translator'); // also kept in "My documents" on this device (never throws)
   } catch (err) {
     showResultMessage('formTranslator.pdfError');
   }

@@ -550,3 +550,26 @@ Phantom Voice Kit is a reusable skeleton for voice-first web applications with a
 5. A correct answer SHALL call `correct()`; every 3 levels SHALL also call `levelUp()` and `giftBox()`. A wrong answer SHALL show the right order gently and offer "Try again".
 6. THE best level SHALL be saved in localStorage and shown.
 7. Ghost Echo SHALL make no Gemini calls.
+
+### Requirement 35: Bigger Gift Box and More Flowers
+
+1. THE gift box SHALL be shown centred on a dim overlay, about 3 times bigger than before (smaller only when the screen is too small), and SHALL stay until the user taps "Collect" (or presses Escape); it closes by itself after 8 seconds. Focus moves to "Collect" and returns afterwards.
+2. `levelUp()` SHALL also drop flower shapes (five-petal flowers and daisies) besides petals and paper.
+
+### Requirement 36: My Documents (new page)
+
+**User Story:** As a user, I want every PDF the apps make kept on my phone, so that I can open, share or download it again later without the internet.
+
+#### Acceptance Criteria
+
+1. THE new page SHALL live in `apps/my-documents` (Tamil "என் ஆவணங்கள்"), with a Home card and a nav entry.
+2. EVERY PDF the apps create (Spirit Clerk summary PDF, filled original form, Form Translator translated form) SHALL also be saved on the device in IndexedDB with its name, app and date. Saving is in try/catch: if it fails, the download still works.
+3. THE page SHALL list the documents newest first, each with Open, Download, Share (Web Share API with the file; hidden when the browser cannot share files) and Delete (with an in-page confirm, never window.confirm).
+4. THE page SHALL show the total size and the note "Saved only on this device. Nothing is uploaded." There is no login and no server storage.
+
+### Requirement 37: Voice Notes (new page)
+
+1. THE new page SHALL live in `apps/voice-notes` (Tamil "குரல் குறிப்பேடு"), with a Home card and a nav entry.
+2. THE user SHALL add a note by Speak / Done (skeleton speech input in the chosen language) or by typing. Notes are saved in localStorage (try/catch) with their date.
+3. EACH note SHALL have Read aloud (in the chosen language), Edit and Delete (in-page confirm). Big buttons, newest first, and a search box that filters the notes.
+4. No network calls.

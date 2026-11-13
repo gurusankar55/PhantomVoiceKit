@@ -2,7 +2,7 @@
 // Shared navigation header (Requirement 16):
 //   [ ☰ menu ] [ ← Back ] [ coins ] [ sound ]          [ language dropdown ]
 // plus a slide-in drawer with links to Home, Spirit Clerk, Ghost Tutor, Form Translator,
-// Ghost Echo and the Sticker book.
+// Ghost Echo, the Sticker book, My documents and Voice notes.
 //
 // Nothing here touches `document` or `window` when the file is loaded,
 // so createScreenHistory can be imported and tested in plain Node.
@@ -65,6 +65,8 @@ const MENU_LINKS = [
   { id: 'form-translator', labelKey: 'nav.formTranslator', href: '/apps/form-translator/index.html', subtitle: 'Phantom Lens · Form Translator' },
   { id: 'ghost-echo', labelKey: 'nav.ghostEcho', href: '/apps/ghost-echo/index.html', subtitle: 'Ghost Echo · Voice Memory Game' },
   { id: 'sticker-book', labelKey: 'nav.stickerBook', href: '/apps/sticker-book/index.html' },
+  { id: 'my-documents', labelKey: 'nav.myDocuments', href: '/apps/my-documents/index.html' },
+  { id: 'voice-notes', labelKey: 'nav.voiceNotes', href: '/apps/voice-notes/index.html' },
 ];
 
 // Stop any speech that is currently playing (safe if unsupported).

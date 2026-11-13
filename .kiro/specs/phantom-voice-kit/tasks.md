@@ -596,3 +596,13 @@ Build the Phantom Voice Kit from the ground up: project scaffolding → Express 
   - [x] 26.1 `apps/ghost-echo/echo-utils.js` (pure) with unit and property tests
   - [x] 26.2 `apps/ghost-echo` page, app and style; Home card and nav entry
   - [x] 26.3 All new strings and the 30 words with variants in all 20 locale files
+
+- [x] 27. Bigger gift box with Collect, flower shapes (Requirement 35)
+- [x] 28. My documents (Requirement 36)
+  - [x] 28.1 `skeleton/documents-utils.js` (pure, tests), `skeleton/documents-store.js`, `skeleton/inline-confirm.js`
+  - [x] 28.2 Keep every PDF: Spirit Clerk summary and filled form, Form Translator
+  - [x] 28.3 `apps/my-documents` page; Home card and nav entry
+- [x] 29. Voice notes (Requirement 37)
+  - [x] 29.1 `apps/voice-notes/notes-utils.js` (pure, tests)
+  - [x] 29.2 `apps/voice-notes` page; Home card and nav entry
+- [x] 30. All new strings in the 20 locale files

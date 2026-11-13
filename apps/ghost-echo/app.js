@@ -442,12 +442,12 @@ function finishAnswer(ok, heard) {
     correct({ coins: state.sequence.length, from: resultText });
     best = saveBest(storage(), state.level);
     renderBest();
+    speak(t('ghostEcho.correct'));
+    nextButton.focus(); // before the gift: the gift's Collect button takes the focus and gives it back here
     if (isMilestone(state.level)) {
       levelUp();
       giftBox();
     }
-    speak(t('ghostEcho.correct'));
-    nextButton.focus();
   } else {
     // Gently show the right order and offer to try the same words again.
     setI18nText(resultText, 'ghostEcho.wrong');

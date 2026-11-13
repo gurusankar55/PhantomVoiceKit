@@ -867,3 +867,20 @@ The server console gets one line per page: `[translate-layout] ta-IN received=6 
 - `apps/ghost-echo/echo-utils.js` (pure): `WORDS` (30 `{ id, emoji }`), `wordForms(text)` (the "a|b|c" locale value split into variants), `sequenceLength(level)` (level + 1), `makeSequence(level, random)` (no word twice in a row), `choiceWords(sequence, random, total)` (the sequence words plus others, shuffled), `normalizeSpeech(text)` (lower case, punctuation removed, NFC, spaces collapsed), `matchSequence(heard, expected, formsById, lang)` (in order, variants, Levenshtein distance 1 for short words and 2 for long ones, a word with an ending attached counts, Chinese and Japanese compared without spaces), `tapsMatch`, `isMilestone(level)` (every 3 levels), `loadBest` / `saveBest` (key `phantomVoiceKit.ghostEcho.best`).
 - `apps/ghost-echo/app.js`: screens start, show (one picture at a time, spoken with speech-output), answer (picture buttons + Speak/Done using continuous speech-input in the chosen language), result (correct or the right order and Try again). No Gemini calls.
 - Locale keys `ghostEcho.*`, `ghostEcho.words.<id>` ("display|variant|variant"), `sticker.<id>`, `stickerBook.*`, `celebrate.*`, `nav.ghostEcho`, `nav.stickerBook`, `home.ghostEcho`, `home.ghostEchoHint` in all 20 files.
+
+## Bigger Gift Box (Requirement 35)
+
+- `giftBox()` shows `.pvk-gift-overlay` (dim, takes the pointer, role="dialog", aria-modal) with the box scaled by `giftScale(width, height)` (celebrate-utils.js: 3, or less to fit the screen), the sticker name and a "Collect" button (`celebrate.collect`). Escape or Collect closes it; a timer closes it after 8 s (`GIFT_AUTO_CLOSE_MS`). Focus returns to the element that had it.
+- `fallingPieces` also makes `flower` (five petals and a yellow middle) and `daisy` (white petals) shapes.
+
+## My Documents (Requirement 36)
+
+- `skeleton/documents-utils.js` (pure): `makeDocumentRecord({ name, app, blob, now })` (a safe name ending in .pdf), `sortNewestFirst`, `totalBytes`, `formatBytes(bytes, locale)` (Intl unit format with a plain fallback), `APP_NAME_KEYS`.
+- `skeleton/documents-store.js` (IndexedDB database `phantomVoiceKit`, store `documents`, autoIncrement id): `saveDocument`, `listDocuments`, `getDocument`, `deleteDocument`, and `keepPdf(doc, name, app)` used right after every `doc.save(...)` (it never throws).
+- `skeleton/inline-confirm.js`: `showInlineConfirm(container, { message, confirmKey, onConfirm })`: a message with Delete and Cancel buttons inside the page (focus on Cancel, Escape cancels).
+- `apps/my-documents`: the list (name, app, date, size), Open (object URL in a new tab), Download (a link with `download`), Share (`navigator.canShare({ files })`), Delete; total size; the device-only note.
+
+## Voice Notes (Requirement 37)
+
+- `apps/voice-notes/notes-utils.js` (pure): `loadNotes` / `saveNotes` (key `phantomVoiceKit.voiceNotes`, try/catch, damaged data repaired), `addNote`, `updateNote`, `deleteNote`, `sortNotes` (newest first), `searchNotes(notes, query)` (every word of the query, case and accents of the same letters ignored), `MAX_NOTE_LENGTH`.
+- `apps/voice-notes/app.js`: a text box with Speak / Done (continuous skeleton speech input, the heard text is added to the box), Save; the list with Read aloud (speech output in the chosen language), Edit (in the card), Delete (inline confirm).

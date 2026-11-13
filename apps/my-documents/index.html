@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title data-i18n="myDocuments.pageTitle">My documents – Phantom Voice Kit</title>
+  <!-- Shared theme and page styles (absolute paths, per project rules) -->
+  <link rel="stylesheet" href="/skeleton/theme.css" />
+  <link rel="stylesheet" href="/apps/my-documents/style.css" />
+</head>
+<body>
+  <!-- Shared navigation header (menu, Back, coins, sound, language) is built by skeleton/nav-menu.js -->
+  <header id="app-header"></header>
+
+  <main id="app" class="docs">
+    <h1 class="app-title" data-i18n="myDocuments.title">My documents</h1>
+    <!-- Nothing ever leaves the device -->
+    <p class="docs-note">
+      <span class="docs-note-icon" aria-hidden="true">🔒</span>
+      <span data-i18n="myDocuments.note">Saved only on this device. Nothing is uploaded.</span>
+    </p>
+    <p id="docs-total" class="docs-total" aria-live="polite"></p>
+    <p id="docs-message" class="docs-message" role="status" hidden></p>
+    <p id="docs-empty" class="docs-empty" data-i18n="myDocuments.empty" hidden>No documents yet. The PDFs you make in the apps are kept here.</p>
+    <!-- One card per document (built by app.js) -->
+    <ul id="docs-list" class="docs-list"></ul>
+  </main>
+
+  <script type="module" src="/apps/my-documents/app.js"></script>
+</body>
+</html>

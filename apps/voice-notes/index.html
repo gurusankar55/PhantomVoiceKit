@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title data-i18n="voiceNotes.pageTitle">Voice notes – Phantom Voice Kit</title>
+  <!-- Shared theme and page styles (absolute paths, per project rules) -->
+  <link rel="stylesheet" href="/skeleton/theme.css" />
+  <link rel="stylesheet" href="/apps/voice-notes/style.css" />
+</head>
+<body>
+  <!-- Shared navigation header (menu, Back, coins, sound, language) is built by skeleton/nav-menu.js -->
+  <header id="app-header"></header>
+
+  <main id="app" class="notes">
+    <h1 class="app-title" data-i18n="voiceNotes.title">Voice notes</h1>
+    <p class="notes-note">
+      <span aria-hidden="true">🔒</span>
+      <span data-i18n="voiceNotes.note">Your notes are saved only on this device.</span>
+    </p>
+
+    <!-- A new note: speak or type -->
+    <section class="notes-new" aria-labelledby="new-note-label">
+      <label id="new-note-label" for="note-input" class="notes-label" data-i18n="voiceNotes.newNote">New note</label>
+      <textarea id="note-input" class="notes-input" rows="4" maxlength="5000" data-i18n-attr="placeholder:voiceNotes.placeholder" placeholder="Type a note, or press Speak"></textarea>
+      <div class="notes-voice">
+        <button id="speak-button" type="button" class="btn btn--large notes-speak" data-i18n="voiceNotes.speak">Speak</button>
+        <button id="done-button" type="button" class="btn btn--large notes-done" data-i18n="voiceNotes.done" hidden>Done</button>
+      </div>
+      <p id="listening-indicator" class="listening-indicator" role="status" hidden>
+        <span class="listening-dot" aria-hidden="true"></span>
+        <span data-i18n="voiceNotes.listening">Listening…</span>
+      </p>
+      <p id="live-text" class="notes-live" hidden></p>
+      <button id="save-button" type="button" class="btn btn--large notes-save" data-i18n="voiceNotes.save">Save note</button>
+      <p id="notes-message" class="notes-message" role="status" hidden></p>
+    </section>
+
+    <!-- The saved notes -->
+    <section class="notes-saved" aria-labelledby="saved-title">
+      <h2 id="saved-title" class="notes-heading" data-i18n="voiceNotes.savedTitle">My notes</h2>
+      <label for="search-input" class="notes-label" data-i18n="voiceNotes.search">Search notes</label>
+      <input id="search-input" class="notes-search" type="search" autocomplete="off" />
+      <p id="notes-count" class="notes-count" aria-live="polite"></p>
+      <p id="notes-empty" class="notes-empty" hidden></p>
+      <ul id="notes-list" class="notes-list"></ul>
+    </section>
+  </main>
+
+  <script type="module" src="/apps/voice-notes/app.js"></script>
+</body>
+</html>

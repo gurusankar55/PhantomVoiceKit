@@ -24,6 +24,7 @@ import { localizedOption } from '/apps/spirit-clerk/choice-words.js';
 import { numbersToDigits } from '/apps/spirit-clerk/spoken-numbers.js';
 import { createNavMenu, createScreenHistory } from '/skeleton/nav-menu.js';
 import { initI18n, t, setI18nText, clearI18n } from '/skeleton/i18n.js';
+import { keepPdf } from '/skeleton/documents-store.js';
 import { matchCommand, parseWords } from '/skeleton/voice-commands.js';
 import { LISTEN_DELAY_MS } from '/skeleton/voice-retry.js';
 import { cleanByKind, hasNonLatinLetters } from '/apps/spirit-clerk/answer-cleaning.js';
@@ -1458,7 +1459,9 @@ async function downloadPdf() {
     const canvases = drawTextPages(entries, { title: `Form: ${state.formName}` });
     const doc = addCanvasesToPdf(null, canvases);
     for (const canvas of canvases) canvas.width = 0; // let the browser free the memory
-    doc.save(pdfFilename(state.formName, new Date()));
+    const name = pdfFilename(state.formName, new Date());
+    doc.save(name);
+    keepPdf(doc, name, 'spirit-clerk'); // also kept in "My documents" on this device (never throws)
   } catch (err) {
     setI18nText(summaryMessage, 'spiritClerk.pdfError');
     summaryMessage.hidden = false;
@@ -1654,7 +1657,9 @@ originalDownload.addEventListener('click', async () => {
       for (const canvas of canvases) canvas.width = 0;
     }
 
-    doc.save(filledPdfFilename(state.formName, new Date()));
+    const name = filledPdfFilename(state.formName, new Date());
+    doc.save(name);
+    keepPdf(doc, name, 'spirit-clerk'); // also kept in "My documents" on this device (never throws)
   } catch (err) {
     showOriginalMessage('spiritClerk.pdfError');
   } finally {

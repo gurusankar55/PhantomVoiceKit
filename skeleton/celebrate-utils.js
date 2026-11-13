@@ -176,10 +176,39 @@ export function fallingPieces({ width, height, count = 70, seconds = 4, random =
       swaySpeed: 1 + 2 * random(),
       size: 8 + 8 * random(),
       color: PETAL_COLORS[Math.floor(clamp01(random()) * PETAL_COLORS.length)],
-      shape: random() < 0.55 ? 'petal' : 'paper',
+      shape: FALLING_SHAPES[Math.floor(clamp01(random()) * FALLING_SHAPES.length)],
       spin: (random() - 0.5) * 4,
       angle: random() * Math.PI * 2,
     });
   }
+  // Flowers are drawn bigger than single petals.
+  for (const piece of pieces) if (piece.shape === 'flower' || piece.shape === 'daisy') piece.size *= 1.6;
   return pieces;
+}
+
+// What falls in levelUp(): single petals, coloured paper, five-petal flowers and daisies.
+export const FALLING_SHAPES = Object.freeze(['petal', 'paper', 'flower', 'daisy']);
+
+// ---------------------------------------------------------------------------
+// The gift box
+// ---------------------------------------------------------------------------
+
+// The gift box is drawn at this size (CSS pixels) before it is scaled ...
+export const GIFT_BASE_WIDTH = 170;
+export const GIFT_BASE_HEIGHT = 230;
+// ... about this many times bigger, unless the screen is too small ...
+export const GIFT_SCALE = 3;
+// ... and it closes by itself after this time when Collect is not tapped.
+export const GIFT_AUTO_CLOSE_MS = 8000;
+
+/**
+ * How much the gift box is scaled: GIFT_SCALE, or less so that it fits the screen with room
+ * for the sticker name and the Collect button (never below 1).
+ */
+export function giftScale(viewportWidth, viewportHeight) {
+  const w = Number(viewportWidth) || 0;
+  const h = Number(viewportHeight) || 0;
+  const byWidth = (w - 32) / GIFT_BASE_WIDTH;
+  const byHeight = (h - 190) / GIFT_BASE_HEIGHT; // the name and the button need about 190 px
+  return Math.max(1, Math.min(GIFT_SCALE, byWidth, byHeight));
 }

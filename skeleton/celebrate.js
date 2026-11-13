@@ -6,9 +6,10 @@
 //   giftBox()  a gift box shakes, the lid flies off and a sticker pops out (saved in the sticker book)
 // Coins and stickers are shared by all apps (localStorage, see celebrate-utils.js).
 //
-// A celebration never blocks the page: every layer is fixed, ignores the pointer
-// (pointer-events: none), is hidden from screen readers and removes itself when done. A short
-// polite announcement says what happened. With prefers-reduced-motion a soft glow is shown
+// Confetti, petals and coins never block the page: their layers are fixed, ignore the pointer
+// (pointer-events: none), are hidden from screen readers and remove themselves when done. The
+// gift is a small dialog on a dim overlay that stays until "Collect" (closes by itself after 8 s).
+// A short polite announcement says what happened. With prefers-reduced-motion a soft glow is shown
 // instead of moving pieces. Nothing touches the DOM when this module is imported.
 // The styles are in theme.css (section 16).
 
@@ -25,6 +26,10 @@ import {
   confettiBurst,
   fireworkBurst,
   fallingPieces,
+  giftScale,
+  GIFT_BASE_WIDTH,
+  GIFT_BASE_HEIGHT,
+  GIFT_AUTO_CLOSE_MS,
 } from './celebrate-utils.js';
 
 // The event sent on window whenever the coins or stickers change (detail = the rewards).
@@ -280,7 +285,25 @@ function confettiAndFireworks() {
   }, 3.5);
 }
 
-// Petals and coloured paper falling from the top for about 4 seconds.
+// A small flower at (0, 0): five petals around a yellow middle (a daisy has more, white petals).
+function drawFlower(ctx, size, petalColor) {
+  const daisy = petalColor === '#ffffff';
+  const petals = daisy ? 8 : 5;
+  const radius = size / 2;
+  ctx.fillStyle = petalColor;
+  for (let i = 0; i < petals; i++) {
+    const angle = (i / petals) * Math.PI * 2;
+    ctx.beginPath();
+    ctx.ellipse(Math.cos(angle) * radius * 0.5, Math.sin(angle) * radius * 0.5, radius * (daisy ? 0.45 : 0.5), radius * (daisy ? 0.18 : 0.3), angle, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.fillStyle = '#ffd23f';
+  ctx.beginPath();
+  ctx.arc(0, 0, radius * 0.28, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+// Petals, flowers and coloured paper falling from the top for about 4 seconds.
 function petalsAndPaper() {
   const width = window.innerWidth;
   const height = window.innerHeight;
@@ -308,6 +331,8 @@ function petalsAndPaper() {
         ctx.beginPath();
         ctx.ellipse(0, 0, piece.size / 2, piece.size / 4, 0, 0, Math.PI * 2);
         ctx.fill();
+      } else if (piece.shape === 'flower' || piece.shape === 'daisy') {
+        drawFlower(ctx, piece.size, piece.shape === 'daisy' ? '#ffffff' : piece.color);
       } else {
         // coloured paper turning in the air: its width changes
         ctx.fillRect(-piece.size / 2, -piece.size / 3, piece.size * Math.abs(Math.cos(own * 3)), (piece.size * 2) / 3);
@@ -397,8 +422,10 @@ export function levelUp() {
 }
 
 /**
- * A gift: the box shakes, the lid flies off and a sticker pops out. The sticker is saved in the
- * sticker book. Resolves with the sticker id when the sticker is shown.
+ * A gift: on a dim overlay in the middle of the screen, a big box (about 3x) shakes, the lid flies
+ * off and a sticker pops out. The sticker is saved in the sticker book at once. The gift stays
+ * until "Collect" is tapped (or Escape), and closes by itself after 8 seconds.
+ * Resolves with the sticker id when the sticker is shown.
  * @returns {Promise<string>}
  */
 export function giftBox() {
@@ -411,35 +438,83 @@ export function giftBox() {
       const sticker = stickerById(id);
       const name = t(sticker.nameKey);
       const still = reducedMotion();
+      const scale = giftScale(window.innerWidth, window.innerHeight);
+      const returnFocus = document.activeElement;
 
-      const layer = makeLayer('pvk-gift-layer');
+      // The dim overlay is a small dialog: the gift, its name and the Collect button.
+      const overlay = document.createElement('div');
+      overlay.className = 'pvk-gift-overlay';
+      overlay.setAttribute('role', 'dialog');
+      overlay.setAttribute('aria-modal', 'true');
+      const labelId = `pvk-gift-label-${Date.now()}`;
+      overlay.setAttribute('aria-labelledby', labelId);
+
+      // The box is drawn at its normal size and scaled up as a whole.
+      const stage = document.createElement('div');
+      stage.className = 'pvk-gift-stage';
+      stage.style.width = `${Math.round(GIFT_BASE_WIDTH * scale)}px`;
+      stage.style.height = `${Math.round(GIFT_BASE_HEIGHT * scale)}px`;
+      stage.setAttribute('aria-hidden', 'true');
       const scene = document.createElement('div');
       scene.className = still ? 'pvk-gift pvk-gift--open pvk-gift--still' : 'pvk-gift';
+      scene.style.transform = `scale(${scale})`;
       scene.innerHTML =
         '<div class="pvk-gift-box"><div class="pvk-gift-front"></div><div class="pvk-gift-side"></div>' +
         '<div class="pvk-gift-ribbon"></div></div>' +
         '<div class="pvk-gift-lid"><div class="pvk-gift-bow"></div></div>' +
         `<div class="pvk-gift-sticker">${sticker.svg}</div>`; // sticker.svg is a fixed constant (stickers.js)
+      stage.appendChild(scene);
+
       const label = document.createElement('p');
       label.className = 'pvk-gift-label';
+      label.id = labelId;
       label.textContent = t('celebrate.gotSticker', { name }); // plain text, never HTML
-      scene.appendChild(label);
-      layer.appendChild(scene);
+
+      const collect = document.createElement('button');
+      collect.type = 'button';
+      collect.className = 'btn btn--large pvk-gift-collect';
+      collect.textContent = t('celebrate.collect');
+
+      overlay.append(stage, label, collect);
+      document.body.appendChild(overlay);
+      collect.focus({ preventScroll: true });
+
+      const timers = [];
+      let closed = false;
+      function close() {
+        if (closed) return;
+        closed = true;
+        timers.forEach(clearTimeout);
+        document.removeEventListener('keydown', onKey, true);
+        overlay.remove();
+        if (returnFocus && typeof returnFocus.focus === 'function' && returnFocus.isConnected) returnFocus.focus({ preventScroll: true });
+      }
+      // Escape closes; Tab stays on the Collect button (the only control in the dialog).
+      function onKey(event) {
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          close();
+        } else if (event.key === 'Tab') {
+          event.preventDefault();
+          collect.focus();
+        }
+      }
+      document.addEventListener('keydown', onKey, true);
+      collect.addEventListener('click', close);
 
       const open = () => {
         scene.classList.add('pvk-gift--open');
+        overlay.classList.add('pvk-gift-overlay--open');
         playNotes(SOUND_POP);
         announce(t('celebrate.gotSticker', { name }));
         resolve(id);
+        timers.push(setTimeout(close, GIFT_AUTO_CLOSE_MS));
       };
       if (still) {
         open();
-        setTimeout(() => layer.remove(), 3200);
       } else {
         requestAnimationFrame(() => scene.classList.add('pvk-gift--shake'));
-        setTimeout(open, 1000);
-        setTimeout(() => scene.classList.add('pvk-gift--leave'), 3400);
-        setTimeout(() => layer.remove(), 3900);
+        timers.push(setTimeout(open, 1000));
       }
     } catch {
       resolve(id);
