@@ -12,7 +12,7 @@ import { createLanguageDropdown, getCurrentLanguage } from '/skeleton/language-d
 import { createSpeechInput } from '/skeleton/speech-input.js';
 import { createSpeechOutput } from '/skeleton/speech-output.js';
 import { extractFields, translate, translateList } from '/skeleton/api-client.js';
-import { pdfFilename, cleanLabel } from '/apps/spirit-clerk/form-utils.js';
+import { pdfFilename, cleanLabel, finalAnswer, previousAnswerValue } from '/apps/spirit-clerk/form-utils.js';
 import { renderPageImages } from '/skeleton/page-images.js';
 import { MAX_PAGES, pdfPageSize, splitDataUrl } from '/skeleton/page-images-utils.js';
 import { loadImage, drawAnswers, analyzeBoxes } from '/skeleton/form-overlay.js';
@@ -596,6 +596,13 @@ function askCurrentQuestion(notice) {
     keypadFirst: keypadMode,
   });
 
+  // Edit from the review: the earlier answer is already in the box (text, boxes, date, option,
+  // signature), so the user only changes what is wrong.
+  if (state.editing === state.currentIndex) {
+    const previous = previousAnswerValue(state.answers[state.currentIndex]);
+    if (previous !== null) widget.setValue(previous);
+  }
+
   englishFallback = false;
   localizedOptions = [];
   loadOptionLabels(field, format, myId); // the options as buttons in the chosen language (choice fields)
@@ -1169,9 +1176,8 @@ function doConfirm() {
     return;
   }
 
-  // An e-mail address is kept in lower case, whatever the user typed.
-  const typed = widget.getValue().trim();
-  const value = currentFormat.kind === 'email' ? typed.toLowerCase() : typed;
+  // An e-mail address is kept in lower case and a name in Title Case, whatever the user typed.
+  const value = finalAnswer(widget.getValue(), currentFormat.kind);
   stopEverything();
   storeAnswer(heardParts.join(' ').trim() || value, value, false);
   advance();
@@ -1447,9 +1453,10 @@ async function showOriginal() {
       const entries = first.pages[p];
       const analysis = analyzeBoxes(image, entries.map((entry) => entry.box));
       entries.forEach((entry, i) => {
-        if (entry.type === 'text') {
-          entry.cells = analysis[i].cells;
-          entry.line = analysis[i].line;
+        if (entry.type === 'text') entry.cells = analysis[i].cells;
+        if (entry.type === 'text' || entry.type === 'image') {
+          entry.line = analysis[i].line; // the line to write or sign on
+          entry.labelHeight = analysis[i].labelHeight; // the printed label: answers are sized from it
         }
       });
       return entries.map((entry, i) => entry.type !== 'tick' && analysis[i].occupied);
@@ -1519,8 +1526,18 @@ async function showOriginal() {
 // What to draw for one placed answer.
 function drawItem(entry) {
   if (entry.type === 'tick') return { type: 'tick', box: entry.box };
-  if (entry.type === 'image') return { type: 'image', box: entry.box, image: original.pictures.get(entry.image) };
-  return { type: 'text', text: entry.text, box: entry.box, kind: entry.kind, cells: entry.cells, line: entry.line };
+  if (entry.type === 'image') {
+    return { type: 'image', box: entry.box, image: original.pictures.get(entry.image), line: entry.line, labelHeight: entry.labelHeight };
+  }
+  return {
+    type: 'text',
+    text: entry.text,
+    box: entry.box,
+    kind: entry.kind,
+    cells: entry.cells,
+    line: entry.line,
+    labelHeight: entry.labelHeight,
+  };
 }
 
 // Draw every page again with the current text size. Nothing is sent to the server.

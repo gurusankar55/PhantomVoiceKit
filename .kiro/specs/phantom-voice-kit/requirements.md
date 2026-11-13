@@ -490,3 +490,16 @@ Phantom Voice Kit is a reusable skeleton for voice-first web applications with a
 1. WHEN the answer area has a line to write on (solid, dashed or dotted), THE app SHALL place the text's baseline a few pixels above the line so the letters (including descenders) never touch it. Inside a closed box THE text SHALL stay vertically centred.
 2. THE "already has text" check SHALL ignore horizontal lines made of repeated short marks (dashes, dots, underscores) as well as solid lines.
 3. FOR codes (PAN, IFSC and every other code kind) and bank account numbers, THE big on-screen keypad SHALL be the main input, open from the start with the character boxes. Voice SHALL be an optional small "Speak" button that hears the whole code in one turn. Codes SHALL NOT be asked chunk by chunk by voice.
+
+### Requirement 30: Spirit Clerk Polish (answer size, signature, title case, keypad, edit, Speak button)
+
+**User Story:** As a user, I want the filled form to look hand-written at the right size, my codes easy to type, and my answers kept when I edit them.
+
+#### Acceptance Criteria
+
+1. ON the original form, THE answer size SHALL come from the printed label on the same row (about 85% of the label's size, never below 70%; a longer answer wraps instead), still above the line and inside the area. Without a label the earlier fitting is used.
+2. THE drawn signature SHALL fill most of the area above the line (height up to 2x the label height, shape kept), stay a few pixels above the line, and be drawn in dark ink with strokes of at least 2.5 px.
+3. Name answers, typed or spoken, SHALL be kept in Title Case ("ravi kumar" -> "Ravi Kumar") in the box, the review, the summary and both PDFs.
+4. ON the code keypad, a key equal to a fixed character at the cursor (the "0" of IFSC) SHALL step over it; after a box is replaced the cursor SHALL move to the next box; a big delete key (⌫) SHALL clear the current box (or, when it is empty, go back one box and clear that). Spoken codes SHALL follow the same fixed-character rule.
+5. Edit from the review SHALL reopen the question with the earlier answer filled in (text, boxes, date, option, signature).
+6. THE Speak button SHALL be a large rounded rectangle (about 14 px radius), full width, about 64 px tall, like Done.

@@ -176,6 +176,7 @@
   "spiritClerk.sayChar": "Dieses Zeichen noch einmal sagen",
   "spiritClerk.tapBox": "Tippen Sie auf ein Kästchen, um dieses Zeichen zu ändern.",
   "spiritClerk.keypadHowTo": "Tippen Sie auf die Tasten, um die Kästchen zu füllen. Sie können auch Sprechen drücken und es sagen.",
+  "spiritClerk.deleteKey": "Löschen",
   "spiritClerk.cellLabel": "Zeichen {n} von {total}",
   "spiritClerk.invalidFormat": "Das passt noch nicht zum Format. Prüfen Sie die roten Kästchen.",
   "spiritClerk.invalidEmail": "Bitte geben Sie eine gültige E-Mail-Adresse ein.",

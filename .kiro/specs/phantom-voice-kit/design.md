@@ -832,3 +832,11 @@ The server console gets one line per page: `[translate-layout] ta-IN received=6 
 - `apps/spirit-clerk/answer-flow.js`: `isKeypadFirst(format, label)` is true for kind code and for number fields whose label names an account (not "Permanent Account").
 - `apps/spirit-clerk/answer-widgets.js`: cells widget `keypadFirst` opens the keypad on the first empty box and keeps it open; code and account-number widgets get a keypad under the box. New string `spiritClerk.keypadHowTo` (20 locales).
 - `apps/spirit-clerk/app.js`: `keypadMode` makes Speak small (`btn--small`), hides the voice how-to, hears the whole code in one turn from the first empty box, and does not restart listening after Wrong.
+
+## Spirit Clerk Polish (Requirement 30)
+
+- `skeleton/form-overlay-utils.js`: `measureLabelHeight(image, rect)` (tallest ink band to the left of the area on its row, else just above it; lines and borders removed); `answerSizeFromLabel` (label size = ink height / 0.8; answer 85% down to 70%, then wraps; `maxHeight` caps it in a closed box; A-/A+ scale applies); `signaturePlacement` (bottom 4 px above the line, height min(2x label, max(90% of the room, 1.5x label)), shape kept); `signatureThickenRadius` and `thickenOffsets` (strokes at least 2.5 px).
+- `skeleton/form-overlay.js`: `analyzeBoxes` returns `labelHeight`; `drawAnswers` sizes text from it and draws the signature through `darkSignature` (solid dark ink, thickened).
+- `skeleton/field-formats.js`: `typeKey`, `deleteKey`, `cursorCell` (keypad cursor that may stand on a fixed cell); `fillFrom` consumes a spoken fixed character when the text is not exactly as long as the boxes to fill.
+- `apps/spirit-clerk/form-utils.js`: `finalAnswer(text, kind)` (name Title Case, e-mail lower case) used on Correct; `previousAnswerValue(answer)` used when editing. The name text box title-cases on change and on setValue; the signature widget accepts a data URL in `setValue`.
+- New string `spiritClerk.deleteKey` (20 locales). Speak button CSS: full width, 64 px, radius 14 px.

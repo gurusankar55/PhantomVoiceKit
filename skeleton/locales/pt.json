@@ -176,6 +176,7 @@
   "spiritClerk.sayChar": "Diga este caractere de novo",
   "spiritClerk.tapBox": "Toque em uma caixa para mudar esse caractere.",
   "spiritClerk.keypadHowTo": "Toque nas teclas para preencher as caixas. Você também pode tocar em Falar e dizer.",
+  "spiritClerk.deleteKey": "Apagar",
   "spiritClerk.cellLabel": "Caractere {n} de {total}",
   "spiritClerk.invalidFormat": "Ainda não combina com o formato. Veja as caixas vermelhas.",
   "spiritClerk.invalidEmail": "Digite um e-mail válido.",

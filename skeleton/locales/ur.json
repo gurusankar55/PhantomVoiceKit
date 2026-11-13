@@ -176,6 +176,7 @@
   "spiritClerk.sayChar": "یہ حرف دوبارہ بولیں",
   "spiritClerk.tapBox": "اس حرف کو بدلنے کے لیے خانے پر ٹیپ کریں۔",
   "spiritClerk.keypadHowTo": "خانے بھرنے کے لیے کلیدیں دبائیں۔ آپ بولیں دبا کر بول بھی سکتے ہیں۔",
+  "spiritClerk.deleteKey": "مٹائیں",
   "spiritClerk.cellLabel": "حرف {n} از {total}",
   "spiritClerk.invalidFormat": "ابھی فارمیٹ سے میل نہیں کھاتا۔ سرخ خانے دیکھیں۔",
   "spiritClerk.invalidEmail": "درست ای میل ایڈریس درج کریں۔",

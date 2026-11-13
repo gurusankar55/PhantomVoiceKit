@@ -1146,6 +1146,208 @@ export function baselinesAboveLine({ lineTop, size, lineCount, lineHeight }) {
   return Array.from({ length: lineCount }, (_, i) => lastBaseline - (lineCount - 1 - i) * size * lineHeight);
 }
 
+// ---------------------------------------------------------------------------
+// Answers sized like the printed label on the same row
+// ---------------------------------------------------------------------------
+
+// The ink of a printed label (from the top of the capitals to the bottom of g, p, y) is about this
+// share of its font size, so the label's font size is about its ink height / LABEL_INK_SHARE.
+export const LABEL_INK_SHARE = 0.8;
+// The answer's size is this share of the label's size ...
+export const ANSWER_LABEL_SHARE = 0.85;
+// ... and never below this share (a long answer wraps instead of shrinking further).
+export const ANSWER_LABEL_MIN_SHARE = 0.7;
+
+/**
+ * The height of the printed text in an area: the tallest band of rows with ink, after lines to
+ * write on and box borders are taken out. Null when there is no text, or when the ink fills the
+ * area from top to bottom (a picture or a border, not a label).
+ */
+function inkBandHeight(image, area) {
+  const { data, width, height } = image;
+  const x0 = Math.max(0, Math.round(area.x));
+  const y0 = Math.max(0, Math.round(area.y));
+  const x1 = Math.min(width, Math.round(area.x + area.w));
+  const y1 = Math.min(height, Math.round(area.y + area.h));
+  const w = x1 - x0;
+  const h = y1 - y0;
+  if (w < 6 || h < 6) return null;
+
+  // The background: the middle colour of the area.
+  const reds = [];
+  const greens = [];
+  const blues = [];
+  for (let py = y0; py < y1; py++) {
+    for (let px = x0; px < x1; px++) {
+      const i = (py * width + px) * 4;
+      if (data[i + 3] < 128) continue;
+      reds.push(data[i]);
+      greens.push(data[i + 1]);
+      blues.push(data[i + 2]);
+    }
+  }
+  if (reds.length === 0) return null;
+  const background = { r: median(reds), g: median(greens), b: median(blues) };
+
+  const mask = new Uint8Array(w * h);
+  const columnCount = new Array(w).fill(0);
+  for (let row = 0; row < h; row++) {
+    for (let column = 0; column < w; column++) {
+      const i = ((y0 + row) * width + (x0 + column)) * 4;
+      if (data[i + 3] >= 128 && colorDistance({ r: data[i], g: data[i + 1], b: data[i + 2] }, background) >= INK_DISTANCE) {
+        mask[row * w + column] = 1;
+        columnCount[column] += 1;
+      }
+    }
+  }
+
+  // Ink per row, without lines to write on and without box borders (tall columns of ink).
+  const ruled = ruledRows(mask, w, h, Math.max(4, Math.round(h * 0.1)));
+  const rowInk = new Array(h).fill(0);
+  for (let row = 0; row < h; row++) {
+    if (ruled.rows[row]) continue;
+    for (let column = 0; column < w; column++) {
+      if (mask[row * w + column] !== 1 || columnCount[column] >= 0.9 * h) continue;
+      if (ruled.edge[row] && ruled.edgeColumns[row][column]) continue;
+      rowInk[row] += 1;
+    }
+  }
+
+  // Bands of rows with ink (a gap of up to 2 rows stays inside one band: the dot of an i).
+  let best = null;
+  for (let row = 0; row < h; ) {
+    if (rowInk[row] === 0) {
+      row += 1;
+      continue;
+    }
+    let end = row;
+    let sum = 0;
+    let gap = 0;
+    while (end < h && gap <= 2) {
+      if (rowInk[end] > 0) {
+        sum += rowInk[end];
+        gap = 0;
+      } else {
+        gap += 1;
+      }
+      end += 1;
+    }
+    const bottom = end - 1 - gap; // the last row with ink
+    if (!best || sum > best.sum) best = { top: row, bottom, sum };
+    row = end;
+  }
+  if (!best || best.sum < 6) return null;
+  const bandHeight = best.bottom - best.top + 1;
+  if (bandHeight < 5) return null;
+  if (best.top === 0 && best.bottom === h - 1) return null; // fills the whole area: not a label
+  return bandHeight;
+}
+
+/**
+ * How tall is the printed label of an answer area? The label is looked for on the same row to the
+ * left of the area first, then just above it.
+ * @param {{data: Uint8ClampedArray|number[], width:number, height:number}} image  RGBA pixels
+ * @param {{x:number, y:number, w:number, h:number}} rect  the answer area in pixels
+ * @returns {number|null}  the height of the label's ink in pixels, or null when no label was found
+ */
+export function measureLabelHeight(image, rect) {
+  const reach = Math.round(Math.max(rect.h * 8, 160));
+  const top = rect.y - Math.round(rect.h * 0.5);
+  const bottom = rect.y + Math.round(rect.h * 1.25);
+  const left = { x: rect.x - reach, y: top, w: reach - 2, h: bottom - top };
+  const fromLeft = inkBandHeight(image, left);
+  if (fromLeft !== null) return fromLeft;
+  const above = { x: rect.x, y: rect.y - Math.round(rect.h * 2), w: rect.w, h: Math.round(rect.h * 2) - 1 };
+  return inkBandHeight(image, above);
+}
+
+/**
+ * The font size of an answer from the label on its row: about 85% of the label's size, never
+ * below 70% of it. The biggest size from 85% down to 70% at which the answer fits on ONE line is
+ * used; a longer answer is wrapped at 70% (it is never made smaller than that). maxHeight caps
+ * the size (the height of a closed box), and the A- / A+ scale applies on top.
+ * @param {object} options
+ *   text, labelHeight (the label's ink height in pixels), boxW (width the text may use),
+ *   measureAt (s, size) => width, maxHeight (default: no cap), scale (default 1), lineHeight
+ * @returns {{size:number, lines:string[], fits:boolean} | null}  null without a usable label height
+ */
+export function answerSizeFromLabel({ text, labelHeight, boxW, measureAt, maxHeight = Infinity, scale = 1, lineHeight = 1.15 }) {
+  if (!Number.isFinite(labelHeight) || labelHeight <= 0) return null;
+  const labelSize = labelHeight / LABEL_INK_SHARE;
+  const cap = Number.isFinite(maxHeight) ? Math.max(6, Math.floor(maxHeight)) : Infinity;
+  const target = Math.max(6, Math.min(cap, Math.round(labelSize * ANSWER_LABEL_SHARE * scale)));
+  const lowest = Math.max(6, Math.min(target, Math.round(labelSize * ANSWER_LABEL_MIN_SHARE * scale)));
+
+  for (let size = target; size >= lowest; size--) {
+    const one = layoutAt({ text, boxW, boxH: Infinity, measureAt, size, lineHeight, maxLines: 1 });
+    if (one.fits) return { size, lines: one.lines, fits: true };
+  }
+  const wrapped = layoutAt({ text, boxW, boxH: Infinity, measureAt, size: lowest, lineHeight });
+  return { size: lowest, lines: wrapped.lines, fits: wrapped.fits };
+}
+
+// ---------------------------------------------------------------------------
+// The drawn signature on the original form
+// ---------------------------------------------------------------------------
+
+// The signature is at most this many times the label's ink height ...
+export const SIGNATURE_LABEL_SHARE = 2;
+// ... and stays at least this many pixels above the line to sign on.
+export const SIGNATURE_LINE_GAP_PX = 4;
+// Strokes on the form are at least this thick (in page pixels) ...
+export const SIGNATURE_MIN_STROKE_PX = 2.5;
+// ... knowing that the pad draws them this thick (in picture pixels).
+export const PAD_STROKE_PX = 3.2;
+
+/**
+ * Where the drawn signature goes: it fills most of the space above the line (or of the area when
+ * there is no line), at most 2x the label height, its shape kept, starting at the left, and its
+ * bottom a few pixels ABOVE the line so it never touches it.
+ * @param {{imageW:number, imageH:number, rect:{x:number,y:number,w:number,h:number}, lineTop?:number|null, labelHeight?:number|null}} options
+ * @returns {{x:number, y:number, w:number, h:number, scale:number}}
+ */
+export function signaturePlacement({ imageW, imageH, rect, lineTop = null, labelHeight = null }) {
+  const hasLine = Number.isFinite(lineTop);
+  const bottom = hasLine ? lineTop - SIGNATURE_LINE_GAP_PX : rect.y + rect.h * 0.94;
+  const space = Math.max(4, bottom - rect.y); // the room above the line inside the area
+  const hasLabel = Number.isFinite(labelHeight) && labelHeight > 0;
+  // Most of the room (90%). With a label: at most 2x the label height, and at least 1.5x it
+  // (a tight area does not make a tiny signature; it may reach a little above the area).
+  const maxH = hasLabel
+    ? Math.min(SIGNATURE_LABEL_SHARE * labelHeight, Math.max(space * 0.9, 1.5 * labelHeight))
+    : space * 0.9;
+  const maxW = rect.w * 0.96;
+  const scale = Math.min(maxH / Math.max(1, imageH), maxW / Math.max(1, imageW));
+  const w = imageW * scale;
+  const h = imageH * scale;
+  return { x: rect.x + rect.w * 0.02, y: bottom - h, w, h, scale };
+}
+
+/**
+ * How far (in page pixels) the strokes of a signature drawn at `scale` must be thickened on each
+ * side so they are at least SIGNATURE_MIN_STROKE_PX thick.
+ */
+export function signatureThickenRadius(scale) {
+  const drawn = PAD_STROKE_PX * Math.max(0, scale);
+  return Math.max(0, (SIGNATURE_MIN_STROKE_PX - drawn) / 2);
+}
+
+/**
+ * The small shifts used to thicken strokes: the picture is drawn once at each point of a circle
+ * of this radius (and the middle), so every stroke grows by about the radius on each side.
+ * @returns {{dx:number, dy:number}[]}  just the middle for a radius of 0
+ */
+export function thickenOffsets(radius) {
+  if (!(radius > 0)) return [{ dx: 0, dy: 0 }];
+  const steps = Math.max(8, Math.ceil(radius * 8));
+  const offsets = [{ dx: 0, dy: 0 }];
+  for (let i = 0; i < steps; i++) {
+    const angle = (i / steps) * Math.PI * 2;
+    offsets.push({ dx: Math.cos(angle) * radius, dy: Math.sin(angle) * radius });
+  }
+  return offsets;
+}
+
 // A column of the middle band counts as a divider of a comb box when ink fills this share of it.
 const COMB_LINE_SHARE = 0.9;
 

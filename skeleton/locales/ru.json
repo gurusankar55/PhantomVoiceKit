@@ -176,6 +176,7 @@
   "spiritClerk.sayChar": "Скажите этот символ ещё раз",
   "spiritClerk.tapBox": "Нажмите на клетку, чтобы изменить этот символ.",
   "spiritClerk.keypadHowTo": "Нажимайте клавиши, чтобы заполнить клетки. Можно также нажать «Говорить» и произнести.",
+  "spiritClerk.deleteKey": "Стереть",
   "spiritClerk.cellLabel": "Символ {n} из {total}",
   "spiritClerk.invalidFormat": "Пока не соответствует формату. Проверьте красные клетки.",
   "spiritClerk.invalidEmail": "Введите правильный адрес электронной почты.",

@@ -83,3 +83,31 @@ export function formatAnswerByKind(text, kind) {
   const value = String(text ?? '');
   return kind === 'name' ? toTitleCase(value) : value;
 }
+
+/**
+ * The answer that is kept when the user presses Correct (typed or spoken alike): trimmed, a name
+ * in Title Case ("ravi kumar" -> "Ravi Kumar"), an e-mail address in lower case. This is the text
+ * shown in the review, the summary and both PDFs.
+ * @param {string} text
+ * @param {string} kind  the kind of the field
+ * @returns {string}
+ */
+export function finalAnswer(text, kind) {
+  const value = String(text ?? '').trim();
+  if (kind === 'email') return value.toLowerCase();
+  return formatAnswerByKind(value, kind);
+}
+
+/**
+ * What to put back in the answer box when an answer is edited from the review: the drawn
+ * signature (a picture), or the kept English answer. null when there is nothing to show (no
+ * answer yet, or the question was skipped).
+ * @param {{skipped?:boolean, englishMeaning?:string, signatureImage?:string}|undefined} answer
+ * @returns {string|null}
+ */
+export function previousAnswerValue(answer) {
+  if (!answer || answer.skipped) return null;
+  if (typeof answer.signatureImage === 'string' && answer.signatureImage !== '') return answer.signatureImage;
+  const text = String(answer.englishMeaning ?? '').trim();
+  return text === '' ? null : text;
+}

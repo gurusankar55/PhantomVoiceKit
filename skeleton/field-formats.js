@@ -246,9 +246,18 @@ export function isPatternComplete(values, cells) {
 export function fillFrom(values, cells, startIndex, chars) {
   const result = [...values];
   const list = Array.from(alnumUpper(chars));
+  const start = Math.max(0, startIndex);
+  // Did the user say the fixed characters too ("SBIN0001234" for IFSC AAAA0XXXXXX)? Then a fixed
+  // cell takes the same character from what was said. When exactly as many characters were said
+  // as there are boxes to fill ("SBIN001234"), the fixed cells are simply skipped.
+  const editable = cells.slice(start).filter((cell) => cell.type !== 'literal').length;
+  const saysFixed = list.length !== editable;
   let used = 0;
-  for (let i = Math.max(0, startIndex); i < cells.length && used < list.length; i++) {
-    if (cells[i].type === 'literal') continue;
+  for (let i = start; i < cells.length && used < list.length; i++) {
+    if (cells[i].type === 'literal') {
+      if (saysFixed && list[used] === cells[i].char.toUpperCase()) used += 1; // the fixed "0" was said
+      continue;
+    }
     result[i] = list[used];
     used += 1;
   }
@@ -261,6 +270,74 @@ export function setCell(values, cells, index, char) {
   const next = [...values];
   next[index] = alnumUpper(char).slice(0, 1);
   return next;
+}
+
+// ---------------------------------------------------------------------------
+// The on-screen keypad: a cursor that moves box by box
+// ---------------------------------------------------------------------------
+// The cursor is where the next key goes. It may stand on a fixed cell (the "0" of IFSC) or at
+// the end (cells.length). The box that is highlighted is cursorCell(cells, cursor).
+
+/**
+ * The box to highlight for a cursor: the cursor's box, or the next box the user fills in after a
+ * fixed cell. -1 when there is no such box (the cursor is at the end).
+ */
+export function cursorCell(cells, cursor) {
+  for (let i = Math.max(0, cursor); i < cells.length; i++) {
+    if (cells[i].type !== 'literal') return i;
+  }
+  return -1;
+}
+
+// The last box the user fills in (-1 when there is none).
+function lastEditable(cells) {
+  for (let i = cells.length - 1; i >= 0; i--) if (cells[i].type !== 'literal') return i;
+  return -1;
+}
+
+/**
+ * A key was pressed. The character goes into the box at the cursor and the cursor moves to the
+ * NEXT box (also after a box that was tapped and replaced). On a fixed cell, the same key just
+ * steps over it ("0" of IFSC AAAA0XXXXXX, so typing all of "SBIN0001234" works); any other key
+ * goes into the next box after the fixed cell. At the end nothing changes.
+ * @returns {{values:string[], cursor:number}}
+ */
+export function typeKey(values, cells, cursor, key) {
+  const char = alnumUpper(key).slice(0, 1);
+  let at = Math.max(0, cursor);
+  if (char === '') return { values: [...values], cursor: at };
+  while (at < cells.length && cells[at].type === 'literal') {
+    if (cells[at].char.toUpperCase() === char) return { values: [...values], cursor: at + 1 };
+    at += 1;
+  }
+  if (at >= cells.length) return { values: [...values], cursor: cells.length };
+  const next = [...values];
+  next[at] = char;
+  return { values: next, cursor: at + 1 };
+}
+
+/**
+ * The delete key (⌫). The highlighted box (the last box when the cursor is at the end):
+ *   - holds a character: it is cleared and the cursor stays on it
+ *   - is empty: the cursor moves BACK to the box before it, which is cleared
+ * Fixed cells are never cleared.
+ * @returns {{values:string[], cursor:number}}
+ */
+export function deleteKey(values, cells, cursor) {
+  const next = [...values];
+  let current = cursorCell(cells, cursor);
+  if (current === -1) current = lastEditable(cells);
+  if (current === -1) return { values: next, cursor: Math.max(0, cursor) };
+  if ((next[current] ?? '') !== '') {
+    next[current] = '';
+    return { values: next, cursor: current };
+  }
+  for (let i = current - 1; i >= 0; i--) {
+    if (cells[i].type === 'literal') continue;
+    next[i] = '';
+    return { values: next, cursor: i };
+  }
+  return { values: next, cursor: current }; // already at the first box
 }
 
 /**

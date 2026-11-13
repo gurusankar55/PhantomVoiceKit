@@ -176,6 +176,7 @@
   "spiritClerk.sayChar": "Say this character again",
   "spiritClerk.tapBox": "Tap a box to change that character.",
   "spiritClerk.keypadHowTo": "Tap the keys to fill the boxes. You can also press Speak and say it.",
+  "spiritClerk.deleteKey": "Delete",
   "spiritClerk.cellLabel": "Character {n} of {total}",
   "spiritClerk.invalidFormat": "This does not match the format yet. Check the red boxes.",
   "spiritClerk.invalidEmail": "Please enter a valid email address.",

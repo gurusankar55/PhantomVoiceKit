@@ -176,6 +176,7 @@
   "spiritClerk.sayChar": "この文字をもう一度言う",
   "spiritClerk.tapBox": "文字を変えたいときは、そのマスをタップします。",
   "spiritClerk.keypadHowTo": "キーをタップしてマスを埋めます。「話す」を押して言うこともできます。",
+  "spiritClerk.deleteKey": "消す",
   "spiritClerk.cellLabel": "{total}文字中の{n}文字目",
   "spiritClerk.invalidFormat": "まだ形式に合っていません。赤いマスを確認してください。",
   "spiritClerk.invalidEmail": "正しいメールアドレスを入力してください。",

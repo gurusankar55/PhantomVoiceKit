@@ -31,9 +31,13 @@ import {
   findWritingLine,
   baselinesAboveLine,
   LINE_GAP_PX,
+  measureLabelHeight,
+  answerSizeFromLabel,
+  signaturePlacement,
+  signatureThickenRadius,
+  thickenOffsets,
   detectCombCells,
   layoutComb,
-  fitInBox,
   textHeight,
   sampleBackground,
   sampleDarkest,
@@ -306,11 +310,11 @@ export function findOccupiedBoxes(image, boxes) {
 
 /**
  * Look at the answer boxes of a page (reads the pixels once): is something already written in
- * each box, is it divided into character cells (a comb box), and is there a line to write on
- * (solid, dashed or dotted)?
+ * each box, is it divided into character cells (a comb box), is there a line to write on
+ * (solid, dashed or dotted), and how tall is the printed label next to it (answers are sized from it)?
  * @param {HTMLImageElement} image
  * @param {number[][]} boxes  [ymin, xmin, ymax, xmax] on a 0 to 1000 scale
- * @returns {{occupied:boolean, cells:{x:number, y:number, w:number, h:number}[]|null, line:{top:number, bottom:number}|null}[]}  one per box
+ * @returns {{occupied:boolean, cells:{x:number, y:number, w:number, h:number}[]|null, line:{top:number, bottom:number}|null, labelHeight:number|null}[]}  one per box
  */
 export function analyzeBoxes(image, boxes) {
   if (boxes.length === 0) return [];
@@ -326,10 +330,59 @@ export function analyzeBoxes(image, boxes) {
 
   const result = boxes.map((box) => {
     const rect = boxToPixels(box, width, height);
-    return { occupied: boxHasInk(pixels, rect), cells: detectCombCells(pixels, rect), line: findWritingLine(pixels, rect) };
+    return {
+      occupied: boxHasInk(pixels, rect),
+      cells: detectCombCells(pixels, rect),
+      line: findWritingLine(pixels, rect),
+      labelHeight: measureLabelHeight(pixels, rect),
+    };
   });
   scratch.width = 0; // let the browser free the memory
   return result;
+}
+
+/**
+ * The drawn signature, ready to put on the form: scaled to `place`, every stroke pixel turned into
+ * solid dark ink (faint, thin edges after scaling become crisp), and thickened by `radius` pixels
+ * on each side so strokes are at least 2.5 px.
+ * @param {HTMLImageElement} picture  the signature (transparent background)
+ * @param {{w:number, h:number}} place  from signaturePlacement
+ * @param {number} radius  from signatureThickenRadius
+ * @returns {{canvas:HTMLCanvasElement, pad:number} | null}  pad = extra pixels around the picture
+ */
+function darkSignature(picture, place, radius) {
+  const w = Math.max(1, Math.round(place.w));
+  const h = Math.max(1, Math.round(place.h));
+  const scaled = document.createElement('canvas');
+  scaled.width = w;
+  scaled.height = h;
+  const sctx = scaled.getContext('2d', { willReadFrequently: true });
+  sctx.drawImage(picture, 0, 0, w, h);
+
+  // Solid dark ink wherever the pen went.
+  const pixels = sctx.getImageData(0, 0, w, h);
+  const ink = { r: 0x14, g: 0x26, b: 0x7b }; // ANSWER_INK
+  for (let i = 0; i < pixels.data.length; i += 4) {
+    if (pixels.data[i + 3] >= 40) {
+      pixels.data[i] = ink.r;
+      pixels.data[i + 1] = ink.g;
+      pixels.data[i + 2] = ink.b;
+      pixels.data[i + 3] = 255;
+    } else {
+      pixels.data[i + 3] = 0;
+    }
+  }
+  sctx.putImageData(pixels, 0, 0);
+
+  // Thicker strokes: the picture drawn once for each small shift around a circle.
+  const pad = Math.ceil(radius) + 1;
+  const out = document.createElement('canvas');
+  out.width = w + pad * 2;
+  out.height = h + pad * 2;
+  const octx = out.getContext('2d');
+  for (const { dx, dy } of thickenOffsets(radius)) octx.drawImage(scaled, pad + dx, pad + dy);
+  scaled.width = 0; // let the browser free the memory
+  return { canvas: out, pad };
 }
 
 /**
@@ -343,8 +396,10 @@ export function analyzeBoxes(image, boxes) {
  *        when the box is divided into character cells (cells = their pixel rectangles, see
  *        detectCombCells) and the answer fits them, ONE character per cell, centred
  *   { type: 'tick', box }                         a tick mark in the box (an option, a tick box)
- *   { type: 'image', image, box }                 a picture (the drawn signature) scaled to fit the box,
- *        its shape kept (image = a loaded HTMLImageElement)
+ *   { type: 'image', image, box, line?, labelHeight? }   the drawn signature (a loaded HTMLImageElement),
+ *        its shape kept, up to 2x the label height, its bottom a few pixels above the line,
+ *        in dark ink with strokes of at least 2.5 px (see signaturePlacement)
+ *   text and image items may carry labelHeight (see measureLabelHeight): answers are sized from it
  * (an item without a type is a text item). box = [ymin, xmin, ymax, xmax] on a 0 to 1000 scale.
  * @param {HTMLCanvasElement} canvas
  * @param {HTMLImageElement} image
@@ -418,11 +473,21 @@ export function drawAnswers(canvas, image, items, { scaleOffset = 0 } = {}) {
     }
 
     if (item.type === 'image') {
+      // The drawn signature: big (up to 2x the label height), above the line, never touching it,
+      // with strokes thickened to at least 2.5 px in dark ink.
       const picture = item.image;
       if (!picture) return { type: 'image', drawn: false };
-      const fitted = fitInBox(picture.naturalWidth || picture.width, picture.naturalHeight || picture.height, rect);
-      ctx.drawImage(picture, fitted.x, fitted.y, fitted.w, fitted.h);
-      return { type: 'image', drawn: true };
+      const lineTop = item.line && Number.isFinite(item.line.top) ? item.line.top : null;
+      const place = signaturePlacement({
+        imageW: picture.naturalWidth || picture.width,
+        imageH: picture.naturalHeight || picture.height,
+        rect,
+        lineTop,
+        labelHeight: item.labelHeight,
+      });
+      const ink = darkSignature(picture, place, signatureThickenRadius(place.scale));
+      if (ink) ctx.drawImage(ink.canvas, Math.round(place.x) - ink.pad, Math.round(place.y) - ink.pad);
+      return { type: 'image', drawn: Boolean(ink), size: Math.round(place.h) };
     }
 
     // Text: cell by cell when the box is a comb box and the answer fits it.
@@ -433,12 +498,17 @@ export function drawAnswers(canvas, image, items, { scaleOffset = 0 } = {}) {
 
     const boxW = Math.max(1, rect.w - ANSWER_PAD * 2);
 
+    // The size comes from the printed label on the same row (about 85% of it, never below 70%)
+    // when a label was found; otherwise the answer is fitted to the area as before.
+    const labelSized = (maxHeight) =>
+      answerSizeFromLabel({ text: item.text, labelHeight: item.labelHeight, boxW, measureAt, maxHeight, scale, lineHeight });
+
     // A line to write on (solid, dashed, dotted): the text stands on it, a few pixels ABOVE it, so
     // it never looks crossed out. The space for the text ends just above the line.
     const lineTop = item.line && Number.isFinite(item.line.top) ? item.line.top : null;
     if (lineTop !== null) {
       const room = Math.max(lineTop - LINE_GAP_PX - rect.y, rect.h * 0.6);
-      const fitted = fitAnswer({ text: item.text, boxW, boxH: room, measureAt, maxSize, lineHeight, scale });
+      const fitted = labelSized(Infinity) || fitAnswer({ text: item.text, boxW, boxH: room, measureAt, maxSize, lineHeight, scale });
       const baselines = baselinesAboveLine({ lineTop, size: fitted.size, lineCount: fitted.lines.length, lineHeight });
       ctx.font = `${fitted.size}px ${FONT_FAMILY}`;
       ctx.textBaseline = 'alphabetic';
@@ -447,7 +517,12 @@ export function drawAnswers(canvas, image, items, { scaleOffset = 0 } = {}) {
       return { type: 'text', text: item.text, lines: fitted.lines, size: fitted.size, fits: fitted.fits, aboveLine: true };
     }
 
-    const { size, lines, fits } = fitAnswer({ text: item.text, boxW, boxH: rect.h, measureAt, maxSize, lineHeight, scale });
+    // Inside a box: never taller than the box allows.
+    const inBox = labelSized(rect.h * 0.8);
+    const sized = inBox
+      ? { ...inBox, fits: inBox.fits && textHeight(inBox.lines.length, inBox.size, lineHeight) <= rect.h }
+      : fitAnswer({ text: item.text, boxW, boxH: rect.h, measureAt, maxSize, lineHeight, scale });
+    const { size, lines, fits } = sized;
 
     // Inside a box: centre the lines up and down when they fit; otherwise start at the top edge.
     const offsetY = fits ? (rect.h - textHeight(lines.length, size, lineHeight)) / 2 : 0;

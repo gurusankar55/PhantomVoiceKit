@@ -176,6 +176,7 @@
   "spiritClerk.sayChar": "यह अक्षर फिर से बोलें",
   "spiritClerk.tapBox": "उस अक्षर को बदलने के लिए डिब्बे पर टैप करें।",
   "spiritClerk.keypadHowTo": "डिब्बे भरने के लिए कुंजियाँ दबाएँ। आप बोलें दबाकर इसे बोल भी सकते हैं।",
+  "spiritClerk.deleteKey": "मिटाएँ",
   "spiritClerk.cellLabel": "अक्षर {n} / {total}",
   "spiritClerk.invalidFormat": "अभी फ़ॉर्मेट से मेल नहीं खाता। लाल डिब्बे देखें।",
   "spiritClerk.invalidEmail": "सही ईमेल पता लिखें।",

@@ -17,7 +17,8 @@
 // and calls onChange() whenever the user (or the code) changes the answer. The widgets use only
 // textContent and value (never innerHTML), so user text can never inject HTML.
 
-import { t, setI18nText } from '/skeleton/i18n.js';
+import { t, setI18nText, setI18nAttr } from '/skeleton/i18n.js';
+import { toTitleCase } from '/apps/spirit-clerk/form-utils.js';
 import { inkBounds, growRect, midPoint, isRealSignature } from '/apps/spirit-clerk/signature-utils.js';
 import {
   parsePattern,
@@ -28,6 +29,9 @@ import {
   cellStates,
   fillFrom,
   setCell,
+  typeKey,
+  deleteKey,
+  cursorCell,
   chunkToAsk,
   validateAnswer,
   parseDateString,
@@ -57,16 +61,28 @@ function nextId(prefix) {
 // Text box
 // ---------------------------------------------------------------------------
 
-function createTextWidget(container, { multiline, onChange }) {
+// A name (kind "name") is shown in Title Case ("ravi kumar" -> "Ravi Kumar") as soon as the user
+// leaves the box, and whenever a value is put in (voice, an earlier answer).
+function createTextWidget(container, { multiline, onChange, kind }) {
+  const isName = kind === 'name';
   const box = multiline ? el('textarea', 'answer-input') : el('input', 'answer-input');
   if (multiline) box.rows = 3;
   else box.type = 'text';
   box.maxLength = 500;
   box.id = nextId('answer-text');
   box.setAttribute('autocomplete', 'off');
-  box.setAttribute('autocapitalize', 'off');
+  box.setAttribute('autocapitalize', isName ? 'words' : 'off');
   box.spellcheck = false;
   box.addEventListener('input', () => onChange());
+  if (isName) {
+    box.addEventListener('change', () => {
+      const titled = toTitleCase(box.value);
+      if (titled !== box.value) {
+        box.value = titled;
+        onChange();
+      }
+    });
+  }
   container.appendChild(box);
 
   return {
@@ -74,7 +90,7 @@ function createTextWidget(container, { multiline, onChange }) {
     element: box,
     getValue: () => box.value,
     setValue(text) {
-      box.value = String(text ?? '');
+      box.value = isName ? toTitleCase(String(text ?? '')) : String(text ?? '');
       onChange();
     },
     validate: () => validateAnswer(box.value, { kind: 'text' }),
@@ -102,10 +118,20 @@ function createDigitsWidget(container, { onChange, kind, keypadFirst = false }) 
     onChange();
   });
   container.appendChild(box);
-  const extra = keypadFirst ? addTypingKeypad(container, DIGITS, (key) => {
-    box.value = clean(box.value + key);
-    onChange();
-  }) : null;
+  const extra = keypadFirst
+    ? addTypingKeypad(
+        container,
+        DIGITS,
+        (key) => {
+          box.value = clean(box.value + key);
+          onChange();
+        },
+        () => {
+          box.value = box.value.slice(0, -1); // ⌫: the last digit
+          onChange();
+        }
+      )
+    : null;
 
   return {
     type: 'digits',
@@ -127,13 +153,13 @@ function createDigitsWidget(container, { onChange, kind, keypadFirst = false }) 
 
 // The keypad under a typing box (a code or account number without boxes): a short hint and big keys.
 // Returns the element that holds both (to remove it later).
-function addTypingKeypad(container, keys, onKey) {
+function addTypingKeypad(container, keys, onKey, onDelete) {
   const wrap = el('div', 'cell-panel');
   const hint = el('p', 'cell-hint');
   setI18nText(hint, 'spiritClerk.keypadHowTo');
   const keypad = el('div', 'keypad');
   keypad.setAttribute('role', 'group');
-  fillKeypad(keypad, keys, onKey);
+  fillKeypad(keypad, keys, onKey, onDelete);
   wrap.append(hint, keypad);
   container.appendChild(wrap);
   return wrap;
@@ -159,10 +185,18 @@ function createCodeWidget(container, { onChange }) {
     onChange();
   });
   container.appendChild(box);
-  const extra = addTypingKeypad(container, [...LETTERS, ...DIGITS], (key) => {
-    box.value = clean(box.value + key);
-    onChange();
-  });
+  const extra = addTypingKeypad(
+    container,
+    [...LETTERS, ...DIGITS],
+    (key) => {
+      box.value = clean(box.value + key);
+      onChange();
+    },
+    () => {
+      box.value = box.value.slice(0, -1); // ⌫: the last character
+      onChange();
+    }
+  );
 
   return {
     type: 'code',
@@ -331,14 +365,23 @@ function createDateWidget(container, { onChange, lang }) {
 const LETTERS = Array.from('ABCDEFGHIJKLMNOPQRSTUVWXYZ');
 const DIGITS = Array.from('0123456789');
 
-// Fill a keypad element with one big button per key. onKey(key) is called on a press.
-function fillKeypad(keypad, keys, onKey) {
+// Fill a keypad element with one big button per key. onKey(key) is called on a press. With
+// onDelete, a wide delete key (⌫) comes last.
+function fillKeypad(keypad, keys, onKey, onDelete) {
   keypad.textContent = '';
   for (const key of keys) {
     const button = el('button', `key ${/[0-9]/.test(key) ? 'key--digit' : 'key--letter'}`, key);
     button.type = 'button';
     button.addEventListener('click', () => onKey(key));
     keypad.appendChild(button);
+  }
+  if (typeof onDelete === 'function') {
+    const remove = el('button', 'key key--delete', '⌫');
+    remove.type = 'button';
+    setI18nAttr(remove, 'aria-label', 'spiritClerk.deleteKey');
+    setI18nAttr(remove, 'title', 'spiritClerk.deleteKey');
+    remove.addEventListener('click', () => onDelete());
+    keypad.appendChild(remove);
   }
 }
 
@@ -354,7 +397,9 @@ function createCellsWidget(container, { pattern, kind, onChange, onSayChar, keyp
   const cells = parsePattern(pattern);
   const chunks = chunksOf(cells);
   let values = emptyValues(cells);
-  let selected = -1; // the box that was tapped
+  // Where the next key goes (see typeKey): a box, a fixed cell or the end. -1 = the keypad is closed.
+  let cursor = -1;
+  let selected = -1; // the highlighted box (the box the next key fills)
 
   const grid = el('div', 'cells');
   grid.setAttribute('role', 'group');
@@ -386,23 +431,59 @@ function createCellsWidget(container, { pattern, kind, onChange, onSayChar, keyp
   // The first box that can be typed in and is still empty (-1 when every box is filled).
   const firstEmptyAfter = (from) => values.findIndex((v, i) => i > from && cells[i].type !== 'literal' && v === '');
   const firstEditable = () => cells.findIndex((cell) => cell.type !== 'literal');
+  const lastEditable = () => cells.map((cell) => cell.type !== 'literal').lastIndexOf(true);
 
-  function buildKeypad(type) {
-    fillKeypad(keypad, keysFor(type), (key) => {
-      const at = selected;
-      values = setCell(values, cells, at, key);
-      // After a character, go to the next box that is still empty. When none is left the panel
-      // closes, but a keypad-first field keeps the keypad open on the box just filled.
-      const nextEmpty = firstEmptyAfter(at);
-      if (nextEmpty !== -1) select(nextEmpty);
-      else if (keypadFirst) select(at);
-      else closePanel();
-      render();
-      onChange();
-    });
+  // The keys for the highlighted box. When the cursor stands on a fixed cell, its character is a
+  // key too (pressing it steps over the fixed cell).
+  function buildKeypad() {
+    const keys = [...keysFor(cells[selected].type)];
+    const fixed = cells[cursor] && cells[cursor].type === 'literal' ? cells[cursor].char.toUpperCase() : '';
+    if (fixed && /^[A-Z0-9]$/.test(fixed) && !keys.includes(fixed)) keys.push(fixed);
+    fillKeypad(keypad, keys, pressKey, pressDelete);
+  }
+
+  // A key: into the box at the cursor, then on to the NEXT box. At the end a keypad-first field
+  // keeps the keypad open (on the last box); otherwise the panel closes.
+  function pressKey(key) {
+    const result = typeKey(values, cells, cursor, key);
+    values = result.values;
+    moveTo(result.cursor);
+    render();
+    onChange();
+  }
+
+  // ⌫: clear the highlighted box, or (when it is empty) go back one box and clear that.
+  function pressDelete() {
+    const result = deleteKey(values, cells, cursor);
+    values = result.values;
+    moveTo(result.cursor);
+    render();
+    onChange();
+  }
+
+  // Put the cursor somewhere and highlight the box it fills.
+  function moveTo(newCursor) {
+    let box = cursorCell(cells, newCursor);
+    if (box === -1) {
+      if (!keypadFirst) {
+        closePanel();
+        return;
+      }
+      box = lastEditable(); // the end: the keypad stays open on the last box
+      if (box === -1) {
+        closePanel();
+        return;
+      }
+    }
+    cursor = newCursor;
+    selected = box;
+    buildKeypad();
+    panel.hidden = false;
+    render();
   }
 
   function closePanel() {
+    cursor = -1;
     selected = -1;
     panel.hidden = true;
   }
@@ -416,15 +497,13 @@ function createCellsWidget(container, { pattern, kind, onChange, onSayChar, keyp
     const empty = firstEmptyAfter(-1);
     const index = empty !== -1 ? empty : firstEditable();
     if (index === -1) closePanel();
-    else select(index);
+    else moveTo(index);
   }
 
+  // A tapped box: the next key replaces its character.
   function select(index) {
     if (cells[index].type === 'literal') return;
-    selected = index;
-    buildKeypad(cells[index].type);
-    panel.hidden = false;
-    render();
+    moveTo(index);
   }
 
   function render() {
@@ -474,7 +553,8 @@ function createCellsWidget(container, { pattern, kind, onChange, onSayChar, keyp
       if (selected < 0) return;
       const at = selected;
       values = setCell(values, cells, at, chars);
-      resetPanel();
+      if (keypadFirst) moveTo(at + 1); // on to the next box
+      else closePanel();
       render();
       onChange();
     },
@@ -715,6 +795,18 @@ function createSignatureWidget(container, { onChange, onLater }) {
     showPad();
   });
 
+  // Show a kept signature (a PNG data URL) as the picture, as after "Use".
+  function showSignature(dataUrl) {
+    signature = dataUrl;
+    preview.src = signature;
+    preview.hidden = false;
+    canvas.hidden = true;
+    hint.hidden = true;
+    use.hidden = true;
+    message.hidden = true;
+    onChange();
+  }
+
   // "Use": cut the signature out of the pad (transparent background) and keep it as a picture.
   use.addEventListener('click', () => {
     const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -729,22 +821,18 @@ function createSignatureWidget(container, { onChange, onLater }) {
     cut.width = box.w;
     cut.height = box.h;
     cut.getContext('2d').drawImage(canvas, box.x, box.y, box.w, box.h, 0, 0, box.w, box.h);
-    signature = cut.toDataURL('image/png');
-    preview.src = signature;
-    preview.hidden = false;
-    canvas.hidden = true;
-    hint.hidden = true;
-    use.hidden = true;
-    message.hidden = true;
-    onChange();
+    showSignature(cut.toDataURL('image/png'));
   });
 
   return {
     type: 'signature',
     getValue: () => signature,
     getImage: () => signature,
+    // '' clears the pad; a PNG data URL (an earlier signature, when an answer is edited) is shown again.
     setValue(text) {
-      if (String(text ?? '') === '') showPad();
+      const value = String(text ?? '');
+      if (value === '') showPad();
+      else if (value.startsWith('data:image/')) showSignature(value);
     },
     validate: () => (signature === '' ? { valid: false, reason: 'empty' } : { valid: true, reason: '' }),
     focus: () => clear.focus(),
@@ -780,5 +868,5 @@ export function createAnswerWidget(container, format, { onChange, onSayChar, onS
   if (kind === 'email') return createEmailWidget(container, { onChange });
   if (kind === 'date') return createDateWidget(container, { onChange, lang });
   if (kind === 'number' || kind === 'phone') return createDigitsWidget(container, { onChange, kind, keypadFirst });
-  return createTextWidget(container, { multiline: kind === 'address' || kind === 'text' || kind === 'choice', onChange });
+  return createTextWidget(container, { multiline: kind === 'address' || kind === 'text' || kind === 'choice', onChange, kind });
 }
