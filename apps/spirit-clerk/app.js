@@ -21,7 +21,7 @@ import { clampOffset, MIN_OFFSET, MAX_OFFSET } from '/skeleton/form-overlay-util
 import { answerLine, placeAnswers, moveOccupied, countPlaced, filledPdfFilename, reviewRows, SIGNATURE_TEXT } from '/apps/spirit-clerk/fill-original-utils.js';
 import { matchOptionWords, optionEntries, optionsFor } from '/apps/spirit-clerk/option-utils.js';
 import { localizedOption } from '/apps/spirit-clerk/choice-words.js';
-import { numbersToDigits } from '/apps/spirit-clerk/spoken-numbers.js';
+import { numbersToDigits } from '/skeleton/spoken-numbers.js';
 import { createNavMenu, createScreenHistory } from '/skeleton/nav-menu.js';
 import { initI18n, t, setI18nText, clearI18n } from '/skeleton/i18n.js';
 import { keepPdf } from '/skeleton/documents-store.js';

@@ -606,3 +606,14 @@ Build the Phantom Voice Kit from the ground up: project scaffolding → Express 
   - [x] 29.1 `apps/voice-notes/notes-utils.js` (pure, tests)
   - [x] 29.2 `apps/voice-notes` page; Home card and nav entry
 - [x] 30. All new strings in the 20 locale files
+
+- [x] 31. Remembered language in localStorage (Requirement 38)
+- [x] 32. Shared word match, 60 picture words, spoken numbers 0–20 in the skeleton
+- [x] 33. Picture book (Requirement 39)
+  - Tests: tests/unit/pictureBook.test.js
+- [x] 34. Pumpkin math (Requirement 40)
+  - Tests: tests/unit/pumpkinMath.test.js, tests/unit/numberWords.test.js
+- [x] 35. Story time: 6 stories x 8 paragraphs in 20 languages (Requirement 41)
+  - Tests: tests/unit/storyTime.test.js (all 54 story keys in 20 locales, progress, text size, voice words)
+- [x] 36. Home welcome text and README list all apps (Requirement 42)
+  - Home cards and menu entries for Picture book, Pumpkin math, Story time

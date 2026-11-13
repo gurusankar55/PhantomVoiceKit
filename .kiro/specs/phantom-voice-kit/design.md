@@ -884,3 +884,29 @@ The server console gets one line per page: `[translate-layout] ta-IN received=6 
 
 - `apps/voice-notes/notes-utils.js` (pure): `loadNotes` / `saveNotes` (key `phantomVoiceKit.voiceNotes`, try/catch, damaged data repaired), `addNote`, `updateNote`, `deleteNote`, `sortNotes` (newest first), `searchNotes(notes, query)` (every word of the query, case and accents of the same letters ignored), `MAX_NOTE_LENGTH`.
 - `apps/voice-notes/app.js`: a text box with Speak / Done (continuous skeleton speech input, the heard text is added to the box), Save; the list with Read aloud (speech output in the chosen language), Edit (in the card), Delete (inline confirm).
+
+## Remembered Language (Requirement 38)
+
+- `skeleton/language-store.js` (pure, storages passed in): `readLanguageCode(local, session)` (localStorage key `phantomVoiceKit.language` first, then the old sessionStorage `chosenLang`), `saveLanguageCode(code, local, session)`. Used by i18n.js (`readStoredLang`) and language-dropdown.js.
+
+## Shared Words and Numbers
+
+- `skeleton/word-match.js`: the forgiving match (`normalizeSpeech`, `editDistance`, `closeness`, `matchSequence`, `wordForms`), moved from Ghost Echo (echo-utils.js re-exports it).
+- `skeleton/picture-words.js`: `PICTURE_WORDS` (60 `{ id, emoji, category }`, categories animals, fruits, colours, numbers, body, things, nature), `wordKey(id)` = `words.<id>` (the old `ghostEcho.words.*` keys were renamed), `ECHO_WORD_IDS` (the 30 Ghost Echo words).
+- `skeleton/spoken-numbers.js` (moved from Spirit Clerk) and `skeleton/number-words.js`: `spokenNumber(text, lang, formsByNumber)` gives 0 to 20 from digits (any script), the digit words, or the words of `numbers.<n>` ("பன்னிரண்டு|12").
+- `skeleton/i18n.js` exports `loadStrings(code)` (the cached locale file) for a second language.
+
+## Picture Book (Requirement 39)
+
+- `apps/picture-book/book-utils.js`: `wordsOf(category)`, `CATEGORIES`, `isWordMilestone(count)` (every 10), `heardWord(heard, id, forms, lang)` (matchSequence of one word against all 60).
+- The page: category buttons, one big picture card (emoji, word, second-language word), Hear again, Speak, "I said it", Previous / Next, the learn-another-language switch with its own language list. The second language strings come from `loadStrings`.
+
+## Pumpkin Math (Requirement 40)
+
+- `apps/pumpkin-math/math-utils.js`: `LEVELS` (1 to 5), `makeProblem(level, random)` → `{ kind: 'count'|'add'|'sub', a, b, answer }` (answer 0 to 20), `isGiftStreak(streak)` (5), `nextLevel(level)`, `countingSteps(problem)` (what to highlight when counting together).
+- The page: pumpkin pictures (taken-away ones faded), a 0–20 number pad, Speak, the gentle count-together animation on a wrong answer, level buttons.
+
+## Story Time (Requirement 41)
+
+- `apps/story-time/story-utils.js`: `STORIES` (6 ids, 8 paragraphs each, keys `story.<id>.title` and `story.<id>.p1`…`p8`), progress `loadProgress` / `saveProgress` (key `phantomVoiceKit.storyTime`, `{ last, at: { id: index }, finished: [] }`), `clampParagraph`, font scale `FONT_STEPS` and `clampFontStep`, `storyCommand(text, words)` ('next' | 'back' | 'stop' | null).
+- The page: story list, the reader with highlighted paragraph, Play / Pause / Resume, Previous / Next, A- / A+, a voice-command button (listens once while reading is paused). Reading the last paragraph to its end calls `giftBox()`.

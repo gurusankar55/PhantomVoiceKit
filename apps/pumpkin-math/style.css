@@ -1,0 +1,231 @@
+/* Pumpkin math: big pumpkins, a big number pad (mobile first). */
+
+.math {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-width: 40rem;
+  margin: 0 auto;
+}
+
+.app-title {
+  text-align: center;
+  margin: var(--space-3) 0 0;
+}
+
+.math-intro {
+  margin: 0;
+  text-align: center;
+  font-size: 1.1rem;
+}
+
+.math-heading {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 1.1rem;
+}
+
+.math-levels {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(6.5rem, 1fr));
+  gap: var(--space-2);
+}
+
+.math-level-button {
+  flex-direction: column;
+  gap: 0.1rem;
+  min-height: 64px;
+  padding: var(--space-1) var(--space-2);
+  font-size: 0.95rem;
+  color: var(--color-ghost);
+  background-color: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: 14px;
+}
+
+.math-level-button[aria-pressed="true"] {
+  color: var(--color-bg);
+  background-color: var(--color-orange);
+  border-color: var(--color-orange-light);
+}
+
+.math-level-number {
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+
+.math-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  text-align: center;
+  background-color: var(--color-surface);
+  border: 3px solid var(--color-orange);
+  border-radius: 24px;
+}
+
+.math-level {
+  margin: 0;
+  color: var(--color-ghost-dim);
+}
+
+.math-question {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 800;
+  direction: ltr; /* "3 + 2 = ?" reads the same way in every language */
+}
+
+.math-pumpkins {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  direction: ltr;
+}
+
+.math-pumpkin {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.6rem;
+  line-height: 1;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.math-pumpkins--many .math-pumpkin {
+  font-size: 2rem;
+}
+
+/* Added pumpkins: a little apart, with a ring */
+.math-pumpkin--more {
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px #9cff57;
+}
+
+/* Taken away: faded and crossed */
+.math-pumpkin--away {
+  opacity: 0.3;
+  filter: grayscale(1);
+}
+
+.math-pumpkin--away::after {
+  content: "";
+  position: absolute;
+  inset: 45% -4px auto;
+  height: 4px;
+  background-color: var(--color-error-border);
+  transform: rotate(-30deg);
+}
+
+/* Counting together: each pumpkin gets its number */
+.math-pumpkin--counted {
+  transform: scale(1.15);
+}
+
+.math-count {
+  position: absolute;
+  top: -0.6rem;
+  right: -0.4rem;
+  min-width: 1.6rem;
+  padding: 0 0.3rem;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--color-bg);
+  background-color: #ffd23f;
+  border-radius: 999px;
+}
+
+.math-count:empty {
+  display: none;
+}
+
+.math-streak {
+  margin: 0;
+  font-weight: 700;
+  color: #ffd23f;
+}
+
+.math-message {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  font-weight: 700;
+  font-size: 1.15rem;
+  background-color: var(--color-bg-alt);
+  border-inline-start: 6px solid var(--color-orange);
+  border-radius: var(--radius);
+}
+
+.math-message[hidden] {
+  display: none;
+}
+
+.math-next,
+.math-speak {
+  gap: 0.5rem;
+  min-height: 64px;
+  font-size: 1.35rem;
+  font-weight: 700;
+  border-radius: 14px;
+}
+
+.math-next {
+  color: #ffffff;
+  background-color: #1f7a45;
+  border-color: #145a31;
+}
+
+/* Number buttons 0 to 20: big and round-cornered, 6 in a row on phones */
+.math-pad {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.4rem;
+  direction: ltr;
+}
+
+.math-key {
+  min-height: 3.4rem;
+  padding: 0;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #ffffff;
+  background-color: #7a3e12;
+  border: 2px solid #ffa24d;
+  border-radius: 12px;
+}
+
+.math-key--right,
+.math-key--right:disabled {
+  opacity: 1;
+  background-color: #1f7a45;
+  border-color: #9cff57;
+}
+
+.math-key--wrong,
+.math-key--wrong:disabled {
+  opacity: 1;
+  background-color: #6b1d2a;
+  border-color: #ff7a8a;
+}
+
+@media (min-width: 600px) {
+  .math-pad {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .math-pumpkin {
+    transition: none;
+  }
+
+  .math-pumpkin--counted {
+    transform: none;
+  }
+}

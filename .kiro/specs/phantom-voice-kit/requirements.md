@@ -573,3 +573,31 @@ Phantom Voice Kit is a reusable skeleton for voice-first web applications with a
 2. THE user SHALL add a note by Speak / Done (skeleton speech input in the chosen language) or by typing. Notes are saved in localStorage (try/catch) with their date.
 3. EACH note SHALL have Read aloud (in the chosen language), Edit and Delete (in-page confirm). Big buttons, newest first, and a search box that filters the notes.
 4. No network calls.
+
+### Requirement 38: Remembered Language
+
+1. THE chosen language SHALL be saved in localStorage (try/catch; sessionStorage as a fallback), so a new tab or another app opens in it.
+
+### Requirement 39: Picture Book (new app)
+
+1. THE new app SHALL live in `apps/picture-book` (Tamil "பேசும் படப் புத்தகம்"), with a Home card and a nav entry.
+2. Pages of big emoji pictures: animals, fruits, colours, numbers, body parts and more. The shared picture word list SHALL have 60 words (the 30 Ghost Echo words and 30 more), with spoken variants in all 20 locale files.
+3. THE ghost says the word; the child repeats it (forgiving match, the same one as Ghost Echo, moved to the skeleton) or taps "I said it". A correct word calls `correct()`; every 10 words calls `levelUp()` and `giftBox()`.
+4. "Learn another language": the word is also shown and spoken in a second chosen language.
+
+### Requirement 40: Pumpkin Math (new app)
+
+1. THE new app SHALL live in `apps/pumpkin-math` (Tamil "பூசணிக் கணக்கு"), with a Home card and a nav entry.
+2. Counting, addition and subtraction with pumpkin pictures, 5 levels of difficulty (counting to 5, counting to 10, adding to 10, taking away within 10, adding and taking away to 20).
+3. THE answer SHALL be given by number buttons 0 to 20 (always) or by voice: digits, the digit words of Spirit Clerk (moved to the skeleton) and the number words 0 to 20 of every language.
+4. Correct calls `correct()`; 5 correct in a row calls `levelUp()` and `giftBox()` and moves to the next level. A wrong answer gently shows the pumpkins being counted.
+
+### Requirement 41: Story Time (new app)
+
+1. THE new app SHALL live in `apps/story-time` (Tamil "கதை நேரம்"), with a Home card and a nav entry.
+2. Six short, kind stories with a moral, 8 short paragraphs each, written into the locale files in all 20 languages.
+3. Read aloud paragraph by paragraph with the paragraph highlighted; big text with A- / A+; Pause / Resume; Next / Previous by buttons or by voice ("next", "back", "stop" in the chosen language); the place where the reader stopped is remembered. Finishing a story calls `giftBox()`.
+
+### Requirement 42: Home and README
+
+1. `home.welcomeText` (all 20 languages) and the README SHALL list all apps.

@@ -1,0 +1,190 @@
+/* Picture book: one big picture card, big buttons (mobile first). */
+
+.book {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-width: 40rem;
+  margin: 0 auto;
+}
+
+.app-title {
+  text-align: center;
+  margin: var(--space-3) 0 0;
+}
+
+.book-intro {
+  margin: 0;
+  text-align: center;
+  font-size: 1.1rem;
+}
+
+/* The pages: chips that wrap */
+.book-pages {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+.book-page {
+  gap: 0.35rem;
+  min-height: var(--touch-min);
+  padding: 0.4rem 0.9rem;
+  color: var(--color-ghost);
+  background-color: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: 999px;
+}
+
+.book-page[aria-pressed="true"] {
+  color: var(--color-bg);
+  background-color: var(--color-orange);
+  border-color: var(--color-orange-light);
+}
+
+/* The picture */
+.book-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  text-align: center;
+  background-color: var(--color-surface);
+  border: 3px solid var(--color-orange);
+  border-radius: 24px;
+}
+
+.book-card--in {
+  animation: book-in 0.35s ease-out;
+}
+
+@keyframes book-in {
+  from { opacity: 0; transform: scale(0.85); }
+}
+
+.book-position {
+  margin: 0;
+  color: var(--color-ghost-dim);
+}
+
+.book-emoji {
+  font-size: clamp(6rem, 30vw, 10rem);
+  line-height: 1.1;
+}
+
+.book-word {
+  margin: 0;
+  font-size: 2.4rem;
+  font-weight: 800;
+}
+
+.book-second {
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #9cff57;
+}
+
+.book-second[hidden],
+.book-message[hidden] {
+  display: none;
+}
+
+/* Big buttons */
+.book-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-2);
+}
+
+.book-actions .btn {
+  gap: 0.5rem;
+  min-height: 64px;
+  font-size: 1.35rem;
+  font-weight: 700;
+  border-radius: 14px;
+}
+
+.book-said {
+  color: #ffffff;
+  background-color: #1f7a45;
+  border-color: #145a31;
+}
+
+.book-message {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  font-weight: 700;
+  background-color: var(--color-bg-alt);
+  border-inline-start: 6px solid var(--color-orange);
+  border-radius: var(--radius);
+}
+
+.book-nav {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.book-step {
+  gap: 0.4rem;
+  min-height: 56px;
+  font-size: 1.15rem;
+}
+
+[dir="rtl"] .book-arrow {
+  display: inline-block;
+  transform: scaleX(-1);
+}
+
+.book-learned {
+  margin: 0;
+  text-align: center;
+  font-weight: 700;
+  color: #ffd23f;
+}
+
+.book-second-lang {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background-color: var(--color-bg-alt);
+  border-radius: var(--radius);
+}
+
+.book-switch {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: 700;
+  min-height: var(--touch-min);
+}
+
+.book-switch input {
+  width: 1.6rem;
+  height: 1.6rem;
+}
+
+.book-label {
+  font-weight: 700;
+}
+
+.book-select {
+  min-height: var(--touch-min);
+  font: inherit;
+}
+
+@media (min-width: 600px) {
+  .book-actions {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .book-card--in {
+    animation: none;
+  }
+}

@@ -7,6 +7,8 @@
 // IMPORTANT: this file must not touch `document` or `window` when it is
 // imported, so it can be loaded in Node for tests.
 
+import { readLanguageCode, browserStorages } from './language-store.js';
+
 // Language codes that have a file in /skeleton/locales/.
 export const SUPPORTED_LOCALE_CODES = [
   'en', 'ta', 'hi', 'te', 'kn', 'ml', 'ko', 'zh', 'ja', 'es',
@@ -56,13 +58,21 @@ function loadLocale(code) {
   return promise;
 }
 
-// Safely read the saved language (sessionStorage may be missing or blocked).
+// The remembered language (localStorage, so every tab and app opens in it), or English.
 function readStoredLang() {
-  try {
-    return sessionStorage.getItem('chosenLang') || 'en-US';
-  } catch (err) {
-    return 'en-US';
-  }
+  const { local, session } = browserStorages();
+  return readLanguageCode(local, session) || 'en-US';
+}
+
+/**
+ * The strings of any language (for example a second language to learn). Cached; null when the
+ * file could not be loaded. Only the app's own /skeleton/locales files are read.
+ * @param {string} code  e.g. "ta" or "ta-IN"
+ */
+export function loadStrings(code) {
+  const base = String(code ?? '').split('-')[0].toLowerCase();
+  if (!SUPPORTED_LOCALE_CODES.includes(base)) return Promise.resolve(null);
+  return loadLocale(base);
 }
 
 // Load English plus the chosen language, then apply everything.

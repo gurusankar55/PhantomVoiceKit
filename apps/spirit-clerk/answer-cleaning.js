@@ -7,8 +7,12 @@
 //        "email" (lower case, spoken "at" / "dot" become @ and .), "name", "date", "text".
 
 import { cleanAnswer } from '../../skeleton/text-fallback-utils.js';
+import { normalizeDigits } from '../../skeleton/digits.js';
 import { toTitleCase } from './form-utils.js';
 import { parsePattern, parseDateString, parseSpokenDate, formatDate } from '../../skeleton/field-formats.js';
+
+// normalizeDigits lives in the skeleton now (shared with the games); it is still offered here.
+export { normalizeDigits };
 
 // Kinds that are cleaned by their own rules (everything else just loses its trailing full stop).
 const STRICT_KINDS = ['number', 'phone', 'code', 'email'];
@@ -16,28 +20,6 @@ const STRICT_KINDS = ['number', 'phone', 'code', 'email'];
 // Spoken "at" and "dot" in English are always understood, whatever the language of the form.
 const ENGLISH_AT = ['at', 'at the rate', 'at sign'];
 const ENGLISH_DOT = ['dot', 'period'];
-
-// The digit 0 of each script that has its own digits: a digit in that script is its offset + 0..9.
-const DIGIT_ZEROS = [0x0660, 0x06f0, 0x0966, 0x09e6, 0x0a66, 0x0ae6, 0x0b66, 0x0be6, 0x0c66, 0x0ce6, 0x0d66, 0xff10];
-
-// English digit words, for when the recognizer writes "one two three" instead of "1 2 3".
-const DIGIT_WORDS = { zero: '0', one: '1', two: '2', three: '3', four: '4', five: '5', six: '6', seven: '7', eight: '8', nine: '9' };
-
-/**
- * Turn digits of other scripts (Tamil ௯, Arabic ٩, Devanagari ९, full-width ９ ...) into 0-9 and
- * English digit words ("nine") into digits.
- * @param {string} text
- * @returns {string}
- */
-export function normalizeDigits(text) {
-  let result = '';
-  for (const character of String(text ?? '')) {
-    const code = character.codePointAt(0);
-    const zero = DIGIT_ZEROS.find((start) => code >= start && code <= start + 9);
-    result += zero === undefined ? character : String(code - zero);
-  }
-  return result.replace(/(?<![\p{L}\p{N}])(zero|one|two|three|four|five|six|seven|eight|nine)(?![\p{L}\p{N}])/giu, (word) => DIGIT_WORDS[word.toLowerCase()]);
-}
 
 // Escape the characters that have a meaning in a regular expression.
 function escapeRegExp(text) {

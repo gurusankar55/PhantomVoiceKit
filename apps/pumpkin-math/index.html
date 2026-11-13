@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title data-i18n="pumpkinMath.pageTitle">Pumpkin math – Phantom Voice Kit</title>
+  <!-- Shared theme and app styles (absolute paths, per project rules) -->
+  <link rel="stylesheet" href="/skeleton/theme.css" />
+  <link rel="stylesheet" href="/apps/pumpkin-math/style.css" />
+</head>
+<body>
+  <!-- Shared navigation header (menu, Back, coins, sound, language) is built by skeleton/nav-menu.js -->
+  <header id="app-header"></header>
+
+  <main id="app" class="math">
+    <h1 class="app-title"><span data-i18n="pumpkinMath.title">Pumpkin math</span><span class="brand-sub" lang="en" dir="ltr">Pumpkin Math · Count and Add</span></h1>
+    <p class="math-intro" data-i18n="pumpkinMath.intro">Count the pumpkins. Tap the answer, or say it.</p>
+
+    <!-- The 5 levels (built by app.js) -->
+    <h2 class="math-heading" data-i18n="pumpkinMath.levelLabel">Choose a level</h2>
+    <div id="levels" class="math-levels" role="group" data-i18n-attr="aria-label:pumpkinMath.levelLabel" aria-label="Choose a level"></div>
+
+    <!-- The question with the pumpkins -->
+    <section id="question-card" class="math-card" aria-live="polite">
+      <p id="level-text" class="math-level"></p>
+      <p id="question" class="math-question"></p>
+      <ol id="pumpkins" class="math-pumpkins" aria-hidden="true"></ol>
+      <p id="streak" class="math-streak"></p>
+    </section>
+
+    <p id="message" class="math-message" role="status" hidden></p>
+    <button id="next-button" type="button" class="btn btn--large math-next" data-i18n="pumpkinMath.next" hidden>Next question</button>
+
+    <!-- Answer by voice (optional) or with the number buttons (always) -->
+    <button id="speak-button" type="button" class="btn btn--large math-speak"><span aria-hidden="true">🎤</span> <span data-i18n="pumpkinMath.speak">Say the answer</span></button>
+    <p id="listening-indicator" class="listening-indicator" role="status" hidden>
+      <span class="listening-dot" aria-hidden="true"></span>
+      <span data-i18n="pumpkinMath.listening">Listening…</span>
+    </p>
+    <div id="pad" class="math-pad" role="group" data-i18n-attr="aria-label:pumpkinMath.numbers" aria-label="Number buttons"></div>
+  </main>
+
+  <script type="module" src="/apps/pumpkin-math/app.js"></script>
+</body>
+</html>

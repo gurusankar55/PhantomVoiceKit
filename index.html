@@ -433,6 +433,56 @@
             <span data-i18n="home.start">Start</span>
           </a>
         </article>
+
+        <article class="app-card" aria-labelledby="book-name">
+          <span class="app-icon" aria-hidden="true">
+            <!-- An open book -->
+            <svg viewBox="0 0 24 24" focusable="false">
+              <path d="M3 5h6a3 3 0 013 3v12a2 2 0 00-2-2H3z" />
+              <path d="M21 5h-6a3 3 0 00-3 3v12a2 2 0 012-2h7z" />
+            </svg>
+          </span>
+          <h3 id="book-name" class="app-name" data-i18n="home.pictureBook">Picture book</h3>
+          <p class="brand-sub" lang="en" dir="ltr">Picture Book · Talking Words</p>
+          <p class="app-desc" data-i18n="home.pictureBookHint">Learn words with big pictures</p>
+          <a class="btn btn--large app-start" href="/apps/picture-book/index.html" aria-describedby="book-name">
+            <span data-i18n="home.start">Start</span>
+          </a>
+        </article>
+
+        <article class="app-card" aria-labelledby="math-name">
+          <span class="app-icon" aria-hidden="true">
+            <!-- A pumpkin -->
+            <svg viewBox="0 0 24 24" focusable="false">
+              <ellipse cx="12" cy="14" rx="8" ry="6.5" />
+              <path d="M12 7.5c-2 2-2 11 0 13M12 7.5c2 2 2 11 0 13" />
+              <path d="M12 7.5V4.5l2-1" />
+            </svg>
+          </span>
+          <h3 id="math-name" class="app-name" data-i18n="home.pumpkinMath">Pumpkin math</h3>
+          <p class="brand-sub" lang="en" dir="ltr">Pumpkin Math · Count and Add</p>
+          <p class="app-desc" data-i18n="home.pumpkinMathHint">Count, add and take away with pumpkins</p>
+          <a class="btn btn--large app-start" href="/apps/pumpkin-math/index.html" aria-describedby="math-name">
+            <span data-i18n="home.start">Start</span>
+          </a>
+        </article>
+
+        <article class="app-card" aria-labelledby="story-name">
+          <span class="app-icon" aria-hidden="true">
+            <!-- A book with a speech wave -->
+            <svg viewBox="0 0 24 24" focusable="false">
+              <path d="M4 4h10v16H4z" />
+              <path d="M7 8h4M7 12h4" />
+              <path d="M17 9a3 3 0 010 6M19.5 6.5a7 7 0 010 11" />
+            </svg>
+          </span>
+          <h3 id="story-name" class="app-name" data-i18n="home.storyTime">Story time</h3>
+          <p class="brand-sub" lang="en" dir="ltr">Story Time · Read Aloud</p>
+          <p class="app-desc" data-i18n="home.storyTimeHint">Kind stories read aloud</p>
+          <a class="btn btn--large app-start" href="/apps/story-time/index.html" aria-describedby="story-name">
+            <span data-i18n="home.start">Start</span>
+          </a>
+        </article>
       </div>
     </section>
 
@@ -525,7 +575,7 @@
     });
 
     // Renders the dropdown (English by default) on the right of the header
-    // and saves the choice to sessionStorage. A new language stops the welcome
+    // and remembers the choice (localStorage). A new language stops the welcome
     // and uses a voice for that language next time.
     createLanguageDropdown(nav.languageEl, {
       onChange: (language) => {

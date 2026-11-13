@@ -5,7 +5,7 @@
 // No browser or DOM access here, so they are easy to test.
 
 import { cleanEmail } from './answer-cleaning.js';
-import { numbersToDigits } from './spoken-numbers.js';
+import { numbersToDigits } from '../../skeleton/spoken-numbers.js';
 import { letterNameMap, exampleLinks } from './letter-names.js';
 
 // "alpha bravo charlie ..." -> letters

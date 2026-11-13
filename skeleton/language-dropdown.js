@@ -1,8 +1,9 @@
 // language-dropdown.js
-// Renders a <select> with the 20 supported languages and keeps the
-// user's choice in sessionStorage so every page can read it.
+// Renders a <select> with the 20 supported languages and remembers the user's choice in
+// localStorage (language-store.js), so every tab and app opens in it.
 
 import { setLocale, setI18nText } from './i18n.js';
+import { readLanguageCode, saveLanguageCode, browserStorages } from './language-store.js';
 
 // Canonical list from design.md (Language-to-BCP47 Map).
 // label = English name, native = the language's own name.
@@ -39,27 +40,20 @@ function findLanguage(bcp47) {
   return LANGUAGES.find((lang) => lang.bcp47 === bcp47) || DEFAULT_LANGUAGE;
 }
 
-// Safely read the saved BCP-47 code (sessionStorage can be unavailable).
+// The remembered BCP-47 code (localStorage, then sessionStorage; null when none or blocked).
 function readStoredCode() {
-  try {
-    return sessionStorage.getItem('chosenLang');
-  } catch (err) {
-    return null;
-  }
+  const { local, session } = browserStorages();
+  return readLanguageCode(local, session) || null;
 }
 
-// Safely save the chosen language.
+// Remember the chosen language for every tab and app (if storage is blocked, the app still works).
 function saveLanguage(lang) {
-  try {
-    sessionStorage.setItem('chosenLang', lang.bcp47);
-    sessionStorage.setItem('chosenLangLabel', lang.label);
-  } catch (err) {
-    // Ignore: the app still works, the choice just is not remembered.
-  }
+  const { local, session } = browserStorages();
+  saveLanguageCode(lang.bcp47, local, session, lang.label);
 }
 
 // Returns { label, bcp47 } for the current language.
-// Uses the on-screen select if there is one, otherwise sessionStorage.
+// Uses the on-screen select if there is one, otherwise the remembered language.
 export function getCurrentLanguage() {
   if (activeSelect) {
     return findLanguage(activeSelect.value);
@@ -111,6 +105,6 @@ export function createLanguageDropdown(containerEl, { onChange } = {}) {
   containerEl.appendChild(select);
   activeSelect = select;
 
-  // Make sure sessionStorage always holds a value after init.
+  // Make sure the storage always holds a value after init.
   saveLanguage(current);
 }

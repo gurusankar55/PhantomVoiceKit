@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title data-i18n="storyTime.pageTitle">Story time – Phantom Voice Kit</title>
+  <!-- Shared theme and app styles (absolute paths, per project rules) -->
+  <link rel="stylesheet" href="/skeleton/theme.css" />
+  <link rel="stylesheet" href="/apps/story-time/style.css" />
+</head>
+<body>
+  <!-- Shared navigation header (menu, Back, coins, sound, language) is built by skeleton/nav-menu.js -->
+  <header id="app-header"></header>
+
+  <main id="app" class="story">
+    <h1 class="app-title"><span data-i18n="storyTime.title">Story time</span><span class="brand-sub" lang="en" dir="ltr">Story Time · Read Aloud</span></h1>
+
+    <!-- The list of stories -->
+    <section id="screen-list" class="screen">
+      <p class="story-intro" data-i18n="storyTime.intro">Choose a story. The ghost reads it to you.</p>
+      <ul id="story-list" class="story-list"></ul>
+    </section>
+
+    <!-- The reader -->
+    <section id="screen-read" class="screen" hidden>
+      <div class="story-top">
+        <button id="list-button" type="button" class="btn btn--secondary story-small" data-i18n="storyTime.allStories">All stories</button>
+        <div class="story-size" role="group" data-i18n-attr="aria-label:storyTime.textSize" aria-label="Text size">
+          <button id="smaller-button" type="button" class="btn btn--secondary story-small" data-i18n-attr="aria-label:storyTime.smaller" aria-label="Smaller text">A−</button>
+          <button id="bigger-button" type="button" class="btn btn--secondary story-small" data-i18n-attr="aria-label:storyTime.bigger" aria-label="Bigger text">A+</button>
+        </div>
+      </div>
+      <h2 id="story-title" class="story-title"></h2>
+      <p id="story-progress" class="story-progress"></p>
+      <!-- The paragraphs; the one being read is highlighted -->
+      <ol id="paragraphs" class="story-paragraphs"></ol>
+      <p id="the-end" class="story-end" data-i18n="storyTime.theEnd" hidden>The end</p>
+
+      <!-- The controls stay at the bottom of the screen -->
+      <div class="story-controls">
+        <button id="previous-button" type="button" class="btn btn--secondary story-step"><span class="story-arrow" aria-hidden="true">←</span> <span data-i18n="storyTime.previous">Back</span></button>
+        <button id="play-button" type="button" class="btn story-play"></button>
+        <button id="next-button" type="button" class="btn btn--secondary story-step"><span data-i18n="storyTime.next">Next</span> <span class="story-arrow" aria-hidden="true">→</span></button>
+        <button id="voice-button" type="button" class="btn btn--secondary story-voice"><span aria-hidden="true">🎤</span> <span data-i18n="storyTime.voice">Say next, back or stop</span></button>
+        <p id="listening-indicator" class="listening-indicator" role="status" hidden>
+          <span class="listening-dot" aria-hidden="true"></span>
+          <span data-i18n="storyTime.listening">Listening…</span>
+        </p>
+        <p id="message" class="story-message" role="status" hidden></p>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="/apps/story-time/app.js"></script>
+</body>
+</html>

@@ -67,6 +67,9 @@ const MENU_LINKS = [
   { id: 'sticker-book', labelKey: 'nav.stickerBook', href: '/apps/sticker-book/index.html' },
   { id: 'my-documents', labelKey: 'nav.myDocuments', href: '/apps/my-documents/index.html' },
   { id: 'voice-notes', labelKey: 'nav.voiceNotes', href: '/apps/voice-notes/index.html' },
+  { id: 'picture-book', labelKey: 'nav.pictureBook', href: '/apps/picture-book/index.html', subtitle: 'Picture Book · Talking Words' },
+  { id: 'pumpkin-math', labelKey: 'nav.pumpkinMath', href: '/apps/pumpkin-math/index.html', subtitle: 'Pumpkin Math · Count and Add' },
+  { id: 'story-time', labelKey: 'nav.storyTime', href: '/apps/story-time/index.html', subtitle: 'Story Time · Read Aloud' },
 ];
 
 // Stop any speech that is currently playing (safe if unsupported).

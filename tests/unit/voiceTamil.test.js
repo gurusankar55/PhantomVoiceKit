@@ -15,7 +15,7 @@ import { stripPunctuation, joinParts, transcriptFromResults } from '../../skelet
 import { createSpeechInput } from '../../skeleton/speech-input.js';
 import { parseSpokenDate, parsePattern, chunksOf, BUILTIN_PATTERNS } from '../../skeleton/field-formats.js';
 import { cleanDate, cleanByKind, cleanNumber } from '../../apps/spirit-clerk/answer-cleaning.js';
-import { DIGIT_WORDS, REPEAT_WORDS, numberWordTable, numbersToDigits, baseLanguage } from '../../apps/spirit-clerk/spoken-numbers.js';
+import { DIGIT_WORDS, REPEAT_WORDS, numberWordTable, numbersToDigits, baseLanguage } from '../../skeleton/spoken-numbers.js';
 import { LETTER_NAMES, EXAMPLE_LINKS, letterNameMap } from '../../apps/spirit-clerk/letter-names.js';
 import { spokenToChars, parseEmailSpeech } from '../../apps/spirit-clerk/spoken-chars.js';
 import { COMMON_OPTIONS, commonOptionKey, localizedOption } from '../../apps/spirit-clerk/choice-words.js';

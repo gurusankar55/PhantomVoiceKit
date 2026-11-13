@@ -8,7 +8,7 @@
 // and the spellings a recognizer may write. REPEAT_WORDS[language] are "double" and "triple".
 // Digits written in the script of the language (Tamil ௯, Devanagari ९, Arabic ٩) become 0-9 as well.
 
-import { normalizeDigits } from './answer-cleaning.js';
+import { normalizeDigits } from './digits.js';
 
 // Words that mean the digits 0 to 9, per language (first part of the BCP-47 code).
 export const DIGIT_WORDS = {
