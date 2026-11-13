@@ -585,3 +585,14 @@ Build the Phantom Voice Kit from the ground up: project scaffolding → Express 
 
 - [x] 23. Typed answers converted to English, larger answer text (Requirement 31)
   - Tests: `tests/unit/englishAnswers.test.js`, `tests/unit/polish.test.js` (label factor 0.7)
+
+- [x] 24. Shared celebrations, coins and stickers (Requirement 32)
+  - [x] 24.1 `skeleton/celebrate-utils.js` and `skeleton/stickers.js` (pure) with unit tests
+  - [x] 24.2 `skeleton/celebrate.js`: correct(), levelUp(), giftBox(), rewards bar, mute, reduced motion
+  - [x] 24.3 Nav: coin counter, mute button, Ghost Echo and Sticker book entries; `apps/sticker-book` page
+- [x] 25. Ghost Tutor celebrations (Requirement 33)
+  - [x] 25.1 correct() on a correct answer; levelUp() + giftBox() for 3+ correct in a round; `correct` kept in saved progress; tests
+- [x] 26. Ghost Echo voice memory game (Requirement 34)
+  - [x] 26.1 `apps/ghost-echo/echo-utils.js` (pure) with unit and property tests
+  - [x] 26.2 `apps/ghost-echo` page, app and style; Home card and nav entry
+  - [x] 26.3 All new strings and the 30 words with variants in all 20 locale files

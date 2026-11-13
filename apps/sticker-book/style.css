@@ -1,0 +1,86 @@
+/* Sticker book: a grid of sticker cards (mobile first). */
+
+.book {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-width: 48rem;
+  margin: 0 auto;
+}
+
+.app-title {
+  text-align: center;
+  margin: var(--space-3) 0 0;
+}
+
+.book-intro,
+.book-coins {
+  margin: 0;
+  text-align: center;
+  font-size: 1.1rem;
+}
+
+.book-coins {
+  font-weight: 800;
+  color: #ffd23f;
+}
+
+.book-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.book-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-2);
+  text-align: center;
+  background-color: var(--color-surface);
+  border: 2px solid var(--color-orange);
+  border-radius: 16px;
+}
+
+.book-picture svg {
+  display: block;
+  width: 5rem;
+  height: 5rem;
+  filter: drop-shadow(0 0 8px rgba(255, 225, 77, 0.45));
+}
+
+/* Not found yet: a grey silhouette */
+.book-card--missing {
+  border-color: var(--color-border);
+  border-style: dashed;
+}
+
+.book-card--missing .book-picture svg {
+  filter: grayscale(1) brightness(0.35);
+  opacity: 0.6;
+}
+
+.book-name {
+  font-weight: 700;
+}
+
+.book-card--missing .book-name {
+  color: var(--color-ghost-dim);
+  font-weight: 400;
+}
+
+.book-count {
+  padding: 0 0.6rem;
+  font-weight: 800;
+  color: var(--color-bg);
+  background-color: #ffd23f;
+  border-radius: 999px;
+}
+
+.book-play {
+  align-self: center;
+}

@@ -10,7 +10,8 @@ import { createTextFallback } from '/skeleton/text-fallback.js';
 import { lesson, translate, evaluate } from '/skeleton/api-client.js';
 import { createNavMenu, createScreenHistory } from '/skeleton/nav-menu.js';
 import { initI18n, t, setI18nText, clearI18n } from '/skeleton/i18n.js';
-import { computeHasMore, canLearnMore, coveredTitles, isPauseVisible } from '/apps/ghost-tutor/lesson-utils.js';
+import { computeHasMore, canLearnMore, coveredTitles, isPauseVisible, earnsRoundGift } from '/apps/ghost-tutor/lesson-utils.js';
+import { correct as celebrateCorrect, levelUp, giftBox } from '/skeleton/celebrate.js';
 import { matchCommand, parseWords } from '/skeleton/voice-commands.js';
 import { buildProgress, parseProgress, restoreSegments, PROGRESS_KEY } from '/apps/ghost-tutor/progress-utils.js';
 import { createRetryCounter, LISTEN_DELAY_MS } from '/skeleton/voice-retry.js';
@@ -1005,7 +1006,11 @@ function applyEvaluation(item, evalResult, requestLang, canScore) {
     return;
   }
 
-  if (canScore && evalResult.correct === true) score += 1; // counted once per question
+  if (canScore && evalResult.correct === true) {
+    score += 1; // counted once per question
+    item.correct = true; // kept in the saved progress: counts for the gift at the end of the round
+    celebrateCorrect({ coins: 2, from: dualDisplayContainer }); // confetti, a happy sound, coins into the bag
+  }
   item.feedbackSource = { text: feedback, bcp47: requestLang.bcp47 };
   item.feedbackTexts = { [requestLang.bcp47]: feedback };
   feedbackNoticeKey = '';
@@ -1205,6 +1210,12 @@ function playComplete() {
 
   const total = state.segments.length; // parts of ALL rounds; the score adds up too
   const more = canLearnMore(state.round);
+
+  // 3 or more of the 4 parts of this round correct: a new level and a gift with a sticker.
+  if (earnsRoundGift(state.segments, state.round)) {
+    levelUp();
+    giftBox();
+  }
   setI18nText(completeText, 'ghostTutor.complete');
   setI18nText(scoreText, 'ghostTutor.score', { score, total });
   if (more) {

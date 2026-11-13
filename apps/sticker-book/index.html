@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title data-i18n="stickerBook.pageTitle">Sticker book – Phantom Voice Kit</title>
+  <!-- Shared theme and page styles (absolute paths, per project rules) -->
+  <link rel="stylesheet" href="/skeleton/theme.css" />
+  <link rel="stylesheet" href="/apps/sticker-book/style.css" />
+</head>
+<body>
+  <!-- Shared navigation header (menu, Back, coins, sound, language) is built by skeleton/nav-menu.js -->
+  <header id="app-header"></header>
+
+  <main id="app" class="book">
+    <h1 class="app-title" data-i18n="stickerBook.title">Sticker book</h1>
+    <p id="book-intro" class="book-intro"></p>
+    <p id="book-coins" class="book-coins"></p>
+    <!-- One card per sticker (built by app.js) -->
+    <ul id="book-grid" class="book-grid"></ul>
+    <a class="btn btn--large book-play" href="/apps/ghost-echo/index.html" data-i18n="stickerBook.play">Play the memory game</a>
+  </main>
+
+  <script type="module" src="/apps/sticker-book/app.js"></script>
+</body>
+</html>

@@ -1,12 +1,14 @@
 // nav-menu.js
 // Shared navigation header (Requirement 16):
-//   [ ☰ menu ] [ ← Back ]                     [ language dropdown ]
-// plus a slide-in drawer with links to Home, Spirit Clerk, Ghost Tutor and Form Translator.
+//   [ ☰ menu ] [ ← Back ] [ coins ] [ sound ]          [ language dropdown ]
+// plus a slide-in drawer with links to Home, Spirit Clerk, Ghost Tutor, Form Translator,
+// Ghost Echo and the Sticker book.
 //
 // Nothing here touches `document` or `window` when the file is loaded,
 // so createScreenHistory can be imported and tested in plain Node.
 
 import { setI18nText, setI18nAttr } from './i18n.js';
+import { createRewardsBar } from './celebrate.js';
 
 // ---------------------------------------------------------------------------
 // Screen history
@@ -61,6 +63,8 @@ const MENU_LINKS = [
   { id: 'spirit-clerk', labelKey: 'nav.spiritClerk', href: '/apps/spirit-clerk/index.html', subtitle: 'Spirit Clerk · Voice Form Filler' },
   { id: 'ghost-tutor', labelKey: 'nav.ghostTutor', href: '/apps/ghost-tutor/index.html', subtitle: 'Ghost Tutor · Voice Teacher' },
   { id: 'form-translator', labelKey: 'nav.formTranslator', href: '/apps/form-translator/index.html', subtitle: 'Phantom Lens · Form Translator' },
+  { id: 'ghost-echo', labelKey: 'nav.ghostEcho', href: '/apps/ghost-echo/index.html', subtitle: 'Ghost Echo · Voice Memory Game' },
+  { id: 'sticker-book', labelKey: 'nav.stickerBook', href: '/apps/sticker-book/index.html' },
 ];
 
 // Stop any speech that is currently playing (safe if unsupported).
@@ -121,6 +125,8 @@ export function createNavMenu(
   languageEl.className = 'nav-lang';
 
   bar.appendChild(leftGroup);
+  // The coin bag (shared by all apps) and the sound on / off button
+  bar.appendChild(createRewardsBar());
   bar.appendChild(languageEl);
   headerEl.appendChild(bar);
 

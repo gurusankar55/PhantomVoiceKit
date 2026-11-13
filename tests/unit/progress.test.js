@@ -30,7 +30,8 @@ describe('buildProgress / parseProgress', () => {
     assert.equal(back.score, 3);
     assert.equal(back.round, 2);
     assert.equal(back.segments.length, 8);
-    assert.deepEqual(back.segments[0], { title: 'Title 0', segment: 'Segment 0', quizQuestion: 'Question 0?', lang: 'ta-IN' });
+    // correct: was this part answered correctly (counts for the gift at the end of a round)
+    assert.deepEqual(back.segments[0], { title: 'Title 0', segment: 'Segment 0', quizQuestion: 'Question 0?', lang: 'ta-IN', correct: false });
     assert.equal(back.taught.length, 8);
     assert.equal(back.taught[0], 'Title 0');
   });

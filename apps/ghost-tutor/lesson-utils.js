@@ -53,3 +53,24 @@ export function coveredTitles(segments) {
 export function isPauseVisible(screen, phase) {
   return screen === 'lesson' && phase !== 'complete';
 }
+
+// A round with at least this many correct answers (of its 4 parts) earns a level-up and a gift.
+export const ROUND_GIFT_MIN = 3;
+
+/**
+ * How many parts of one round were answered correctly. Round 1 is parts 0 to 3, round 2 is
+ * parts 4 to 7, and so on. A part counts when it has `correct: true`.
+ * @param {{correct?:boolean}[]} segments  the parts of all rounds so far
+ * @param {number} round  1, 2, 3...
+ * @returns {number}
+ */
+export function roundCorrect(segments, round) {
+  if (!Array.isArray(segments) || !Number.isInteger(round) || round < 1) return 0;
+  const start = (round - 1) * PARTS_PER_ROUND;
+  return segments.slice(start, start + PARTS_PER_ROUND).filter((part) => part && part.correct === true).length;
+}
+
+/** Does this round earn a level-up and a gift? (3 or more of its 4 parts correct) */
+export function earnsRoundGift(segments, round) {
+  return roundCorrect(segments, round) >= ROUND_GIFT_MIN;
+}

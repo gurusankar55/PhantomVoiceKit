@@ -742,3 +742,351 @@ body.nav-open {
     gap: var(--space-3);
   }
 }
+
+/* ---------- 16. Celebrations, coins and stickers (celebrate.js) ---------- */
+/* Every celebration layer covers the screen but never takes the pointer. */
+.pvk-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  pointer-events: none;
+}
+
+.pvk-canvas {
+  width: 100vw;
+  height: 100vh;
+  max-width: none;
+}
+
+/* Text only for screen readers */
+.pvk-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Reduced motion: a soft glow around the screen instead of moving pieces */
+.pvk-glow {
+  animation: pvk-glow 1.5s ease-out forwards;
+}
+
+.pvk-glow--gold {
+  box-shadow: inset 0 0 80px 20px rgba(255, 210, 63, 0.75);
+}
+
+.pvk-glow--pink {
+  box-shadow: inset 0 0 90px 24px rgba(255, 140, 198, 0.75);
+}
+
+@keyframes pvk-glow {
+  0% { opacity: 0; }
+  25% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Coins flying to the bag (moved by the Web Animations API) */
+.pvk-coin {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 26px;
+  height: 26px;
+  margin: -13px 0 0 -13px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff6b0 0 18%, #ffd23f 40%, #e69b00 100%);
+  border: 2px solid #b97800;
+  box-shadow: 0 0 8px rgba(255, 210, 63, 0.8);
+}
+
+/* ----- Coin counter and mute button in the header ----- */
+.pvk-rewards {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.pvk-coin-bag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  min-height: var(--touch-min);
+  padding: 0 0.5rem;
+  color: #ffd23f;
+  font-weight: 800;
+  font-size: 1.05rem;
+  text-decoration: none;
+  border: 2px solid var(--color-border);
+  border-radius: 999px;
+}
+
+.pvk-coin-bag:hover {
+  background-color: var(--color-surface);
+}
+
+.pvk-coin-bag:focus-visible,
+.pvk-mute:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.pvk-coin-icon svg {
+  display: block;
+  width: 26px;
+  height: 26px;
+}
+
+.pvk-coin-bag.pvk-bump {
+  animation: pvk-bump 0.3s ease-out;
+}
+
+@keyframes pvk-bump {
+  50% { transform: scale(1.18); }
+}
+
+.pvk-mute {
+  width: var(--touch-min);
+  min-width: var(--touch-min);
+  height: var(--touch-min);
+  min-height: var(--touch-min);
+  padding: 0;
+  font-size: 1.2rem;
+  background-color: transparent;
+  border: 2px solid var(--color-border);
+}
+
+.pvk-mute:hover,
+.pvk-mute:active {
+  background-color: var(--color-surface);
+}
+
+/* Narrow phones: the Back button shows only its arrow (its name stays in aria-label) */
+@media (max-width: 420px) {
+  .nav-back > span:not(.nav-back-arrow) {
+    display: none;
+  }
+
+  .nav-back {
+    padding: 0.4rem 0.6rem;
+  }
+}
+
+/* ----- Gift box ----- */
+.pvk-gift-layer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pvk-gift {
+  position: relative;
+  width: 170px;
+  height: 230px;
+  perspective: 600px;
+}
+
+/* The box: a front face and a darker side face give it depth */
+.pvk-gift-box {
+  position: absolute;
+  bottom: 30px;
+  left: 20px;
+  width: 120px;
+  height: 100px;
+  transform-style: preserve-3d;
+}
+
+.pvk-gift-front {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(160deg, #ff5fa2 0%, #d8317a 100%);
+  border-radius: 6px;
+  box-shadow: inset -10px -10px 0 rgba(0, 0, 0, 0.12), 0 12px 24px rgba(0, 0, 0, 0.45);
+}
+
+.pvk-gift-side {
+  position: absolute;
+  top: -8px;
+  right: -22px;
+  width: 22px;
+  height: 100px;
+  background: linear-gradient(180deg, #b0245f, #8a1c4a);
+  transform: skewY(-35deg);
+  transform-origin: left bottom;
+  border-radius: 0 4px 4px 0;
+}
+
+.pvk-gift-ribbon {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 18px;
+  margin-left: -9px;
+  background: linear-gradient(90deg, #ffd23f, #ffe98a, #ffd23f);
+}
+
+.pvk-gift-lid {
+  position: absolute;
+  bottom: 126px;
+  left: 12px;
+  width: 136px;
+  height: 28px;
+  background: linear-gradient(160deg, #ff7ab5, #e03f86);
+  border-radius: 6px;
+  box-shadow: inset 0 -6px 0 rgba(0, 0, 0, 0.15);
+}
+
+.pvk-gift-lid::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 18px;
+  margin-left: -9px;
+  background: linear-gradient(90deg, #ffd23f, #ffe98a, #ffd23f);
+}
+
+.pvk-gift-bow {
+  position: absolute;
+  top: -22px;
+  left: 50%;
+  width: 52px;
+  height: 26px;
+  margin-left: -26px;
+}
+
+.pvk-gift-bow::before,
+.pvk-gift-bow::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 26px;
+  height: 22px;
+  border: 6px solid #ffd23f;
+  border-radius: 50% 50% 10% 50%;
+}
+
+.pvk-gift-bow::before {
+  left: 0;
+  transform: rotate(-20deg);
+}
+
+.pvk-gift-bow::after {
+  right: 0;
+  transform: scaleX(-1) rotate(-20deg);
+}
+
+.pvk-gift-sticker {
+  position: absolute;
+  bottom: 60px;
+  left: 35px;
+  width: 100px;
+  height: 100px;
+  opacity: 0;
+  transform: translateY(40px) scale(0.2);
+  filter: drop-shadow(0 0 10px rgba(255, 225, 77, 0.9));
+}
+
+.pvk-gift-sticker svg {
+  width: 100%;
+  height: 100%;
+}
+
+.pvk-gift-label {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  width: max-content;
+  max-width: 80vw;
+  margin: 0;
+  padding: 0.4rem 0.9rem;
+  font-weight: 800;
+  font-size: 1.15rem;
+  text-align: center;
+  color: var(--color-bg);
+  background-color: #ffd23f;
+  border-radius: 999px;
+  opacity: 0;
+  transform: translateX(-50%);
+  transition: opacity 0.3s ease;
+}
+
+.pvk-gift--shake .pvk-gift-box,
+.pvk-gift--shake .pvk-gift-lid {
+  animation: pvk-shake 0.25s ease-in-out 4;
+}
+
+@keyframes pvk-shake {
+  0%, 100% { transform: rotate(0); }
+  25% { transform: rotate(-6deg) translateY(-2px); }
+  75% { transform: rotate(6deg) translateY(-2px); }
+}
+
+.pvk-gift--open .pvk-gift-lid {
+  animation: pvk-lid-off 0.7s ease-out forwards;
+}
+
+@keyframes pvk-lid-off {
+  to {
+    transform: translate(60px, -180px) rotate(55deg);
+    opacity: 0;
+  }
+}
+
+.pvk-gift--open .pvk-gift-sticker {
+  animation: pvk-pop 0.6s cubic-bezier(0.2, 1.6, 0.4, 1) 0.15s forwards;
+}
+
+@keyframes pvk-pop {
+  to {
+    opacity: 1;
+    transform: translateY(-70px) scale(1);
+  }
+}
+
+.pvk-gift--open .pvk-gift-label {
+  opacity: 1;
+  transition-delay: 0.5s;
+}
+
+.pvk-gift--leave {
+  animation: pvk-fade-out 0.5s ease forwards;
+}
+
+@keyframes pvk-fade-out {
+  to { opacity: 0; }
+}
+
+/* Reduced motion: the box is already open, the sticker just glows (no shaking, no flying) */
+.pvk-gift--still .pvk-gift-lid {
+  display: none;
+}
+
+.pvk-gift--still .pvk-gift-sticker {
+  opacity: 1;
+  transform: translateY(-70px);
+  animation: none;
+}
+
+.pvk-gift--still .pvk-gift-label {
+  opacity: 1;
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pvk-coin-bag.pvk-bump,
+  .pvk-gift--shake .pvk-gift-box,
+  .pvk-gift--shake .pvk-gift-lid,
+  .pvk-gift--open .pvk-gift-lid,
+  .pvk-gift--open .pvk-gift-sticker,
+  .pvk-gift--leave {
+    animation: none;
+  }
+}

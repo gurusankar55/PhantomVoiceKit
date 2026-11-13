@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title data-i18n="ghostEcho.pageTitle">Memory game – Phantom Voice Kit</title>
+  <!-- Shared theme and app styles (absolute paths, per project rules) -->
+  <link rel="stylesheet" href="/skeleton/theme.css" />
+  <link rel="stylesheet" href="/apps/ghost-echo/style.css" />
+</head>
+<body>
+  <!-- Shared navigation header (menu, Back, coins, sound, language) is built by skeleton/nav-menu.js -->
+  <header id="app-header"></header>
+
+  <main id="app">
+    <h1 class="app-title"><span data-i18n="ghostEcho.title">Memory game</span><span class="brand-sub" lang="en" dir="ltr">Ghost Echo · Voice Memory Game</span></h1>
+
+    <!-- Start: what the game is, the best level, Start -->
+    <section id="screen-start" class="screen">
+      <div class="echo-ghost" aria-hidden="true"><span class="icon-ghost"></span></div>
+      <p class="echo-intro" data-i18n="ghostEcho.intro">The ghost shows some pictures and says their names. Remember them, then say them in the same order, or tap the pictures.</p>
+      <p id="best-start" class="echo-best"></p>
+      <button id="start-button" type="button" class="btn btn--large" data-i18n="ghostEcho.start">Start</button>
+    </section>
+
+    <!-- The game: show the words, then the player's turn, then the result -->
+    <section id="screen-play" class="screen" hidden>
+      <div class="echo-bar">
+        <p id="level-text" class="echo-level"></p>
+        <p id="best-text" class="echo-best"></p>
+      </div>
+
+      <!-- The ghost shows one picture at a time -->
+      <div id="stage" class="echo-stage" aria-live="polite">
+        <p id="stage-status" class="echo-status"></p>
+        <div id="stage-card" class="echo-card" hidden>
+          <span id="stage-emoji" class="echo-card-emoji" aria-hidden="true"></span>
+          <span id="stage-word" class="echo-card-word"></span>
+        </div>
+        <ol id="stage-dots" class="echo-dots" aria-hidden="true"></ol>
+      </div>
+
+      <!-- The player's turn -->
+      <section id="answer-area" class="echo-answer" hidden>
+        <h2 class="echo-answer-title" data-i18n="ghostEcho.yourAnswer">Your answer</h2>
+        <ol id="answer-slots" class="echo-slots"></ol>
+
+        <div class="echo-voice">
+          <button id="speak-button" type="button" class="btn btn--large" data-i18n="ghostEcho.speak">Speak</button>
+          <button id="done-button" type="button" class="btn btn--large echo-done" data-i18n="ghostEcho.done" hidden>Done</button>
+          <p id="listening-indicator" class="listening-indicator" role="status" hidden>
+            <span class="listening-dot" aria-hidden="true"></span>
+            <span data-i18n="ghostEcho.listening">Listening…</span>
+          </p>
+          <p id="live-text" class="echo-live" hidden></p>
+          <p id="voice-message" class="echo-message" role="status" hidden></p>
+        </div>
+
+        <h3 class="echo-choose" data-i18n="ghostEcho.choose">Tap the pictures in order</h3>
+        <div id="choices" class="echo-choices" role="group" data-i18n-attr="aria-label:ghostEcho.choose" aria-label="Tap the pictures in order"></div>
+        <button id="clear-button" type="button" class="btn btn--secondary" data-i18n="ghostEcho.clear">Start again</button>
+      </section>
+
+      <!-- The result -->
+      <section id="result-area" class="echo-result" hidden>
+        <p id="result-text" class="echo-result-text" role="status"></p>
+        <p id="heard-text" class="echo-heard" hidden></p>
+        <ol id="right-order" class="echo-slots echo-slots--right" hidden></ol>
+        <button id="next-button" type="button" class="btn btn--large" data-i18n="ghostEcho.next" hidden>Next level</button>
+        <button id="retry-button" type="button" class="btn btn--large" data-i18n="ghostEcho.tryAgain" hidden>Try again</button>
+      </section>
+    </section>
+  </main>
+
+  <script type="module" src="/apps/ghost-echo/app.js"></script>
+</body>
+</html>

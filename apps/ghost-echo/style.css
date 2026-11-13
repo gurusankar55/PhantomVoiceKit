@@ -1,0 +1,314 @@
+/* Ghost Echo (memory game): mobile first, large touch targets, uses the theme tokens. */
+
+.app-title {
+  text-align: center;
+  margin: var(--space-3) 0;
+}
+
+.screen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-width: 40rem;
+  margin: 0 auto;
+}
+
+.screen[hidden] {
+  display: none;
+}
+
+/* ---------- Start ---------- */
+.echo-ghost {
+  display: flex;
+  justify-content: center;
+}
+
+.echo-ghost .icon-ghost {
+  width: 6rem;
+  height: 6rem;
+  background-color: var(--color-ghost);
+  filter: drop-shadow(0 0 16px rgba(246, 243, 255, 0.55));
+  animation: echo-float 3s ease-in-out infinite;
+}
+
+@keyframes echo-float {
+  50% { transform: translateY(-8px); }
+}
+
+.echo-intro {
+  margin: 0;
+  font-size: 1.15rem;
+  text-align: center;
+}
+
+.echo-best {
+  margin: 0;
+  font-weight: 700;
+  color: #ffd23f;
+  text-align: center;
+}
+
+.echo-best[hidden] {
+  display: none;
+}
+
+/* ---------- Level bar ---------- */
+.echo-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.echo-level {
+  margin: 0;
+  padding: 0.3rem 0.9rem;
+  font-weight: 800;
+  font-size: 1.2rem;
+  color: var(--color-bg);
+  background-color: var(--color-orange);
+  border-radius: 999px;
+}
+
+/* ---------- Stage: one picture at a time ---------- */
+.echo-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 15rem;
+  padding: var(--space-3);
+  background-color: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.echo-status {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.echo-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--color-bg-alt);
+  border: 3px solid var(--color-orange);
+  border-radius: 20px;
+}
+
+.echo-card[hidden] {
+  display: none;
+}
+
+.echo-card--in {
+  animation: echo-card-in 0.35s ease-out;
+}
+
+@keyframes echo-card-in {
+  from { opacity: 0; transform: scale(0.7); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.echo-card-emoji {
+  font-size: 5rem;
+  line-height: 1.1;
+}
+
+.echo-card-word {
+  font-size: 1.8rem;
+  font-weight: 800;
+}
+
+.echo-dots {
+  display: flex;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.echo-dot {
+  width: 14px;
+  height: 14px;
+  background-color: var(--color-bg);
+  border: 2px solid var(--color-border);
+  border-radius: 50%;
+}
+
+.echo-dot--on {
+  background-color: var(--color-orange);
+  border-color: var(--color-orange-light);
+}
+
+/* ---------- The player's answer ---------- */
+.echo-answer,
+.echo-result {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.echo-answer[hidden],
+.echo-result[hidden] {
+  display: none;
+}
+
+.echo-answer-title,
+.echo-choose {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 1.1rem;
+}
+
+.echo-slots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.echo-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 4.5rem;
+  min-height: 4.5rem;
+  padding: var(--space-1);
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--color-ghost-dim);
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius);
+}
+
+.echo-slot--filled {
+  color: var(--color-ghost);
+  background-color: var(--color-surface);
+  border-style: solid;
+  border-color: var(--color-orange);
+}
+
+.echo-slots--right .echo-slot--filled {
+  border-color: #9cff57;
+}
+
+.echo-emoji {
+  font-size: 2rem;
+  line-height: 1.1;
+}
+
+.echo-word {
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.echo-voice {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+#speak-button,
+.echo-done {
+  width: 100%;
+  min-height: 64px;
+  font-size: 1.4rem;
+  font-weight: 700;
+  border-radius: 14px;
+}
+
+/* "Done" is green: it finishes something */
+.echo-done {
+  color: #ffffff;
+  background-color: #1f7a45;
+  border-color: #145a31;
+}
+
+.echo-live,
+.echo-heard {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--color-bg-alt);
+  border-inline-start: 6px solid var(--color-orange);
+  border-radius: var(--radius);
+}
+
+.echo-live[hidden],
+.echo-heard[hidden],
+.echo-message[hidden] {
+  display: none;
+}
+
+.echo-message {
+  margin: 0;
+  font-weight: 700;
+  color: var(--color-orange-light);
+}
+
+/* Picture buttons: big, three in a row on phones */
+.echo-choices {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.echo-choice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  min-height: 6rem;
+  padding: var(--space-2);
+  color: var(--color-ghost);
+  background-color: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: 16px;
+}
+
+.echo-choice:hover,
+.echo-choice:active {
+  color: var(--color-ghost);
+  background-color: var(--color-bg-alt);
+  border-color: var(--color-orange);
+}
+
+.echo-choice:focus-visible {
+  outline: 4px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.echo-choice .echo-emoji {
+  font-size: 2.6rem;
+}
+
+/* ---------- Result ---------- */
+.echo-result-text {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+@media (min-width: 600px) {
+  .echo-choices {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .echo-ghost .icon-ghost,
+  .echo-card--in {
+    animation: none;
+  }
+}

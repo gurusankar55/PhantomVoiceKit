@@ -27,6 +27,7 @@ export function buildProgress({ topic, language, segments, segmentIndex, score, 
       segment: s.segment,
       quizQuestion: s.quizQuestion,
       lang: s.lang || language.bcp47, // language the original texts are written in
+      correct: s.correct === true, // answered correctly (counts for the gift at the end of a round)
     })),
     segmentIndex,
     score,
@@ -66,6 +67,7 @@ export function parseProgress(json) {
       segment: s.segment,
       quizQuestion: s.quizQuestion,
       lang: s.lang,
+      correct: s.correct === true, // older saves have no flag: not counted
     });
   }
 
@@ -92,6 +94,7 @@ export function restoreSegments(list) {
     lang: s.lang,
     segment: s.segment,
     quizQuestion: s.quizQuestion,
+    correct: s.correct === true,
     texts: {
       segment: { [s.lang]: s.segment },
       quizQuestion: { [s.lang]: s.quizQuestion },

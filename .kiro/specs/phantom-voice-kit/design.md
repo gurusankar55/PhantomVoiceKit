@@ -847,3 +847,23 @@ The server console gets one line per page: `[translate-layout] ta-IN received=6 
 - `apps/spirit-clerk/app.js`: `toEnglish(text, format)` (ONE `translate` call with kind, label and pattern) is used for spoken answers (`interpretAnswer`) and typed ones (`convertBeforeKeeping`). `englishPreview = { source, english }` is shown in `#english-line` under the heard text while the box still holds `source`; it resets on a new question, Wrong, or any change of the box.
 - New strings `spiritClerk.englishValue`, `spiritClerk.checkEnglish`, `spiritClerk.englishFailed` (20 locales).
 - `skeleton/form-overlay-utils.js`: `LABEL_INK_SHARE` 0.8 -> 0.7.
+
+## Celebrations, Coins and Stickers (Requirement 32)
+
+- `skeleton/celebrate-utils.js` (pure): reward storage `loadRewards(storage)` / `saveRewards(storage, rewards)` (key `phantomVoiceKit.rewards`, `{ coins, stickers: { id: count } }`, every access in try/catch), `addCoins`, `addSticker`, `pickSticker(owned, random)` (a sticker not found yet first), mute `loadMuted` / `saveMuted` (key `phantomVoiceKit.muted`), and the particle makers `confettiBurst`, `fireworkBurst`, `fallingPieces` (plain numbers, tested without a browser).
+- `skeleton/stickers.js` (pure): `STICKERS` = at least 12 `{ id, nameKey, svg }`, drawn as inline SVG strings with fixed shapes (no user text inside).
+- `skeleton/celebrate.js` (DOM): `correct({ coins, from })`, `levelUp()`, `giftBox()` (returns the sticker id), `createRewardsBar()` (coin counter + mute button, used by nav-menu.js), `onRewardsChange`. Every effect uses a fixed full-screen layer with `pointer-events: none` and `aria-hidden`, removed when done; a polite live region announces it. Canvas animations use requestAnimationFrame with a time limit. Sounds are short Web Audio oscillator notes, made only after a user gesture and never when muted. With prefers-reduced-motion a soft glow is shown instead of particles, the box does not shake.
+- `skeleton/nav-menu.js`: new menu entries Ghost Echo and Sticker book; the rewards bar sits between the left buttons and the language dropdown.
+- `apps/sticker-book`: a page that lists all stickers (found: in colour with "×count"; missing: grey silhouette) and the coins.
+
+## Ghost Tutor Celebrations (Requirement 33)
+
+- On `score += 1` the app marks `item.correct = true` and calls `correct()`.
+- `roundCorrect(segments, round)` (lesson-utils.js) counts correct parts of the round; `playComplete` calls `levelUp()` then `giftBox()` when it is 3 or more.
+- `buildProgress` / `parseProgress` / `restoreSegments` keep `correct` per part (older saves read as false).
+
+## Ghost Echo (Requirement 34)
+
+- `apps/ghost-echo/echo-utils.js` (pure): `WORDS` (30 `{ id, emoji }`), `wordForms(text)` (the "a|b|c" locale value split into variants), `sequenceLength(level)` (level + 1), `makeSequence(level, random)` (no word twice in a row), `choiceWords(sequence, random, total)` (the sequence words plus others, shuffled), `normalizeSpeech(text)` (lower case, punctuation removed, NFC, spaces collapsed), `matchSequence(heard, expected, formsById, lang)` (in order, variants, Levenshtein distance 1 for short words and 2 for long ones, a word with an ending attached counts, Chinese and Japanese compared without spaces), `tapsMatch`, `isMilestone(level)` (every 3 levels), `loadBest` / `saveBest` (key `phantomVoiceKit.ghostEcho.best`).
+- `apps/ghost-echo/app.js`: screens start, show (one picture at a time, spoken with speech-output), answer (picture buttons + Speak/Done using continuous speech-input in the chosen language), result (correct or the right order and Try again). No Gemini calls.
+- Locale keys `ghostEcho.*`, `ghostEcho.words.<id>` ("display|variant|variant"), `sticker.<id>`, `stickerBook.*`, `celebrate.*`, `nav.ghostEcho`, `nav.stickerBook`, `home.ghostEcho`, `home.ghostEchoHint` in all 20 files.

@@ -514,3 +514,39 @@ Phantom Voice Kit is a reusable skeleton for voice-first web applications with a
 2. ONLY the English value SHALL be used in the review, the summary, the summary PDF and the filled original form.
 3. IF the conversion fails or the reply is still not English, THE app SHALL keep the user on the question with a clear message and SHALL NOT keep the non-English text.
 4. THE label size used to size answers on the original form SHALL be the label's ink height / 0.7.
+
+### Requirement 32: Shared Celebrations, Coins and Stickers (skeleton)
+
+**User Story:** As a player, I want happy, colourful rewards when I get something right, so that learning feels like a game.
+
+#### Acceptance Criteria
+
+1. THE skeleton SHALL provide `skeleton/celebrate.js` (plain canvas, CSS and Web Audio; no libraries, no audio files; works on phones) with:
+   - `correct()`: confetti and small firecracker bursts from the bottom, a short happy sound, and coins flying into the coin bag in the header.
+   - `levelUp()`: flower petals and coloured paper falling from the top for about 4 seconds, with a bigger sound.
+   - `giftBox()`: a 3D-looking gift box shakes, the lid flies off and a sticker pops out. The sticker is saved in the sticker book.
+2. THERE SHALL be at least 12 stickers drawn as inline SVG (ghost, pumpkin, owl, moon, bat, star, cat, candy and more), each with a name in all 20 languages.
+3. Coins and stickers SHALL be shared by all apps and saved in localStorage (every access in try/catch; broken or missing data starts from zero).
+4. THE nav header SHALL show a coin counter and a mute button for the sounds (the choice is saved). THE nav menu SHALL have a "Sticker book" page that shows every sticker, found ones in colour with how many times, missing ones as a silhouette.
+5. WHEN prefers-reduced-motion is set, THE celebrations SHALL show a simple glow instead of moving pieces.
+6. A celebration SHALL never block the page (no focus trap, pointer events pass through) and SHALL remove itself when done. A short polite announcement tells screen-reader users what happened.
+
+### Requirement 33: Ghost Tutor Celebrations
+
+1. WHEN a quiz answer is judged correct, THE Ghost Tutor SHALL call `correct()`.
+2. WHEN a round of 4 parts ends with 3 or more correct answers in that round, THE Ghost Tutor SHALL call `levelUp()` and then `giftBox()`.
+3. Which parts were answered correctly SHALL be kept in the saved progress, so a resumed round is counted right.
+
+### Requirement 34: Ghost Echo, a Voice Memory Game (new app)
+
+**User Story:** As a player, I want to remember pictures shown by the ghost and say them back in my language, so that I train my memory and vocabulary.
+
+#### Acceptance Criteria
+
+1. THE new app SHALL live in `apps/ghost-echo`, with the big translated name "Memory game" (Tamil "நினைவு விளையாட்டு") and the small English name "Ghost Echo · Voice Memory Game", a Home card and a nav entry.
+2. THE ghost SHALL show and speak a sequence of picture words in the chosen language: 2 words at level 1, one more each level. The words come from a fixed list of 30 simple nouns with emoji pictures, translated (with spoken variants) in all 20 locale files.
+3. THE player SHALL repeat the words in order by voice, or by tapping the picture buttons (always available, also without a microphone).
+4. Voice matching SHALL be forgiving: punctuation and case are ignored, each word's listed variants are accepted, small spelling differences are accepted, and a word with an ending stuck to it (Tamil "பூனையும்") still counts.
+5. A correct answer SHALL call `correct()`; every 3 levels SHALL also call `levelUp()` and `giftBox()`. A wrong answer SHALL show the right order gently and offer "Try again".
+6. THE best level SHALL be saved in localStorage and shown.
+7. Ghost Echo SHALL make no Gemini calls.
