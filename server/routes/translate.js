@@ -11,7 +11,7 @@ export function createTranslateRouter(callGemini) {
   const router = Router();
 
   router.post('/', async (req, res) => {
-    const { text, targetLang, transliterate, kind, label, pattern, options, list } = req.body ?? {};
+    const { text, targetLang, transliterate, kind, label, pattern, options, list, style, sourceLang } = req.body ?? {};
 
     // The options of a choice field, translated in ONE call: { list: [...], targetLang } gives
     // { translations: [{ label, aliases }] } in the same order (aliases = other ways to say it).
@@ -54,7 +54,16 @@ export function createTranslateRouter(callGemini) {
     // An answer to a form field: ONE call gives the English meaning AND the form-ready value
     // (date as DD/MM/YYYY, digits only, a valid e-mail address, a code that matches its pattern...).
     const wantsValue = typeof kind === 'string' && FIELD_KINDS.includes(kind);
-    const prompt = wantsValue
+    // Voice Translator: what one person says to another, in natural everyday words.
+    const everyday = style === 'everyday' && !wantsValue && transliterate !== true;
+    // Only a real language code goes into this prompt (never free text); a bad source language is
+    // left out (Gemini then detects it), a bad target language is refused.
+    if (everyday && (text.length > MAX_EVERYDAY_CHARS || cleanLangCode(targetLang) === '')) {
+      return res.status(400).json({ error: 'invalid_input' });
+    }
+    const prompt = everyday
+      ? buildEverydayPrompt(text, cleanLangCode(sourceLang), cleanLangCode(targetLang))
+      : wantsValue
       ? buildValuePrompt(text, kind, typeof label === 'string' ? label.slice(0, 200) : '', isValidPattern(pattern) ? pattern : '', cleanOptions(options))
       : transliterate === true
       ? `Transliterate the following personal name into the letters of the language with BCP-47 code or name "${targetLang}". ` +
@@ -133,6 +142,34 @@ function buildValuePrompt(text, kind, label, pattern, options = []) {
       : '') +
     'Do not add words, labels or explanations.\n\n' +
     `Answer:\n${text}`
+  );
+}
+
+// Longest text the Voice Translator may send in one turn.
+export const MAX_EVERYDAY_CHARS = 2000;
+
+// A language code such as "ta-IN" or "en" (letters, digits and dashes only), or "" for anything
+// else, so a language field can never carry extra instructions into the prompt.
+export function cleanLangCode(value) {
+  if (typeof value !== 'string') return '';
+  const code = value.trim();
+  return /^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8}){0,2}$/.test(code) ? code : '';
+}
+
+// Voice Translator: natural, everyday spoken translation (not word by word).
+export function buildEverydayPrompt(text, sourceLang, targetLang) {
+  const from = sourceLang ? `from the language with BCP-47 code "${sourceLang}" ` : '';
+  return (
+    'You are an interpreter helping two people talk to each other. ' +
+    `Translate what the person said ${from}into the language with BCP-47 code "${targetLang}". ` +
+    'Use natural, everyday spoken words that a native speaker would really say, with the same meaning, ' +
+    'tone and politeness. Do not translate word by word, and do not make it formal unless the original is formal. ' +
+    'The text may come from speech recognition: ignore small recognition mistakes and missing punctuation, and add normal punctuation. ' +
+    'Keep or transliterate names, numbers, times, prices and addresses so they stay correct. ' +
+    'Do not answer the text, do not explain and do not add notes or quotation marks. ' +
+    'If it is already in the target language, return it unchanged. ' +
+    'Reply with JSON only, in exactly this shape: {"translation": "<translated text>"}.\n\n' +
+    `What the person said:\n${text}`
   );
 }
 

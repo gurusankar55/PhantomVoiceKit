@@ -1,0 +1,366 @@
+/* Voice Translator: a big translation, big microphones, a chat of two people (mobile first). */
+
+.vt {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-width: 44rem;
+  margin: 0 auto;
+}
+
+.app-title {
+  text-align: center;
+  margin: var(--space-3) 0 0;
+}
+
+.vt-screen,
+.vt-history-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.vt-screen[hidden],
+.vt-result[hidden],
+.vt-message[hidden],
+.vt-live[hidden],
+.vt-working[hidden],
+.vt-empty[hidden],
+.vt-last[hidden],
+.vt-toast[hidden] {
+  display: none;
+}
+
+/* Translate | Conversation */
+.vt-modes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.vt-mode {
+  min-height: 56px;
+  font-size: 1.15rem;
+  color: var(--color-ghost);
+  background-color: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+.vt-mode[aria-pressed="true"] {
+  color: #1a0f2e;
+  background-color: var(--color-orange);
+  border-color: var(--color-orange-dark);
+}
+
+.vt-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+  font-weight: 700;
+}
+
+.vt-field select,
+.vt-field textarea {
+  font-weight: 400;
+}
+
+.vt-field textarea {
+  min-height: 7rem;
+  font-size: 1.2rem;
+}
+
+/* From [⇄] To: side by side when they fit, one below the other on a narrow phone */
+.vt-langs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-2);
+}
+
+.vt-langs .vt-field {
+  flex: 1 1 9rem;
+}
+
+.vt-swap {
+  flex: 0 0 auto;
+  min-width: 56px;
+  min-height: 48px;
+  font-size: 1.5rem;
+}
+
+.vt-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr));
+  gap: var(--space-2);
+}
+
+.vt-big {
+  min-height: 64px;
+  font-size: 1.3rem;
+}
+
+.vt-done {
+  color: #ffffff;
+  background-color: #1f7a45;
+  border-color: #145a31;
+}
+
+.vt-live {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  font-size: 1.15rem;
+  color: var(--color-ghost-dim);
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius);
+}
+
+.vt-working {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  margin: 0;
+  font-weight: 700;
+}
+
+.vt-message {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  font-weight: 700;
+  background-color: var(--color-bg-alt);
+  border-inline-start: 6px solid var(--color-orange);
+  border-radius: var(--radius);
+}
+
+/* The translation, large and easy to read */
+.vt-result {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background-color: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-inline-start: 6px solid var(--color-orange);
+  border-radius: 16px;
+  box-shadow: var(--depth-panel); /* soft 3D depth (theme.css) */
+}
+
+.vt-result-label {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-orange-light);
+}
+
+.vt-result-text {
+  margin: 0;
+  font-size: 1.9rem;
+  font-weight: 800;
+  line-height: 1.35;
+  color: var(--color-ghost);
+}
+
+.vt-result-text:focus {
+  outline: none;
+}
+
+.vt-result-original {
+  margin: 0;
+  color: var(--color-ghost-dim);
+}
+
+/* ---------- Conversation ---------- */
+.vt-flip {
+  align-self: center;
+}
+
+.vt-half {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background-color: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: 18px;
+  box-shadow: var(--depth-panel); /* soft 3D depth (theme.css) */
+}
+
+.vt-half--other {
+  border-top: 6px solid #4fd1c5;
+}
+
+.vt-half--me {
+  border-bottom: 6px solid var(--color-orange);
+}
+
+/* Turned around for the person across the table */
+.vt-half--flipped {
+  transform: rotate(180deg);
+}
+
+.vt-half-title {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+.vt-last {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-ghost);
+  background-color: var(--color-bg-alt);
+  border-radius: var(--radius);
+}
+
+/* One big microphone per person, each in its own colour, with the language name on it */
+.vt-mic {
+  min-height: 80px;
+  font-size: 1.4rem;
+}
+
+.vt-mic--other {
+  color: #ffffff;
+  background-color: #136f6f; /* dark teal: white text above 4.5:1, also with the sheen */
+  border-color: #0b4d4d;
+}
+
+.vt-mic--other:hover {
+  background-color: #0f5f5f;
+}
+
+.vt-mic.is-listening {
+  color: #ffffff;
+  background-color: #1f7a45;
+  border-color: #9cff57;
+}
+
+.vt-type {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-2);
+}
+
+.vt-type input {
+  min-width: 0;
+}
+
+.vt-chat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.vt-bubble {
+  max-width: 88%;
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--color-surface);
+  border-radius: 16px;
+  box-shadow: var(--depth-panel);
+}
+
+.vt-bubble--me {
+  margin-inline-start: auto;
+  border-inline-end: 5px solid var(--color-orange);
+}
+
+.vt-bubble--other {
+  margin-inline-end: auto;
+  border-inline-start: 5px solid #4fd1c5;
+}
+
+.vt-bubble p {
+  margin: 0;
+}
+
+.vt-bubble-who {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-ghost-dim);
+}
+
+.vt-bubble-original {
+  color: var(--color-ghost-dim);
+}
+
+.vt-bubble-translation {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-ghost);
+}
+
+.vt-empty {
+  margin: 0;
+  color: var(--color-ghost-dim);
+}
+
+/* ---------- The last 30 translations ---------- */
+.vt-heading {
+  margin: 0;
+}
+
+.vt-history {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.vt-entry {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: 16px;
+  box-shadow: var(--depth-panel);
+}
+
+.vt-entry p {
+  margin: 0;
+}
+
+.vt-entry-langs {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--color-orange-light);
+}
+
+.vt-entry-original {
+  color: var(--color-ghost-dim);
+}
+
+.vt-entry-translation {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.vt-delete {
+  color: #ffd6dd;
+  border-color: #ff6b86;
+}
+
+/* "Copied": a small message at the bottom of the screen */
+.vt-toast {
+  position: fixed;
+  inset-inline: var(--space-3);
+  bottom: var(--space-3);
+  z-index: 40;
+  max-width: 24rem;
+  margin: 0 auto;
+  padding: var(--space-2) var(--space-3);
+  text-align: center;
+  font-weight: 700;
+  color: #1a0f2e;
+  background-color: #9cff57;
+  border-radius: 999px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}

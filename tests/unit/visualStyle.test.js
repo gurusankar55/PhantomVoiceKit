@@ -200,6 +200,8 @@ describe('text contrast stays WCAG AA', () => {
       ['#ffffff', '#b3261e'], // red: stop recording
       ['#ffffff', '#7a3e12'], // pumpkin number keys
       ['#ffffff', '#6b1d2a'], // a wrong number key
+      ['#ffffff', '#136f6f'], // Voice Translator: the other person's microphone (teal)
+      ['#1a0f2e', '#9cff57'], // the "Copied" toast
       ['#f6f3ff', '#35205c'], // secondary on the surface colour
       ['#f6f3ff', '#1a0f2e'], // secondary on the page
     ];
@@ -245,12 +247,12 @@ describe('one 3D icon per entry', () => {
   const NAV = read('skeleton/nav-menu.js');
   const menuIds = [...NAV.slice(NAV.indexOf('const MENU_LINKS'), NAV.indexOf('];', NAV.indexOf('const MENU_LINKS'))).matchAll(/id: '([\w-]+)'/g)].map((m) => m[1]);
 
-  test('the 12 icons asked for: Home and every app', () => {
-    assert.deepEqual([...APP_ICON_IDS].sort(), ['calm-time', 'form-translator', 'ghost-echo', 'ghost-tutor', 'home', 'my-documents', 'picture-book', 'pumpkin-math', 'spirit-clerk', 'sticker-book', 'story-time', 'voice-notes']);
+  test('the 13 icons asked for: Home and every app', () => {
+    assert.deepEqual([...APP_ICON_IDS].sort(), ['calm-time', 'form-translator', 'ghost-echo', 'ghost-tutor', 'home', 'my-documents', 'picture-book', 'pumpkin-math', 'spirit-clerk', 'sticker-book', 'story-time', 'voice-notes', 'voice-translator']);
   });
 
   test('every menu entry has its own icon and the menu uses them', () => {
-    assert.equal(menuIds.length, 12);
+    assert.equal(menuIds.length, 13);
     for (const id of menuIds) assert.ok(APP_ICON_IDS.includes(id), id);
     assert.match(NAV, /createAppIcon\(item\.id\)/);
     assert.ok(!/icon-ghost/.test(NAV), 'the plain ghost is no longer used in the menu');
@@ -258,7 +260,7 @@ describe('one 3D icon per entry', () => {
 
   test('every Home card shows the icon of the app it opens', () => {
     const cards = [...HOME.matchAll(/data-app-icon="([\w-]+)"[\s\S]*?href="\/apps\/([\w-]+)\//g)];
-    assert.equal(cards.length, 10);
+    assert.equal(cards.length, 11);
     for (const [, icon, app] of cards) assert.equal(icon, app);
   });
 

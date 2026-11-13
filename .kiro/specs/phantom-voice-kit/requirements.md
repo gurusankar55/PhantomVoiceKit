@@ -611,3 +611,21 @@ Phantom Voice Kit is a reusable skeleton for voice-first web applications with a
 6. Rewards: a finished session or a ticked item calls `correct()`; the tick that completes the whole day calls `levelUp()` and `giftBox()`.
 7. Reminders: "Add reminder" downloads an `.ics` file (daily RRULE, or weekly BYDAY for chosen days, local floating time, an alarm at the time, lines folded at 75 bytes). While the page is open, a due item shows an in-page reminder and, if the user allowed it, a browser Notification. The page explains that phone reminders work through the calendar.
 8. `home.welcomeText` (all 20 languages) and the README SHALL mention the app.
+
+### Requirement 44: Voice Translator (new app)
+1. THE new app SHALL live in `apps/voice-translator` (big name Tamil "பேசி மொழிபெயர்", small "Phantom Talk · Voice Translator"), with a Home card, a nav entry and its own 3D icon (two speech bubbles with A/அ).
+2. From: the chosen language (default the page language); To: any of the 20 (the last one is remembered). Speak / Done or type, then ONE `/api/translate` call with `style: "everyday"` (natural, everyday spoken translation, not word by word), using the shared server cache. Same language: no call.
+3. The translation is shown large and read aloud in the target voice; Copy uses the Clipboard API with a fallback and shows "Copied"; Share uses the Web Share API and is hidden when unsupported; a Swap button swaps the languages.
+4. Conversation mode: "Me" and "Other person", each with a language picker and a big microphone in its own colour with the language name on it. The other person's words are recognised in their language, translated into mine, shown and read aloud in mine; my reply is recognised in mine, translated into theirs, shown and read aloud in theirs. Every chat bubble shows the original and the translation. A flip button rotates the other person's half by 180°. Typing is possible on both sides.
+5. The last 30 translations are kept in localStorage with Copy and Delete.
+6. The server SHALL accept only a valid language code in `sourceLang` / `targetLang` for this style (no extra instructions in the prompt) and refuse text over 2000 characters.
+
+### Requirement 45: Installable app (PWA)
+1. `/manifest.webmanifest` with name, colours and 192 / 512 px PNG icons (also maskable), drawn by `tools/make-icons.mjs` with plain Node (no packages). Every page links it.
+2. A service worker at `/sw.js` caches the app shell and every app that needs no AI, so they work offline; pages are network-first, files cache-first; `/api` responses are NEVER cached. A page that was never opened shows a translated offline page.
+3. Apps that need the internet (Spirit Clerk, Ghost Tutor, Form Translator, Voice Translator) show a clear "needs internet" message while offline.
+4. An "Install app" button appears in the menu while the browser offers installation.
+5. The server serves `/sw.js` (no-cache) and `/manifest.webmanifest` with `sendFile` only; there is still no static folder at the repository root.
+
+### Requirement 46: Large text mode
+1. An "Aa" toggle in the header SHALL scale text and buttons by about 125 % in every app, be remembered in localStorage, be applied before the page is shown, work in RTL, and never cause horizontal scrolling on a 320 px phone.

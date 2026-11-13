@@ -3,6 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#2a1648" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="icon" type="image/png" href="/skeleton/pwa/icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="/skeleton/pwa/icons/icon-192.png" />
   <title data-i18n="home.pageTitle">Phantom Voice Kit</title>
   <!-- Shared Halloween theme (absolute path, per project rules) -->
   <link rel="stylesheet" href="/skeleton/theme.css" />
@@ -492,6 +496,16 @@
           <p class="brand-sub" lang="en" dir="ltr">Calm Ghost · Meditation and Routine</p>
           <p class="app-desc" data-i18n="home.calmTimeHint">Meditate, time your activities and plan your day</p>
           <a class="btn btn--large app-start" href="/apps/calm-time/index.html" aria-describedby="calm-name">
+            <span data-i18n="home.start">Start</span>
+          </a>
+        </article>
+
+        <article class="app-card" aria-labelledby="talk-name">
+          <span class="app-icon" data-app-icon="voice-translator" aria-hidden="true"></span>
+          <h3 id="talk-name" class="app-name" data-i18n="home.voiceTranslator">Speak and translate</h3>
+          <p class="brand-sub" lang="en" dir="ltr">Phantom Talk · Voice Translator</p>
+          <p class="app-desc" data-i18n="home.voiceTranslatorHint">Say it in your language, hear it in another</p>
+          <a class="btn btn--large app-start" href="/apps/voice-translator/index.html" aria-describedby="talk-name">
             <span data-i18n="home.start">Start</span>
           </a>
         </article>

@@ -20,6 +20,7 @@ export const APP_ICON_IDS = Object.freeze([
   'pumpkin-math',
   'story-time',
   'calm-time',
+  'voice-translator',
 ]);
 
 let counter = 0; // makes the gradient ids unique on the page
@@ -195,6 +196,18 @@ const ICONS = {
       sparkle(32, 31.5, 1.8, '#fff3b0') +
       '<rect x="16" y="33" width="15" height="2.6" rx="1.3" fill="#fff" opacity="0.5"/>' +
       '<rect x="14.5" y="8" width="1.8" height="29" rx="0.9" fill="#fff" opacity="0.25"/>',
+  }),
+
+  // Two speech bubbles with A and அ
+  'voice-translator': (u) => ({
+    defs: lin(u('left'), '#ffb066', '#e0600a') + lin(u('right'), '#6fe3d6', '#138f86'),
+    body:
+      `<path d="M8 5h19a4 4 0 014 4v11a4 4 0 01-4 4H15l-6 5v-5H8a4 4 0 01-4-4V9a4 4 0 014-4z" fill="url(#${u('left')})"/>` +
+      '<path d="M7 8.5h12" stroke="#fff" stroke-width="1.6" stroke-linecap="round" opacity="0.55"/>' +
+      '<text x="12" y="20.5" font-family="Arial, sans-serif" font-size="12" font-weight="700" fill="#3a1400">A</text>' +
+      `<path d="M21 18h19a4 4 0 014 4v11a4 4 0 01-4 4h-1v5l-6-5H21a4 4 0 01-4-4V22a4 4 0 014-4z" fill="url(#${u('right')})" stroke="#0b4d4d" stroke-width="0.8"/>` +
+      '<path d="M20.5 21.5h14" stroke="#fff" stroke-width="1.6" stroke-linecap="round" opacity="0.5"/>' +
+      '<text x="25" y="33" font-family="Nirmala UI, Latha, Noto Sans Tamil, sans-serif" font-size="11" font-weight="700" fill="#06302e">அ</text>',
   }),
 
   // Lotus with a timer ring

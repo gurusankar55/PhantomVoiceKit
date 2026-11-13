@@ -918,3 +918,16 @@ The server console gets one line per page: `[translate-layout] ta-IN received=6 
   - Routine (key `phantomVoiceKit.calmTime.routine`): `{ items: [{ id, activity, name, time, minutes, days, from, until }], done: { dayKey: [ids] } }`; `itemProblem`, `addItem`, `removeItem` (sets `until`), `plannedOn`, `setDone` (forgets ticks after 120 days), `dayStatus`, `history`, `streak`, `completedNow`, `dueReminders(routine, fromMs, toMs)`.
   - Calendar: `buildIcs` (VEVENT + RRULE + VALARM, CRLF, `foldIcsLine` by UTF-8 bytes), `icsFilename`.
 - The page: start screen (Meditate / Activity timer / My day), setup screens, a session screen (SVG ring, breathing circle, clock, Pause / Resume / Stop), the routine screen (today, 7 days, add form, reminders help, notification permission button). A 250 ms tick only redraws; `visibilitychange` catches up at once and asks for the wake lock again. Reminders are checked every 15 s while the page is open.
+
+## Voice Translator (Requirement 44)
+- `apps/voice-translator/translator-utils.js` (pure, tested): `cleanText`, `findLanguage`, `sameLanguage`, `defaultTarget`, `swapLanguages`, `turnLanguages(speaker, me, other)`, settings `{ to, other, mode }` (key `phantomVoiceKit.voiceTranslator.settings`), history (key `phantomVoiceKit.voiceTranslator.history`, newest first, max 30) `addEntry` / `removeEntry`, `errorKey`, `canShareText`.
+- `skeleton/api-client.js` `translateSpeech({ text, sourceLang, targetLang })` -> `/api/translate` with `style: "everyday"`; `server/routes/translate.js` `buildEverydayPrompt`, `cleanLangCode`, `MAX_EVERYDAY_CHARS`. The cache key is the prompt, so the shared cache works unchanged.
+- The page: Translate screen (From ⇄ To, text box, Speak / Done, Translate, large result with Read aloud / Copy / Share) and Conversation screen (other half with flip, chat, my half; one speech engine started with the speaker's language; done words loaded from that language's locale file).
+
+## Installable app (Requirement 45)
+- `skeleton/pwa/manifest.webmanifest`, `skeleton/pwa/icons/icon-192.png` / `icon-512.png`, `skeleton/pwa/offline.html`.
+- `skeleton/pwa/sw-config.js` (classic script, `self.PVK_SW`): `PRECACHE`, `OFFLINE_APPS`, `ONLINE_APPS`, `decide(method, url, origin, mode)` ('network' | 'page' | 'file'), `isCacheable`, `isOldCache`. `skeleton/pwa/sw.js` uses it (install: precache; activate: delete old caches; fetch: page = network first, file = cache first + refresh).
+- `skeleton/pwa-client.js`: `registerServiceWorker`, `onInstallAvailable` / `promptInstall` (beforeinstallprompt), `onConnectionChange`, `needsInternet(appId)`. `nav-menu.js` registers the worker, shows the Install button in the drawer and the offline notice for online-only apps.
+
+## Large text (Requirement 46)
+- `skeleton/text-size.js` (key `phantomVoiceKit.largeText`, class `html.large-text`), applied in `initI18n()` before `i18n-ready`; theme.css: `html.large-text { font-size: 125%; --touch-min: 55px }`; the header bar wraps.

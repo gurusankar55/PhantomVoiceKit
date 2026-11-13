@@ -621,3 +621,11 @@ Build the Phantom Voice Kit from the ground up: project scaffolding → Express 
 - [x] 37. Calm Ghost: meditation, activity timer, daily routine, reminders (Requirement 43)
   - Tests: tests/unit/calmTime.test.js (timer, marks, breath, routine, streak, reminders, .ics, strings in 20 locales)
   - Home card, menu entry, welcome text in 20 languages, README
+
+- [x] 38. Voice Translator with conversation mode (Requirement 44)
+  - Tests: tests/unit/voiceTranslator.test.js (utils, everyday prompt and cache with a fake Gemini, api-client, strings)
+  - One real Gemini check of the everyday prompt (Tamil -> English)
+- [x] 39. Installable app: manifest, icons, service worker, Install button, offline notice (Requirement 45)
+  - Tests: tests/unit/pwa.test.js (manifest, PNG icons, never /api, precache list, server routes)
+- [x] 40. Large text mode (Requirement 46)
+  - Tests: tests/unit/pwa.test.js (storage, class, 125 %, no fixed width over 320 px)

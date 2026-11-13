@@ -461,7 +461,9 @@ textarea {
 
 .nav-bar {
   display: flex;
-  flex-wrap: nowrap;
+  /* On a narrow phone (or with large text) the language picker moves to a second row instead
+     of making the page scroll sideways. */
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2);
   min-width: 0;
@@ -756,6 +758,18 @@ body.nav-open {
   }
 }
 
+/* ---------- 13b. Large text mode (the "Aa" button, skeleton/text-size.js) ---------- */
+/* Every size in rem grows by 25 % (text, padding, gaps, icons in rem); touch targets grow too.
+   Layouts use min(100%, …) columns and wrapping rows, so a 320 px phone never scrolls sideways. */
+html.large-text {
+  font-size: 125%;
+  --touch-min: 55px;
+}
+
+html.large-text .nav-lang .language-select {
+  min-width: 0; /* the picker may shrink on its own row */
+}
+
 /* ---------- 14. Accessibility: respect reduced motion ---------- */
 @media (prefers-reduced-motion: reduce) {
   .spinner {
@@ -971,6 +985,43 @@ body.nav-open {
   background-color: var(--color-surface);
 }
 
+/* Large text button ("Aa") next to the sound button */
+.pvk-text-size {
+  width: var(--touch-min);
+  min-width: var(--touch-min);
+  height: var(--touch-min);
+  min-height: var(--touch-min);
+  padding: 0;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--color-ghost);
+  background-color: transparent;
+  border: 2px solid var(--color-border);
+}
+.pvk-text-size:hover,
+.pvk-text-size:active {
+  background-color: var(--color-surface);
+  color: var(--color-ghost);
+}
+.pvk-text-size[aria-pressed="true"] {
+  color: #1a0f2e;
+  background-color: var(--color-orange);
+  border-color: var(--color-orange-dark);
+}
+/* An app that needs the internet, while the device is offline */
+.pvk-offline {
+  margin: var(--space-2) 0 0;
+  padding: var(--space-2) var(--space-3);
+  font-weight: 700;
+  color: var(--color-error-text);
+  background-color: var(--color-error-bg);
+  border: 2px solid var(--color-error-border);
+  border-radius: var(--radius);
+}
+/* "Install app" at the end of the menu (only when the browser offers it) */
+.nav-install {
+  margin-top: var(--space-2);
+}
 /* Narrow phones: the Back button shows only its arrow (its name stays in aria-label) */
 @media (max-width: 420px) {
   .nav-back > span:not(.nav-back-arrow) {

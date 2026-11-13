@@ -78,6 +78,13 @@ export function translate({ text, targetLang, transliterate = false, kind, label
   return postJson('/api/translate', body, TIMEOUT_TRANSLATE_MS);
 }
 
+// Voice Translator: what one person said, in natural everyday words of another language.
+// sourceLang and targetLang are BCP-47 codes such as 'ta-IN' and 'en-US'. Uses the same server
+// cache as every translation, so the same sentence is never sent to Gemini twice.
+export function translateSpeech({ text, sourceLang, targetLang }) {
+  return postJson('/api/translate', { text, sourceLang, targetLang, style: 'everyday' }, TIMEOUT_TRANSLATE_MS);
+}
+
 // Translate the options of a choice field in one call: { list: ['Male', ...], targetLang }.
 // The reply is { translations: [{ label, aliases }] } in the same order (aliases = other ways to say it).
 export function translateList({ list, targetLang }) {

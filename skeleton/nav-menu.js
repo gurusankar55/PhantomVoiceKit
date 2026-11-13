@@ -9,6 +9,8 @@
 import { setI18nText, setI18nAttr } from './i18n.js';
 import { createRewardsBar } from './celebrate.js';
 import { createAppIcon } from './app-icons.js';
+import { isLargeText, setLargeText } from './text-size.js';
+import { registerServiceWorker, onInstallAvailable, promptInstall, onConnectionChange, needsInternet } from './pwa-client.js';
 
 // ---------------------------------------------------------------------------
 // Screen history
@@ -71,6 +73,7 @@ const MENU_LINKS = [
   { id: 'pumpkin-math', labelKey: 'nav.pumpkinMath', href: '/apps/pumpkin-math/index.html', subtitle: 'Pumpkin Math · Count and Add' },
   { id: 'story-time', labelKey: 'nav.storyTime', href: '/apps/story-time/index.html', subtitle: 'Story Time · Read Aloud' },
   { id: 'calm-time', labelKey: 'nav.calmTime', href: '/apps/calm-time/index.html', subtitle: 'Calm Ghost · Meditation and Routine' },
+  { id: 'voice-translator', labelKey: 'nav.voiceTranslator', href: '/apps/voice-translator/index.html', subtitle: 'Phantom Talk · Voice Translator' },
 ];
 
 // Stop any speech that is currently playing (safe if unsupported).
@@ -132,9 +135,42 @@ export function createNavMenu(
 
   bar.appendChild(leftGroup);
   // The coin bag (shared by all apps) and the sound on / off button
-  bar.appendChild(createRewardsBar());
+  const rewards = createRewardsBar();
+  // Large text mode ("Aa"): text and buttons about 125 % in every app, remembered.
+  const textSize = document.createElement('button');
+  textSize.type = 'button';
+  textSize.className = 'pvk-text-size';
+  textSize.textContent = 'Aa';
+  function showTextSize() {
+    const on = isLargeText();
+    textSize.setAttribute('aria-pressed', String(on));
+    setI18nAttr(textSize, 'aria-label', on ? 'nav.largeTextOff' : 'nav.largeTextOn');
+    setI18nAttr(textSize, 'title', on ? 'nav.largeTextOff' : 'nav.largeTextOn');
+  }
+  textSize.addEventListener('click', () => {
+    setLargeText(!isLargeText());
+    showTextSize();
+  });
+  showTextSize();
+  rewards.appendChild(textSize);
+  bar.appendChild(rewards);
   bar.appendChild(languageEl);
   headerEl.appendChild(bar);
+
+  // Apps that need the internet say so clearly while the device is offline.
+  if (needsInternet(current)) {
+    const offline = document.createElement('p');
+    offline.className = 'pvk-offline';
+    offline.setAttribute('role', 'status');
+    setI18nText(offline, 'pwa.needsInternet');
+    headerEl.appendChild(offline);
+    onConnectionChange((online) => {
+      offline.hidden = online;
+    });
+  }
+
+  // The installable app: the service worker keeps the app shell for offline use.
+  registerServiceWorker();
 
   // --- Drawer and overlay --------------------------------------------------
   const drawer = document.createElement('nav');
@@ -191,6 +227,31 @@ export function createNavMenu(
 
     drawer.appendChild(a);
     links.push(a);
+  }
+
+  // "Install app": only while the browser offers to install (Chrome, Edge, Android...).
+  const install = document.createElement('button');
+  install.type = 'button';
+  install.className = 'btn btn--large nav-install';
+  install.hidden = true;
+  const installIcon = document.createElement('span');
+  installIcon.setAttribute('aria-hidden', 'true');
+  installIcon.textContent = '⬇';
+  const installText = document.createElement('span');
+  setI18nText(installText, 'pwa.install');
+  install.append(installIcon, installText);
+  install.addEventListener('click', async () => {
+    closeMenu(true);
+    await promptInstall();
+  });
+  drawer.appendChild(install);
+  onInstallAvailable((available) => {
+    install.hidden = !available;
+  });
+
+  // Everything Tab can reach inside the open drawer, in order.
+  function drawerItems() {
+    return install.hidden ? links : [...links, install];
   }
 
   const overlay = document.createElement('div');
@@ -263,8 +324,9 @@ export function createNavMenu(
     }
 
     if (event.key === 'Tab') {
-      const first = links[0];
-      const last = links[links.length - 1];
+      const items = drawerItems();
+      const first = items[0];
+      const last = items[items.length - 1];
       if (event.shiftKey && document.activeElement === first) {
         event.preventDefault();
         last.focus();

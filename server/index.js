@@ -28,6 +28,18 @@ app.use(express.json({ limit: '15mb' }));
 // so server/, .env and other private files are never exposed.
 app.get('/', (req, res) => res.sendFile(path.join(ROOT, 'index.html')));
 
+// Installable app (PWA). The service worker must be served from the root to cover the whole site;
+// both files live in skeleton/pwa and are sent one by one (no static folder at the root).
+app.get('/sw.js', (req, res) => {
+  res.set('Cache-Control', 'no-cache'); // the browser checks for a new version every time
+  res.type('application/javascript');
+  res.sendFile(path.join(ROOT, 'skeleton', 'pwa', 'sw.js'));
+});
+app.get('/manifest.webmanifest', (req, res) => {
+  res.type('application/manifest+json');
+  res.sendFile(path.join(ROOT, 'skeleton', 'pwa', 'manifest.webmanifest'));
+});
+
 // Static files: ONLY the shared skeleton and the apps.
 app.use('/skeleton', express.static(path.join(ROOT, 'skeleton')));
 app.use('/apps', express.static(path.join(ROOT, 'apps')));

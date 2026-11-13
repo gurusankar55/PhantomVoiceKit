@@ -8,6 +8,7 @@
 // imported, so it can be loaded in Node for tests.
 
 import { readLanguageCode, browserStorages } from './language-store.js';
+import { applyStoredLargeText } from './text-size.js';
 
 // Language codes that have a file in /skeleton/locales/.
 export const SUPPORTED_LOCALE_CODES = [
@@ -78,6 +79,8 @@ export function loadStrings(code) {
 // Load English plus the chosen language, then apply everything.
 // Safe to call more than once.
 export async function initI18n() {
+  // Large text mode is applied before the page is shown (no jump in size after it appears).
+  if (typeof document !== 'undefined') applyStoredLargeText();
   await setLocale(readStoredLang());
 }
 

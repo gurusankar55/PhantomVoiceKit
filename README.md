@@ -21,6 +21,7 @@ The project has a shared **skeleton/** (speech input and output, language dropdo
 | Pumpkin math | `apps/pumpkin-math` | Counting, adding and taking away with pumpkins, 5 levels, answer by tap or voice | No |
 | Story time | `apps/story-time` | 6 kind stories read aloud paragraph by paragraph, remembers where you stopped | No |
 | Calm Ghost (Calm time) | `apps/calm-time` | Meditation with a bell and breathing circle, activity timer, daily routine with reminders | No |
+| Phantom Talk (Voice Translator) | `apps/voice-translator` | Speak or type, hear a natural translation in any of the 20 languages; two-person conversation mode | Yes |
 
 The language you choose is remembered on this device, so every app and every new tab opens in it.
 
@@ -97,9 +98,31 @@ Also fully offline from the AI: the calm phrases and messages are in the locale 
 
 The timers are worked out from timestamps, so they stay right when the tab is hidden. A hidden tab may play the end bell a little late, because browsers slow down hidden pages.
 
+## Voice Translator (Phantom Talk)
+
+- **Translate**: choose From (your page language at first) and To (remembered). Speak (then tap Done) or type, and get one natural, everyday translation (not word by word) through `/api/translate`, using the same server cache as every other translation. The translation is shown large and read aloud in a voice of the target language. Copy (Clipboard API, with a fallback) shows "Copied"; Share uses the Web Share API and is hidden where it does not exist. ⇄ swaps the languages.
+- **Conversation**: "Me" and "Other person", each with a language picker and a big microphone in its own colour with the language name on it. The other person's words are recognised in their language, translated into mine, shown and read aloud; my reply goes the other way. Every chat bubble shows the original and the translation. "Turn the other side around" rotates the other person's half by 180°, so two people can share one phone across a table. Typing works on both sides too.
+- The last 30 translations are kept on this device (localStorage), each with Copy, Read aloud and Delete.
+
+## Installable app and offline use
+
+The kit is a Progressive Web App: `/manifest.webmanifest` (name, colours, 192 and 512 px icons, also maskable) and a service worker at `/sw.js`. Both files live in `skeleton/pwa/` and are served one by one; there is still no static folder at the repository root.
+
+- The service worker keeps the app shell (Home, the skeleton, the 20 translation files) and every app that needs no AI (Ghost Echo, Sticker book, My documents, Voice notes, Picture book, Pumpkin math, Story time, Calm time), so they work offline.
+- Apps that need Gemini (Spirit Clerk, Ghost Tutor, Form Translator, Voice Translator) show a clear "needs internet" message while offline. A page that was never opened shows a translated offline page.
+- `/api` responses are never cached.
+- When the browser offers it, an "Install app" button appears at the end of the menu.
+- The icons are drawn with plain Node: `node tools/make-icons.mjs` (no packages).
+
+Service workers need `https` or `localhost`.
+
+## Large text
+
+The **Aa** button in every header makes text and buttons about 125 % bigger in every app. The choice is remembered on this device, works in right-to-left languages, and on a 320 px phone the header and buttons wrap instead of scrolling sideways.
+
 ## Privacy
 
-Nothing is saved on the server. Uploaded forms, answers, topics and lessons are only sent to Gemini to get a result, and are not stored in any file or database. Your chosen language, game levels, story positions, daily routine, documents and notes are kept only in this browser (localStorage / IndexedDB). Your API key stays in `.env` and is never sent to the browser.
+Nothing is saved on the server. Uploaded forms, answers, topics, lessons and the sentences you translate are only sent to Gemini to get a result, and are not stored in any file or database. Your chosen language, text size, game levels, story positions, daily routine, recent translations, documents and notes are kept only in this browser (localStorage / IndexedDB). Your API key stays in `.env` and is never sent to the browser.
 
 ## Build your own voice app
 

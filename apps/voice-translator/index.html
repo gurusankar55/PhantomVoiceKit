@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#2a1648" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="icon" type="image/png" href="/skeleton/pwa/icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="/skeleton/pwa/icons/icon-192.png" />
+  <title data-i18n="voiceTranslator.pageTitle">Voice Translator – Phantom Voice Kit</title>
+  <!-- Shared theme and app styles (absolute paths, per project rules) -->
+  <link rel="stylesheet" href="/skeleton/theme.css" />
+  <link rel="stylesheet" href="/apps/voice-translator/style.css" />
+</head>
+<body>
+  <!-- Shared navigation header (menu, Back, coins, sound, Aa, language) is built by skeleton/nav-menu.js -->
+  <header id="app-header"></header>
+
+  <main id="app" class="vt">
+    <h1 class="app-title"><span data-i18n="voiceTranslator.title">Speak and translate</span><span class="brand-sub" lang="en" dir="ltr">Phantom Talk · Voice Translator</span></h1>
+
+    <!-- The two ways of using it -->
+    <div class="vt-modes" role="group" data-i18n-attr="aria-label:voiceTranslator.modeLabel" aria-label="How to translate">
+      <button id="mode-single" type="button" class="vt-mode" aria-pressed="true" data-i18n="voiceTranslator.modeSingle">Translate</button>
+      <button id="mode-chat" type="button" class="vt-mode" aria-pressed="false" data-i18n="voiceTranslator.modeChat">Conversation</button>
+    </div>
+
+    <p id="message" class="vt-message" role="status" hidden></p>
+
+    <!-- ===== Translate: one text at a time ===== -->
+    <section id="screen-single" class="vt-screen">
+      <div class="vt-langs">
+        <div class="vt-field">
+          <label for="from-select" data-i18n="voiceTranslator.from">From</label>
+          <select id="from-select"></select>
+        </div>
+        <button id="swap-button" type="button" class="btn btn--secondary vt-swap" data-i18n-attr="aria-label:voiceTranslator.swap" aria-label="Swap languages"><span aria-hidden="true">⇄</span></button>
+        <div class="vt-field">
+          <label for="to-select" data-i18n="voiceTranslator.to">To</label>
+          <select id="to-select"></select>
+        </div>
+      </div>
+
+      <div class="vt-field">
+        <label for="source-text" data-i18n="voiceTranslator.textLabel">What do you want to say?</label>
+        <textarea id="source-text" maxlength="1000" dir="auto"></textarea>
+      </div>
+      <p id="live-text" class="vt-live" aria-live="polite" hidden></p>
+      <p id="listening-indicator" class="listening-indicator" role="status" hidden>
+        <span class="listening-dot" aria-hidden="true"></span>
+        <span data-i18n="voiceTranslator.listening">Listening… tap Done when you finish.</span>
+      </p>
+      <div class="vt-row">
+        <button id="speak-button" type="button" class="btn btn--large vt-big"><span aria-hidden="true">🎤</span> <span data-i18n="voiceTranslator.speak">Speak</span></button>
+        <button id="done-button" type="button" class="btn btn--large vt-big vt-done" hidden><span aria-hidden="true">✓</span> <span data-i18n="voiceTranslator.done">Done</span></button>
+        <button id="translate-button" type="button" class="btn btn--large vt-big" data-i18n="voiceTranslator.translate">Translate</button>
+      </div>
+      <p id="working" class="vt-working" role="status" hidden><span class="spinner" aria-hidden="true"></span> <span data-i18n="voiceTranslator.working">Translating…</span></p>
+
+      <!-- The translation, large -->
+      <section id="result" class="vt-result" aria-labelledby="result-label" hidden>
+        <h2 id="result-label" class="vt-result-label" data-i18n="voiceTranslator.result">Translation</h2>
+        <p id="result-text" class="vt-result-text" dir="auto"></p>
+        <p id="result-original" class="vt-result-original" dir="auto"></p>
+        <div class="vt-row">
+          <button id="read-button" type="button" class="btn"><span aria-hidden="true">🔊</span> <span data-i18n="voiceTranslator.readAloud">Read aloud</span></button>
+          <button id="copy-button" type="button" class="btn btn--secondary"><span aria-hidden="true">📋</span> <span data-i18n="voiceTranslator.copy">Copy</span></button>
+          <button id="share-button" type="button" class="btn btn--secondary" hidden><span aria-hidden="true">📤</span> <span data-i18n="voiceTranslator.share">Share</span></button>
+        </div>
+      </section>
+    </section>
+
+    <!-- ===== Conversation: two people, one phone ===== -->
+    <section id="screen-chat" class="vt-screen" hidden>
+      <button id="flip-button" type="button" class="btn btn--secondary vt-flip" aria-pressed="false"><span aria-hidden="true">🔄</span> <span data-i18n="voiceTranslator.flip">Turn the other side around</span></button>
+
+      <!-- The other person's half (can be turned 180 degrees to face them across a table) -->
+      <section id="half-other" class="vt-half vt-half--other" aria-labelledby="other-title">
+        <h2 id="other-title" class="vt-half-title" data-i18n="voiceTranslator.otherPerson">Other person</h2>
+        <div class="vt-field">
+          <label for="other-select" data-i18n="voiceTranslator.theirLanguage">Their language</label>
+          <select id="other-select"></select>
+        </div>
+        <p id="other-last" class="vt-last" dir="auto" hidden></p>
+        <button id="other-mic" type="button" class="btn btn--large vt-mic vt-mic--other"></button>
+        <form id="other-form" class="vt-type">
+          <label for="other-input" class="visually-hidden" data-i18n="voiceTranslator.typeInstead">Or type</label>
+          <input id="other-input" type="text" maxlength="1000" dir="auto" autocomplete="off" />
+          <button type="submit" class="btn btn--secondary" data-i18n="voiceTranslator.send">Send</button>
+        </form>
+      </section>
+
+      <!-- The conversation -->
+      <ol id="chat" class="vt-chat" aria-live="polite" data-i18n-attr="aria-label:voiceTranslator.chatLabel" aria-label="Conversation"></ol>
+      <p id="chat-empty" class="vt-empty" data-i18n="voiceTranslator.chatEmpty">Tap a microphone and speak. Each turn is translated and read aloud for the other person.</p>
+
+      <!-- My half -->
+      <section id="half-me" class="vt-half vt-half--me" aria-labelledby="me-title">
+        <h2 id="me-title" class="vt-half-title" data-i18n="voiceTranslator.me">Me</h2>
+        <div class="vt-field">
+          <label for="me-select" data-i18n="voiceTranslator.myLanguage">My language</label>
+          <select id="me-select"></select>
+        </div>
+        <button id="me-mic" type="button" class="btn btn--large vt-mic vt-mic--me"></button>
+        <form id="me-form" class="vt-type">
+          <label for="me-input" class="visually-hidden" data-i18n="voiceTranslator.typeInstead">Or type</label>
+          <input id="me-input" type="text" maxlength="1000" dir="auto" autocomplete="off" />
+          <button type="submit" class="btn btn--secondary" data-i18n="voiceTranslator.send">Send</button>
+        </form>
+      </section>
+      <p id="chat-live" class="vt-live" aria-live="polite" hidden></p>
+    </section>
+
+    <!-- ===== The last 30 translations ===== -->
+    <section class="vt-history-wrap" aria-labelledby="history-title">
+      <h2 id="history-title" class="vt-heading" data-i18n="voiceTranslator.history">Recent translations</h2>
+      <p id="history-empty" class="vt-empty" data-i18n="voiceTranslator.historyEmpty">Your last 30 translations are kept here, on this device only.</p>
+      <ul id="history" class="vt-history"></ul>
+      <div id="history-confirm"></div>
+    </section>
+
+    <!-- "Copied" -->
+    <p id="toast" class="vt-toast" role="status" aria-live="polite" hidden></p>
+  </main>
+
+  <script type="module" src="/apps/voice-translator/app.js"></script>
+</body>
+</html>
