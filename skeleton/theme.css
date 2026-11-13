@@ -186,6 +186,18 @@ button {
   border-radius: var(--radius);
   max-width: 100%;
   touch-action: manipulation;
+  /* Button labels wrap only BETWEEN words, never inside one (the page sets overflow-wrap:
+     anywhere, which would split Tamil "சொல்லுங்கள்" into "சொல்லு" / "ங்கள்"). Chinese and
+     Japanese can still wrap between characters, as normal for those scripts. Layouts give
+     buttons enough room or a second row instead. */
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: manual;
+}
+/* Korean: keep each word whole too (the browser would otherwise break between syllables). */
+:lang(ko) .btn,
+:lang(ko) button {
+  word-break: keep-all;
 }
 
 .btn:hover,
@@ -553,6 +565,7 @@ textarea {
   font-weight: 700;
   color: var(--color-ghost);
   text-decoration: none;
+  overflow-wrap: normal; /* menu entries wrap between words only, like buttons */
   border-inline-start: 5px solid transparent;
   border-radius: var(--radius);
 }
@@ -1126,7 +1139,8 @@ body.nav-open {
 
 .pvk-confirm-buttons {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  /* Two side by side when they fit, else one below the other (words never break) */
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 8rem), 1fr));
   gap: var(--space-2);
 }
 

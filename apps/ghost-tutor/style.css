@@ -88,9 +88,9 @@
   max-width: 100%;
   padding: 0.5rem 1rem;
   font-size: 1rem;
-  /* Long topic names wrap instead of overflowing */
+  /* Long topic names wrap between words (never inside a word) instead of overflowing */
   white-space: normal;
-  overflow-wrap: anywhere;
+  overflow-wrap: normal;
   text-align: center;
   color: var(--color-ghost);
   background-color: var(--color-surface);

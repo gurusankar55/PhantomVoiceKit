@@ -27,7 +27,8 @@
 
 .math-levels {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(6.5rem, 1fr));
+  /* Wide enough for a whole word like "கழித்தல்"; extra levels go to the next row */
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 8rem), 1fr));
   gap: var(--space-2);
 }
 
@@ -168,6 +169,7 @@
 
 .math-next,
 .math-speak {
+  flex-wrap: wrap;
   gap: 0.5rem;
   min-height: 64px;
   font-size: 1.35rem;
@@ -190,6 +192,7 @@
 }
 
 .math-key {
+  min-width: 0; /* 6 keys must fit a 320 px screen */
   min-height: 3.4rem;
   padding: 0;
   font-size: 1.4rem;

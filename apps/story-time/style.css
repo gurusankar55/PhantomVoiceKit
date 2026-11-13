@@ -108,13 +108,21 @@
   color: var(--color-ghost-dim);
 }
 
+/* The sticky control bar must never hide the story: scrolling (and scrollIntoView) keeps this
+   much room at the bottom. --story-bar-height is measured by app.js. */
+html {
+  scroll-padding-bottom: calc(var(--story-bar-height, 0px) + var(--space-2));
+}
+
 .story-paragraphs {
   --story-scale: 1;
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
   margin: 0;
-  padding: 0;
+  /* Space under the last paragraph as tall as the control bar, so its last line can be
+     scrolled above the bar. */
+  padding: 0 0 var(--story-bar-height, 0px);
   list-style: none;
 }
 
@@ -147,20 +155,29 @@
   display: none;
 }
 
-/* Controls stay at the bottom of the screen while reading */
+/* Controls stay at the bottom of the screen while reading.
+   Phones: Back | Next on the first row, the big Play / Pause button on its own row below, so no
+   word has to be squeezed into a third of a narrow screen. */
 .story-controls {
   position: sticky;
   bottom: 0;
+  z-index: 2;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-2);
   padding: var(--space-2) 0;
   background-color: var(--color-bg);
 }
 
+#previous-button { grid-column: 1; grid-row: 1; }
+#next-button { grid-column: 2; grid-row: 1; }
+.story-play { grid-column: 1 / -1; grid-row: 2; }
+
 .story-controls .btn {
+  flex-wrap: wrap; /* the icon may go above the text; the words themselves never break */
   gap: 0.35rem;
   min-height: 64px;
+  padding-inline: var(--space-2);
   font-size: 1.1rem;
   font-weight: 700;
   border-radius: 14px;
@@ -168,6 +185,16 @@
 
 .story-play {
   font-size: 1.25rem;
+}
+
+/* Wider screens: Back | Play | Next in one row */
+@media (min-width: 480px) {
+  .story-controls {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  #previous-button { grid-column: 1; grid-row: 1; }
+  .story-play { grid-column: 2; grid-row: 1; }
+  #next-button { grid-column: 3; grid-row: 1; }
 }
 
 .story-voice,

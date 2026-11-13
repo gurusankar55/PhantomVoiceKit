@@ -16,6 +16,8 @@ import {
   titleKey,
   paragraphKey,
   clampParagraph,
+  stepParagraph,
+  afterParagraphEnd,
   loadProgress,
   saveProgress,
   atParagraph,
@@ -65,6 +67,8 @@ let speechOutput = null;
 let listening = false;
 let voiceOff = false;
 let runId = 0; // every new reading step makes old callbacks do nothing
+let speakTimer = null; // the short wait between stopping and speaking the next paragraph
+const SPEAK_AFTER_STOP_MS = 80;
 
 function handleBack() {
   if (screens.read.hidden) return false; // leave to Home
@@ -95,6 +99,7 @@ function store() {
 
 function stopAll() {
   runId += 1;
+  clearTimeout(speakTimer);
   if (speechOutput) speechOutput.stop();
   if (speechInput && speechInput.supported) speechInput.stop();
   setListening(false);
@@ -268,28 +273,39 @@ function readCurrent(myId) {
   scrollToCurrent();
   progress = atParagraph(progress, state.story, state.index);
   store();
-  const text = t(paragraphKey(state.story, state.index));
-  speechOutput.speak(text, {
-    onEnd: () => {
-      if (myId !== runId || !state.playing) return;
-      if (state.index < PARAGRAPHS - 1) {
-        state.index += 1;
+  // This paragraph's own token: an end event only moves on if it belongs to THIS paragraph of
+  // THIS reading run (a late end event after Pause / Next must never move the position).
+  const spoken = { run: myId, index: state.index };
+  const text = t(paragraphKey(state.story, spoken.index));
+  clearTimeout(speakTimer);
+  // Chrome may drop or end at once an utterance spoken in the same moment as cancel(), so wait a
+  // little after stopping the previous one.
+  speakTimer = setTimeout(() => {
+    if (myId !== runId) return;
+    speechOutput.speak(text, {
+      onEnd: () => {
+        const next = afterParagraphEnd(spoken, { run: runId, index: state.index, playing: state.playing });
+        if (next === 'ignore') return;
+        if (next === 'finish') {
+          storyFinished();
+          return;
+        }
+        state.index = next;
         readCurrent(myId);
-      } else {
-        storyFinished();
-      }
-    },
-    onError: (info) => {
-      if (myId !== runId) return;
-      state.playing = false;
-      renderPlayButton();
-      if (info && info.audioUnavailable) showMessage('storyTime.audioUnavailable');
-    },
-  });
+      },
+      onError: (info) => {
+        if (myId !== runId) return;
+        state.playing = false;
+        renderPlayButton();
+        if (info && info.audioUnavailable) showMessage('storyTime.audioUnavailable');
+      },
+    });
+  }, SPEAK_AFTER_STOP_MS);
 }
 
 function pause() {
-  runId += 1;
+  runId += 1; // every end event of the reading so far is now ignored
+  clearTimeout(speakTimer);
   speechOutput.stop();
   state.playing = false;
   renderPlayButton();
@@ -320,16 +336,19 @@ function goTo(index, andPlay = false) {
   if (wasPlaying || andPlay) play();
 }
 
-playButton.addEventListener('click', () => (state.playing ? pause() : play()));
-previousButton.addEventListener('click', () => goTo(state.index - 1));
-nextButton.addEventListener('click', () => {
-  if (state.index >= PARAGRAPHS - 1) {
+// Next / Back: exactly one paragraph from the highlighted one (reading, paused or stopped).
+function step(delta, andPlay = false) {
+  if (delta > 0 && state.index >= PARAGRAPHS - 1) {
     pause();
     storyFinished(); // Next on the last paragraph ends the story
     return;
   }
-  goTo(state.index + 1);
-});
+  goTo(stepParagraph(state.index, delta), andPlay);
+}
+
+playButton.addEventListener('click', () => (state.playing ? pause() : play()));
+previousButton.addEventListener('click', () => step(-1));
+nextButton.addEventListener('click', () => step(1));
 listButton.addEventListener('click', () => showList());
 
 // ---------- Voice commands: next, back, stop ----------
@@ -350,10 +369,9 @@ function handleCommand(text) {
     stop: parseWords(t('storyTime.stopWords')),
   });
   if (command === 'next') {
-    if (state.index >= PARAGRAPHS - 1) storyFinished();
-    else goTo(state.index + 1, true);
+    step(1, true);
   } else if (command === 'back') {
-    goTo(state.index - 1, true);
+    step(-1, true);
   } else if (command === 'stop') {
     pause();
   } else {
@@ -390,6 +408,20 @@ function changeFont(delta) {
 
 smallerButton.addEventListener('click', () => changeFont(-1));
 biggerButton.addEventListener('click', () => changeFont(1));
+
+// ---------- Room for the control bar ----------
+
+// The control bar sticks to the bottom of the screen. Its height (it grows with a message or a
+// second row of buttons) is given to CSS, which adds that much space under the story, so every
+// line can be scrolled above the bar.
+const controlsEl = document.querySelector('.story-controls');
+function measureControls() {
+  const height = Math.ceil(controlsEl.getBoundingClientRect().height);
+  document.documentElement.style.setProperty('--story-bar-height', `${height}px`);
+}
+if (typeof ResizeObserver === 'function') new ResizeObserver(measureControls).observe(controlsEl);
+window.addEventListener('resize', measureControls);
+measureControls();
 
 // ---------- Start ----------
 

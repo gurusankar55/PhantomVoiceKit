@@ -111,7 +111,6 @@ describe('the recognizer strips the marks from interim and final text', () => {
       this.onresult({ results });
     }
   }
-  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
   beforeEach(() => {
     created = [];
@@ -123,10 +122,19 @@ describe('the recognizer strips the marks from interim and final text', () => {
 
   test('continuous listening: live text and the final text have no full stops', async () => {
     const seen = { results: [], interim: [] };
+    // Wait for the answer itself, not for a fixed 30 ms: when the whole suite runs, the test
+    // processes share the CPU and the fake's end event can come later than 30 ms.
+    let answered;
+    const answer = new Promise((resolve) => {
+      answered = resolve;
+    });
     const input = createSpeechInput({
       lang: 'ta-IN',
-      onResult: (text) => seen.results.push(text),
-      onError: () => {},
+      onResult: (text) => {
+        seen.results.push(text);
+        answered();
+      },
+      onError: () => answered(),
       onInterim: (text) => seen.interim.push(text),
     });
     const recognition = created[0];
@@ -136,7 +144,7 @@ describe('the recognizer strips the marks from interim and final text', () => {
     recognition.say(result('13.', true), result('05.', true), result('1987.', false));
     assert.deepEqual(seen.interim, ['13', '13 05', '13 05 1987']);
     input.finish();
-    await sleep(30);
+    await answer; // speech-input always answers: on the end event, or at the latest after 1.5 s
     assert.deepEqual(seen.results, ['13 05 1987']);
   });
 

@@ -77,7 +77,8 @@
 
 .docs-buttons {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  /* As many side by side as fit; whole words only, so a button may move to the next row */
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 8.5rem), 1fr));
   gap: var(--space-2);
 }
 
@@ -90,10 +91,4 @@
 .docs-delete {
   color: #ffd6dd;
   border-color: #ff6b86;
-}
-
-@media (min-width: 600px) {
-  .docs-buttons {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
 }

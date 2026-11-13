@@ -9,7 +9,7 @@ import { readFileSync } from 'node:fs';
 
 import { parseWords } from '../../skeleton/voice-commands.js';
 import {
-  STORIES, STORY_IDS, PARAGRAPHS, titleKey, paragraphKey, clampParagraph,
+  STORIES, STORY_IDS, PARAGRAPHS, titleKey, paragraphKey, clampParagraph, stepParagraph, afterParagraphEnd,
   PROGRESS_KEY, emptyProgress, cleanProgress, loadProgress, saveProgress, atParagraph, finishStory,
   FONT_STEPS, clampFontStep, fontScale, storyCommand,
 } from '../../apps/story-time/story-utils.js';
@@ -42,6 +42,14 @@ describe('the 6 stories in all 20 languages', () => {
     assert.equal(STORIES.length, 6);
     assert.equal(new Set(STORY_IDS).size, 6);
     for (const story of STORIES) assert.ok(story.emoji.length > 0, story.id);
+  });
+
+  test('every emoji is one plain picture (no joined sequences that Windows shows as a box)', () => {
+    for (const story of STORIES) {
+      assert.ok(!story.emoji.includes('\u200D'), `${story.id} uses a zero-width joiner`);
+      assert.equal([...story.emoji.replace(/\uFE0F/g, '')].length, 1, story.id);
+    }
+    assert.equal(STORIES.find((s) => s.id === 'crow').emoji, '🐦');
   });
 
   test('every title and all 8 paragraphs exist and are not empty in every locale', () => {
@@ -84,6 +92,51 @@ describe('clampParagraph', () => {
     assert.equal(clampParagraph(-1), 0);
     assert.equal(clampParagraph(99), 7);
     assert.equal(clampParagraph('x'), 0);
+  });
+});
+
+describe('Next and Back move exactly one paragraph', () => {
+  test('one step from the highlighted paragraph, stopping at the first and last', () => {
+    assert.equal(stepParagraph(0, 1), 1);
+    assert.equal(stepParagraph(3, 1), 4);
+    assert.equal(stepParagraph(3, -1), 2);
+    assert.equal(stepParagraph(0, -1), 0);
+    assert.equal(stepParagraph(7, 1), 7);
+  });
+
+  test('never more than one step, whatever the delta (100 runs)', () => {
+    fc.assert(fc.property(fc.integer({ min: 0, max: 7 }), fc.integer({ min: -50, max: 50 }), (index, delta) => {
+      const next = stepParagraph(index, delta);
+      return Math.abs(next - index) <= 1 && next >= 0 && next < PARAGRAPHS;
+    }), { numRuns: 100 });
+  });
+
+  test('the end of the paragraph being read moves on by one', () => {
+    assert.equal(afterParagraphEnd({ run: 4, index: 0 }, { run: 4, index: 0, playing: true }), 1);
+    assert.equal(afterParagraphEnd({ run: 4, index: 7 }, { run: 4, index: 7, playing: true }), 'finish');
+  });
+
+  test('a late end event after Pause, Next or Back is ignored', () => {
+    // Paused: the run changed and nothing is playing.
+    assert.equal(afterParagraphEnd({ run: 4, index: 0 }, { run: 5, index: 0, playing: false }), 'ignore');
+    // Paused and then Next: the highlighted paragraph is now 1; the old end must not make it 2.
+    assert.equal(afterParagraphEnd({ run: 4, index: 0 }, { run: 6, index: 1, playing: false }), 'ignore');
+    // Next while reading: a new run reads paragraph 1; the end of the old paragraph 0 is ignored.
+    assert.equal(afterParagraphEnd({ run: 4, index: 0 }, { run: 6, index: 1, playing: true }), 'ignore');
+    // Same run, but the position was moved: ignored too.
+    assert.equal(afterParagraphEnd({ run: 4, index: 0 }, { run: 4, index: 1, playing: true }), 'ignore');
+    assert.equal(afterParagraphEnd(null, { run: 1, index: 0, playing: true }), 'ignore');
+  });
+
+  test('Pause, Next, then the old end event: exactly one step in total', () => {
+    // A small model of the reader: the same rules app.js uses.
+    const reader = { run: 1, index: 0, playing: true };
+    const spoken = { run: reader.run, index: reader.index }; // paragraph 1 is being read
+    reader.run += 1; reader.playing = false; // Pause
+    reader.run += 1; reader.index = stepParagraph(reader.index, 1); // Next
+    const late = afterParagraphEnd(spoken, reader); // the browser reports the old end late
+    if (typeof late === 'number') reader.index = late;
+    assert.equal(reader.index, 1);
   });
 });
 
@@ -187,6 +240,41 @@ describe('storyCommand', () => {
     assert.equal(storyCommand(''), null);
     assert.equal(storyCommand('   '), null);
     assert.equal(storyCommand('elephant banana'), null);
+  });
+});
+
+describe('button words are never broken', () => {
+  const css = (file) => readFileSync(new URL(`../../${file}`, import.meta.url), 'utf8');
+  // The body of the first rule for `selector` ("sel {" or the start of a list "sel,").
+  const rule = (text, selector) => {
+    const start = text.indexOf(`${selector} {`) >= 0 ? text.indexOf(`${selector} {`) : text.indexOf(`${selector},`);
+    assert.ok(start >= 0, selector);
+    return text.slice(text.indexOf('{', start), text.indexOf('}', start));
+  };
+
+  test('the theme turns off breaking inside words for every button', () => {
+    const body = rule(css('skeleton/theme.css'), '.btn');
+    assert.match(body, /overflow-wrap:\s*normal/);
+    assert.match(body, /word-break:\s*normal/);
+  });
+
+  test('no app style lets a button break anywhere inside a word', () => {
+    for (const app of ['picture-book', 'pumpkin-math', 'story-time', 'ghost-echo', 'ghost-tutor', 'my-documents', 'voice-notes', 'spirit-clerk', 'form-translator', 'sticker-book']) {
+      const text = css(`apps/${app}/style.css`);
+      for (const m of text.matchAll(/([^{}]+)\{([^}]*)\}/g)) {
+        const selector = m[1].trim();
+        // Button-like selectors only (".story-play", "button", ".topic-chip"; not ".dual-display").
+        if (/(^|[\s,.#>-])(btn|button|chip|choice|key|step|play)(?![\w])/.test(selector)) {
+          assert.ok(!/overflow-wrap:\s*anywhere|word-break:\s*break-all/.test(m[2]), `${app}: ${selector}`);
+        }
+      }
+    }
+  });
+
+  test('Picture book buttons go to a new row instead of squeezing', () => {
+    const text = css('apps/picture-book/style.css');
+    assert.match(rule(text, '.book-actions'), /auto-fit/);
+    assert.match(rule(text, '.book-nav'), /auto-fit/);
   });
 });
 

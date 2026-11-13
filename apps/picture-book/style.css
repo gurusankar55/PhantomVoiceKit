@@ -92,14 +92,16 @@
   display: none;
 }
 
-/* Big buttons */
+/* Big buttons: as many side by side as fit at 12rem each, else they go to the next row
+   (a long word like "சொல்லுங்கள்" is never split). */
 .book-actions {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
   gap: var(--space-2);
 }
 
 .book-actions .btn {
+  flex-wrap: wrap;
   gap: 0.5rem;
   min-height: 64px;
   font-size: 1.35rem;
@@ -124,11 +126,12 @@
 
 .book-nav {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 8rem), 1fr));
   gap: var(--space-2);
 }
 
 .book-step {
+  flex-wrap: wrap;
   gap: 0.4rem;
   min-height: 56px;
   font-size: 1.15rem;
@@ -175,12 +178,6 @@
 .book-select {
   min-height: var(--touch-min);
   font: inherit;
-}
-
-@media (min-width: 600px) {
-  .book-actions {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

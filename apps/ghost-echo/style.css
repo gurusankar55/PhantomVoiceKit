@@ -291,6 +291,16 @@
 .echo-choice .echo-emoji {
   font-size: 2.6rem;
 }
+/* The word under the picture: a little smaller on narrow screens so a whole word fits a third
+   of the screen (words are never broken in the middle). */
+.echo-choice {
+  min-width: 0;
+  padding-inline: var(--space-1);
+}
+.echo-choice .echo-word {
+  max-width: 100%;
+  font-size: clamp(0.8rem, 3.4vw, 1rem);
+}
 
 /* ---------- Result ---------- */
 .echo-result-text {

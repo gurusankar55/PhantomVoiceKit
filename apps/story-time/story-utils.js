@@ -8,7 +8,7 @@ import { normalizeSpeech, closeness } from '../../skeleton/word-match.js';
 export const PARAGRAPHS = 8;
 export const STORIES = Object.freeze([
   { id: 'lion', emoji: '🦁' },
-  { id: 'crow', emoji: '🐦‍⬛' },
+  { id: 'crow', emoji: '🐦' }, // plain bird: the black-bird sequence shows as a box on Windows
   { id: 'ant', emoji: '🐜' },
   { id: 'tortoise', emoji: '🐢' },
   { id: 'woodcutter', emoji: '🪓' },
@@ -31,6 +31,27 @@ export function clampParagraph(index) {
   const n = Math.floor(Number(index));
   if (!Number.isFinite(n) || n < 0) return 0;
   return Math.min(PARAGRAPHS - 1, n);
+}
+
+/**
+ * The paragraph one step away from `index`: delta +1 is Next, -1 is Back.
+ * Always exactly one step (or none at the first / last paragraph), never more.
+ */
+export function stepParagraph(index, delta) {
+  const step = Math.sign(Number(delta) || 0);
+  return clampParagraph(clampParagraph(index) + step);
+}
+
+/**
+ * The voice says it finished reading a paragraph. What now?
+ * `spoken` is { run, index } of the paragraph that was read; `now` is { run, index, playing }.
+ * Returns 'ignore' for an old or stray end event (after Pause, Next, Back or a new start),
+ * 'finish' after the last paragraph, or the number of the next paragraph.
+ */
+export function afterParagraphEnd(spoken, now) {
+  if (!spoken || !now) return 'ignore';
+  if (spoken.run !== now.run || !now.playing || spoken.index !== now.index) return 'ignore';
+  return spoken.index >= PARAGRAPHS - 1 ? 'finish' : spoken.index + 1;
 }
 
 // ---------- Where the reader stopped ----------
