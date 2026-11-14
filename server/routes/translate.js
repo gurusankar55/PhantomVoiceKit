@@ -5,6 +5,7 @@
 
 import { Router } from 'express';
 import { FIELD_KINDS, isValidPattern } from '../../skeleton/field-formats.js';
+import { callChecked, countGluedLatin, hasOwnScript } from '../script-check.js';
 
 // Factory: receives callGemini so tests can pass a fake function.
 export function createTranslateRouter(callGemini) {
@@ -21,7 +22,14 @@ export function createTranslateRouter(callGemini) {
         return res.status(400).json({ error: 'invalid_input' });
       }
       try {
-        const result = await callGemini({ prompt: buildListPrompt(items, targetLang) });
+        // Every label and alias is checked for Latin letters glued into words (one stricter retry).
+        const result = await callChecked(
+          callGemini,
+          buildListPrompt(items, targetLang),
+          (r) => r.translations.reduce((sum, e) => sum + countGluedLatin([typeof e === 'string' ? e : e?.label, ...(Array.isArray(e?.aliases) ? e.aliases : [])].join(' '), targetLang), 0),
+          (r) => Array.isArray(r?.translations),
+          targetLang
+        );
         const raw = Array.isArray(result?.translations) ? result.translations : [];
         const translations = items.map((_, i) => {
           const entry = raw[i];
@@ -55,11 +63,24 @@ export function createTranslateRouter(callGemini) {
       }
       try {
         if (style === 'detect') {
-          const result = await callGemini({ prompt: buildDetectPrompt(text, mine) });
+          const result = await callChecked(
+            callGemini,
+            buildDetectPrompt(text, mine),
+            (r) => countGluedLatin(r.translation, mine),
+            (r) => typeof r?.translation === 'string',
+            mine
+          );
           const translation = typeof result?.translation === 'string' ? result.translation.trim() : '';
           return res.json({ translation, sourceLang: cleanLangCode(typeof result?.language === 'string' ? result.language : '') });
         }
-        const result = await callGemini({ prompt: buildReplyPrompt(text, sender, mine, hint) });
+        // The replies are in the sender's language, their meanings in mine: both are checked.
+        const result = await callChecked(
+          callGemini,
+          buildReplyPrompt(text, sender, mine, hint),
+          (r) => r.replies.reduce((sum, e) => sum + countGluedLatin(e?.reply, sender) + countGluedLatin(e?.meaning, mine), 0),
+          (r) => Array.isArray(r?.replies),
+          hasOwnScript(sender) ? sender : mine
+        );
         const replies = cleanReplyList(result?.replies);
         if (replies.length === 0) return res.status(502).json({ error: 'gemini_error' });
         return res.json({ replies });
@@ -99,7 +120,11 @@ export function createTranslateRouter(callGemini) {
       : buildTranslatePrompt(text, targetLang);
 
     try {
-      const result = await callGemini({ prompt });
+      // A form answer becomes English (Latin letters): nothing to check. Every other answer is in
+      // the target language and is checked for Latin letters glued into its words.
+      const result = wantsValue
+        ? await callGemini({ prompt })
+        : await callChecked(callGemini, prompt, (r) => countGluedLatin(r.translation, targetLang), (r) => typeof r?.translation === 'string', targetLang);
       if (wantsValue) {
         // value is optional: the browser falls back to cleaning the translation itself.
         const value = typeof result.value === 'string' ? result.value.trim() : '';

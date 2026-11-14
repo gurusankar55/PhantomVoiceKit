@@ -944,3 +944,7 @@ The server console gets one line per page: `[translate-layout] ta-IN received=6 
 - `/api/translate` styles: `detect` (`{ text, targetLang }` -> `{ translation, sourceLang }`, cached like every translation) and `reply` (`{ text, sourceLang, targetLang, hint? }` -> `{ replies: [{ reply, meaning }] }`, not cached, so new replies can be asked for). Only real language codes go into the prompts (`cleanLangCode`); text max 2000, hint max 300. `buildDetectPrompt`, `buildReplyPrompt`, `cleanReplyList`.
 - `api-client.js`: `detectMessage`, `writeReplies`.
 - The page: `speakIfWanted()` is the only automatic voice; typing in the text box updates one history entry instead of adding one per pause; a newer request waits until the current result is shown.
+
+## Hidden helpers and script check (Requirement 51)
+- theme.css section 11: one shared helper rule with !important sizes (element rules such as input[type="file"] used to win by specificity).
+- `server/script-check.js`: `countGluedLatin(text, lang)` (a Latin letter followed by a combining mark; Latin inside or at the end of a word of the target script; only the first rule for Chinese and Japanese), `strictPrefix(lang)`, `callChecked(callGemini, prompt, measure, usable, lang)`. Used for list, normal, transliterate, everyday, detect and reply answers (not for form answers, which are English).

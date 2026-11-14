@@ -80,20 +80,8 @@
   min-width: 0;
 }
 
-/* Visually hidden but still focusable and readable by screen readers
-   (do NOT use display:none, it would remove it from the keyboard order) */
-.file-input-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  padding: 0;
-  border: 0;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
+/* The file input is visually hidden by the shared .file-input-hidden rule (theme.css,
+   section 11): zero-size, still focusable, opened by its label. */
 
 /* Our own translated button (a label that opens the hidden input) */
 .file-picker-button {

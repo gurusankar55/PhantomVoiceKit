@@ -409,16 +409,29 @@ textarea {
 }
 
 /* ---------- 11. Utilities ---------- */
-.visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  padding: 0;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
+/* Visually hidden helpers: invisible and zero-size, but still read by screen readers, and still
+   focusable (a hidden file input still opens through its <label>). Never display:none.
+   !important on purpose: element rules such as input[type="file"] { width: 100%; padding; border;
+   min-height } are more specific than one class, and once made the hidden file input 371 px wide,
+   so the page scrolled sideways on a phone. */
+.visually-hidden,
+.pvk-sr-only,
+.file-input-hidden,
+.nav-lang .language-label {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: 1px !important;
+  max-height: 1px !important;
+  margin: -1px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  overflow: hidden !important;
+  clip: rect(0 0 0 0) !important;
+  clip-path: inset(50%) !important;
+  white-space: nowrap !important;
 }
 
 [hidden] {
@@ -550,18 +563,7 @@ textarea {
   min-width: 7rem;
 }
 
-/* Keep the label for screen readers but do not show it in the bar */
-.nav-lang .language-label {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  padding: 0;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
+/* The language label stays for screen readers but is not shown in the bar (section 11) */
 
 /* Slide-in drawer (hidden and unreachable while closed) */
 .nav-drawer {
@@ -993,18 +995,7 @@ html.large-text .nav-lang .language-select {
   max-width: none;
 }
 
-/* Text only for screen readers */
-.pvk-sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  padding: 0;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
+/* Text only for screen readers: .pvk-sr-only (the shared rule in section 11) */
 
 /* Reduced motion: a soft glow around the screen instead of moving pieces */
 .pvk-glow {

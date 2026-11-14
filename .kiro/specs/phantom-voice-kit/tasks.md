@@ -638,3 +638,6 @@ Build the Phantom Voice Kit from the ground up: project scaffolding → Express 
 - [x] 44. Voice Translator: silent by default, automatic translation, Message helper (Requirement 50)
   - Tests: tests/unit/messageHelper.test.js (settings, request keys, replies, "detect" and "reply" with a fake Gemini and the cache, api-client, strings)
   - One real Gemini check of the "reply" style (Spanish message, Tamil hint)
+
+- [x] 45. Fix sideways scroll from the hidden file input; retry on Latin letters glued into words (Requirement 51)
+  - Tests: tests/unit/hiddenHelpers.test.js (a small CSS cascade: every helper at most 1 px), tests/unit/scriptCheck.test.js (the real "வரவேற்ப Leukிறேன்" example, every style)
