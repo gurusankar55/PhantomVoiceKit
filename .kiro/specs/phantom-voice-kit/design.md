@@ -931,3 +931,10 @@ The server console gets one line per page: `[translate-layout] ta-IN received=6 
 
 ## Large text (Requirement 46)
 - `skeleton/text-size.js` (key `phantomVoiceKit.largeText`, class `html.large-text`), applied in `initI18n()` before `i18n-ready`; theme.css: `html.large-text { font-size: 125%; --touch-min: 55px }`; the header bar wraps.
+
+## Home categories and guides (Requirements 47-48)
+- `skeleton/home-utils.js`: `APP_AUDIENCE`, `FILTERS`, `isVisible`, `loadFilter` / `saveFilter` (key `phantomVoiceKit.homeFilter`), `DEMO_VIDEO_URL`, `demoUrl`.
+- `skeleton/guide-utils.js`: `GUIDES` (per app: steps with target selectors), `guideSteps`, `hasSeen` / `markSeen` (key `phantomVoiceKit.guidesSeen`), `pickTarget`, `placeBubble`. `skeleton/guide.js` builds the button after `main h1` and the overlay (ring with a wide plain shadow, finger, bubble); `nav-menu.js` calls `setupGuide(current)`.
+
+## Deploy (Requirement 49)
+- `GET /healthz` -> `{ ok: true }`; `render.yaml` (runtime node, plan free, npm install / npm start, healthCheckPath /healthz, secrets with `sync: false`).

@@ -245,10 +245,13 @@ describe('storyCommand', () => {
 
 describe('button words are never broken', () => {
   const css = (file) => readFileSync(new URL(`../../${file}`, import.meta.url), 'utf8');
-  // The body of the first rule for `selector` ("sel {" or the start of a list "sel,").
+  // The body of the first rule that starts a line with `selector` ("sel {" or a list "sel,"),
+  // so ".x .btn {" is never mistaken for ".btn {".
   const rule = (text, selector) => {
-    const start = text.indexOf(`${selector} {`) >= 0 ? text.indexOf(`${selector} {`) : text.indexOf(`${selector},`);
-    assert.ok(start >= 0, selector);
+    const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const match = new RegExp(`(^|\\n)${escaped}\\s*[{,]`).exec(text);
+    assert.ok(match, selector);
+    const start = match.index;
     return text.slice(text.indexOf('{', start), text.indexOf('}', start));
   };
 

@@ -629,3 +629,14 @@ Phantom Voice Kit is a reusable skeleton for voice-first web applications with a
 
 ### Requirement 46: Large text mode
 1. An "Aa" toggle in the header SHALL scale text and buttons by about 125 % in every app, be remembered in localStorage, be applied before the page is shown, work in RTL, and never cause horizontal scrolling on a 320 px phone.
+
+### Requirement 47: Home categories and demo
+1. "Who is it for?" SHALL include children. Filter chips All / For children / For adults / For everyone SHALL show the matching Home cards (children: Memory game, Picture book, Pumpkin math, Story time, Sticker book; adults: Fill a form, Translate a form, Voice Translator, My documents, Voice notes; everyone: Learn by speaking, Calm Ghost); the chosen chip is remembered.
+2. A "Watch the 2-minute demo" link SHALL open DEMO_VIDEO_URL (https only) in a new tab and stay hidden while it is empty.
+
+### Requirement 48: "How to use" guides
+1. Every app page SHALL have a "▶ How to use" button that opens a 3 or 4 step walkthrough: the real button of each step is highlighted, an animated finger taps it, and the step is shown and read aloud in the chosen language, with Skip / Next / Done. It opens by itself once on the first visit to each app. Reduced motion stops the animation.
+
+### Requirement 49: Ready for submission
+1. The server listens on process.env.PORT and answers GET /healthz; package.json names the Node version; render.yaml describes a free Render web service with GEMINI_API_KEY and GEMINI_MODELS set only in the dashboard.
+2. .gitignore covers .env, node_modules and temp files; LICENSE is MIT by Sankar D; the README is the final version for judges.

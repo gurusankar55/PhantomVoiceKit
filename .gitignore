@@ -3,5 +3,22 @@ node_modules/
 
 # Secrets (never commit your real API key)
 .env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+
+# Temporary working files (scripts and notes starting with an underscore)
+_*.txt
+_*.mjs
+_*.ps1
+_*.html
+_*.md
+
+# Editor and system files
+.DS_Store
+Thumbs.db
 
 # NOTE: .kiro/ is intentionally NOT ignored

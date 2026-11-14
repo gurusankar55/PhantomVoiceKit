@@ -204,6 +204,20 @@
         box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), inset 0 -4px 0 rgba(0, 0, 0, 0.25), 0 12px 0 rgba(8, 3, 20, 0.4), 0 20px 30px rgba(0, 0, 0, 0.45);
       }
     }
+    /* Filter chips above the cards: they wrap on a narrow phone */
+    .app-filters { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-3); }
+    .app-filter {
+      flex: 1 1 8rem;
+      min-height: 52px;
+      color: var(--color-ghost);
+      background-color: var(--color-surface);
+      border-color: var(--color-border);
+      border-radius: 999px;
+    }
+    .app-filter:hover { color: var(--color-ghost); background-color: var(--color-bg-alt); }
+    .app-filter[aria-pressed="true"] { color: #1a0f2e; background-color: var(--color-orange); border-color: var(--color-orange-dark); }
+    .app-card[hidden] { display: none; }
+    .demo-btn { gap: var(--space-2); }
     .app-icon { display: block; width: 4.5rem; height: 4.5rem; }
     .app-icon .app-icon-3d { width: 100%; height: 100%; }
     .app-name { margin: var(--space-2) 0 0; font-size: 1.75rem; }
@@ -245,8 +259,13 @@
 
     /* ---------- Tablet and up ---------- */
     @media (min-width: 720px) {
-      .who-grid { grid-template-columns: repeat(3, 1fr); }
+      .who-grid { grid-template-columns: repeat(2, 1fr); }
       .who-card { flex-direction: column; text-align: center; }
+    }
+
+    /* Four "who" cards in one row on a large screen */
+    @media (min-width: 1000px) {
+      .who-grid { grid-template-columns: repeat(4, 1fr); }
     }
 
     /* ---------- Reduced motion: stop every animation ---------- */
@@ -345,6 +364,11 @@
         </svg>
         <span id="welcome-label" data-i18n="home.hearWelcome">Hear welcome</span>
       </button>
+      <!-- Shown only when DEMO_VIDEO_URL in skeleton/home-utils.js is filled in -->
+      <a id="demo-link" class="btn btn--large btn--secondary demo-btn" target="_blank" rel="noopener noreferrer" hidden>
+        <span aria-hidden="true">▶</span>
+        <span data-i18n="home.watchDemo">Watch the 2-minute demo</span>
+      </a>
       <!-- Shown only when this browser has no voice for the chosen language -->
       <p id="welcome-text" class="welcome-text" hidden></p>
     </section>
@@ -395,14 +419,33 @@
           </span>
           <p data-i18n="home.who3">People who find reading or typing hard.</p>
         </li>
+        <li class="who-card">
+          <span class="who-icon" aria-hidden="true">
+            <!-- A child with a balloon -->
+            <svg viewBox="0 0 24 24" focusable="false">
+              <circle cx="9" cy="7" r="2.6" />
+              <path d="M5.5 21l1-6.5L9 12l2.5 2.5 1 6.5M6.5 14.5H11.5" />
+              <ellipse cx="18" cy="6.5" rx="3" ry="3.6" />
+              <path d="M18 10.1l-0.6 1.2 0.6 0.4M17.7 11.6C16 14 13 13 11.5 14.5" />
+            </svg>
+          </span>
+          <p data-i18n="home.who4">Children who are learning words, numbers and stories.</p>
+        </li>
       </ul>
     </section>
 
     <!-- ===== The apps ===== -->
     <section aria-labelledby="apps-title">
       <h2 id="apps-title" data-i18n="home.chooseApp">Choose an app</h2>
+      <!-- Filter chips: who the apps are for (the choice is remembered) -->
+      <div id="app-filters" class="app-filters" role="group" data-i18n-attr="aria-label:home.filterLabel" aria-label="Show apps for">
+        <button type="button" class="app-filter" data-filter="all" aria-pressed="true" data-i18n="home.filterAll">All</button>
+        <button type="button" class="app-filter" data-filter="children" aria-pressed="false" data-i18n="home.filterChildren">For children</button>
+        <button type="button" class="app-filter" data-filter="adults" aria-pressed="false" data-i18n="home.filterAdults">For adults</button>
+        <button type="button" class="app-filter" data-filter="everyone" aria-pressed="false" data-i18n="home.filterEveryone">For everyone</button>
+      </div>
       <div class="app-grid">
-        <article class="app-card" aria-labelledby="spirit-name">
+        <article class="app-card" data-app="spirit-clerk" aria-labelledby="spirit-name">
           <span class="app-icon" data-app-icon="spirit-clerk" aria-hidden="true"></span>
           <h3 id="spirit-name" class="app-name" data-i18n="home.spiritClerk">Fill a form by speaking</h3>
           <p class="brand-sub" lang="en" dir="ltr">Spirit Clerk · Voice Form Filler</p>
@@ -412,7 +455,7 @@
           </a>
         </article>
 
-        <article class="app-card" aria-labelledby="ghost-name">
+        <article class="app-card" data-app="ghost-tutor" aria-labelledby="ghost-name">
           <span class="app-icon" data-app-icon="ghost-tutor" aria-hidden="true"></span>
           <h3 id="ghost-name" class="app-name" data-i18n="home.ghostTutor">Learn by speaking</h3>
           <p class="brand-sub" lang="en" dir="ltr">Ghost Tutor · Voice Teacher</p>
@@ -422,7 +465,7 @@
           </a>
         </article>
 
-        <article class="app-card" aria-labelledby="lens-name">
+        <article class="app-card" data-app="form-translator" aria-labelledby="lens-name">
           <span class="app-icon" data-app-icon="form-translator" aria-hidden="true"></span>
           <h3 id="lens-name" class="app-name" data-i18n="home.formTranslator">Translate a form</h3>
           <p class="brand-sub" lang="en" dir="ltr">Phantom Lens · Form Translator</p>
@@ -432,7 +475,7 @@
           </a>
         </article>
 
-        <article class="app-card" aria-labelledby="echo-name">
+        <article class="app-card" data-app="ghost-echo" aria-labelledby="echo-name">
           <span class="app-icon" data-app-icon="ghost-echo" aria-hidden="true"></span>
           <h3 id="echo-name" class="app-name" data-i18n="home.ghostEcho">Memory game</h3>
           <p class="brand-sub" lang="en" dir="ltr">Ghost Echo · Voice Memory Game</p>
@@ -442,7 +485,7 @@
           </a>
         </article>
 
-        <article class="app-card" aria-labelledby="docs-name">
+        <article class="app-card" data-app="my-documents" aria-labelledby="docs-name">
           <span class="app-icon" data-app-icon="my-documents" aria-hidden="true"></span>
           <h3 id="docs-name" class="app-name" data-i18n="home.myDocuments">My documents</h3>
           <p class="app-desc" data-i18n="home.myDocumentsHint">Your PDFs, kept on this device</p>
@@ -451,7 +494,7 @@
           </a>
         </article>
 
-        <article class="app-card" aria-labelledby="notes-name">
+        <article class="app-card" data-app="voice-notes" aria-labelledby="notes-name">
           <span class="app-icon" data-app-icon="voice-notes" aria-hidden="true"></span>
           <h3 id="notes-name" class="app-name" data-i18n="home.voiceNotes">Voice notes</h3>
           <p class="app-desc" data-i18n="home.voiceNotesHint">Speak or type notes and hear them again</p>
@@ -460,7 +503,7 @@
           </a>
         </article>
 
-        <article class="app-card" aria-labelledby="book-name">
+        <article class="app-card" data-app="picture-book" aria-labelledby="book-name">
           <span class="app-icon" data-app-icon="picture-book" aria-hidden="true"></span>
           <h3 id="book-name" class="app-name" data-i18n="home.pictureBook">Picture book</h3>
           <p class="brand-sub" lang="en" dir="ltr">Picture Book · Talking Words</p>
@@ -470,7 +513,7 @@
           </a>
         </article>
 
-        <article class="app-card" aria-labelledby="math-name">
+        <article class="app-card" data-app="pumpkin-math" aria-labelledby="math-name">
           <span class="app-icon" data-app-icon="pumpkin-math" aria-hidden="true"></span>
           <h3 id="math-name" class="app-name" data-i18n="home.pumpkinMath">Pumpkin math</h3>
           <p class="brand-sub" lang="en" dir="ltr">Pumpkin Math · Count and Add</p>
@@ -480,7 +523,7 @@
           </a>
         </article>
 
-        <article class="app-card" aria-labelledby="story-name">
+        <article class="app-card" data-app="story-time" aria-labelledby="story-name">
           <span class="app-icon" data-app-icon="story-time" aria-hidden="true"></span>
           <h3 id="story-name" class="app-name" data-i18n="home.storyTime">Story time</h3>
           <p class="brand-sub" lang="en" dir="ltr">Story Time · Read Aloud</p>
@@ -489,8 +532,16 @@
             <span data-i18n="home.start">Start</span>
           </a>
         </article>
+        <article class="app-card" data-app="sticker-book" aria-labelledby="sticker-name">
+          <span class="app-icon" data-app-icon="sticker-book" aria-hidden="true"></span>
+          <h3 id="sticker-name" class="app-name" data-i18n="home.stickerBook">Sticker book</h3>
+          <p class="app-desc" data-i18n="home.stickerBookHint">The stickers you won in the games</p>
+          <a class="btn btn--large app-start" href="/apps/sticker-book/index.html" aria-describedby="sticker-name">
+            <span data-i18n="home.open">Open</span>
+          </a>
+        </article>
 
-        <article class="app-card" aria-labelledby="calm-name">
+        <article class="app-card" data-app="calm-time" aria-labelledby="calm-name">
           <span class="app-icon" data-app-icon="calm-time" aria-hidden="true"></span>
           <h3 id="calm-name" class="app-name" data-i18n="home.calmTime">Calm time</h3>
           <p class="brand-sub" lang="en" dir="ltr">Calm Ghost · Meditation and Routine</p>
@@ -500,7 +551,7 @@
           </a>
         </article>
 
-        <article class="app-card" aria-labelledby="talk-name">
+        <article class="app-card" data-app="voice-translator" aria-labelledby="talk-name">
           <span class="app-icon" data-app-icon="voice-translator" aria-hidden="true"></span>
           <h3 id="talk-name" class="app-name" data-i18n="home.voiceTranslator">Speak and translate</h3>
           <p class="brand-sub" lang="en" dir="ltr">Phantom Talk · Voice Translator</p>
@@ -533,6 +584,7 @@
     import { createSpeechOutput } from '/skeleton/speech-output.js';
     import { initI18n, t, setI18nText } from '/skeleton/i18n.js';
     import { createAppIcon } from '/skeleton/app-icons.js';
+    import { isVisible, loadFilter, saveFilter, demoUrl } from '/skeleton/home-utils.js';
 
     // Load the saved language first so the menu is built in that language.
     await initI18n();
@@ -571,6 +623,35 @@
       current: 'home',
       showBack: false,
     });
+
+    // ---------- Filter chips: All / For children / For adults / For everyone ----------
+    function homeStorage() {
+      try {
+        return window.localStorage;
+      } catch {
+        return null;
+      }
+    }
+    const chips = [...document.querySelectorAll('.app-filter')];
+    function showFilter(filter) {
+      for (const chip of chips) chip.setAttribute('aria-pressed', String(chip.dataset.filter === filter));
+      for (const card of document.querySelectorAll('.app-card[data-app]')) card.hidden = !isVisible(card.dataset.app, filter);
+    }
+    for (const chip of chips) {
+      chip.addEventListener('click', () => {
+        saveFilter(homeStorage(), chip.dataset.filter);
+        showFilter(chip.dataset.filter);
+      });
+    }
+    showFilter(loadFilter(homeStorage()));
+
+    // ---------- "Watch the 2-minute demo" (hidden until DEMO_VIDEO_URL is filled in) ----------
+    const demoLink = document.getElementById('demo-link');
+    const demo = demoUrl();
+    if (demo) {
+      demoLink.href = demo;
+      demoLink.hidden = false;
+    }
 
     // ---------- Strip of language names (each in its own script) ----------
     for (const id of ['lang-list-1', 'lang-list-2']) {

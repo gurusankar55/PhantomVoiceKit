@@ -14,7 +14,7 @@
   'use strict';
 
   // Change this when the precache list changes: old caches are then deleted.
-  var VERSION = 'pvk-v1';
+  var VERSION = 'pvk-v2';
   var CACHE_NAME = VERSION + '-shell';
   var OFFLINE_PAGE = '/skeleton/pwa/offline.html';
 
@@ -23,7 +23,7 @@
   // The shared skeleton: every page needs these.
   var SKELETON = [
     'api-client.js', 'app-icons.js', 'celebrate-utils.js', 'celebrate.js', 'digits.js', 'documents-store.js',
-    'documents-utils.js', 'dual-display.js', 'field-formats.js', 'form-overlay-utils.js', 'form-overlay.js',
+    'documents-utils.js', 'dual-display.js', 'field-formats.js', 'form-overlay-utils.js', 'form-overlay.js', 'guide-utils.js', 'guide.js', 'home-utils.js',
     'i18n.js', 'inline-confirm.js', 'language-dropdown.js', 'language-store.js', 'nav-menu.js', 'number-words.js',
     'page-images-utils.js', 'page-images.js', 'picture-words.js', 'pwa-client.js', 'speech-input.js',
     'speech-output-utils.js', 'speech-output.js', 'speech-utils.js', 'spoken-numbers.js', 'stickers.js',

@@ -1,10 +1,14 @@
 {
   "name": "phantom-voice-kit",
   "version": "1.0.0",
-  "description": "Reusable skeleton for voice-first web apps (Spirit Clerk and Ghost Tutor).",
+  "description": "A reusable skeleton for voice-first web apps in 20 languages, with 12 apps built on it (forms, learning, translation, games, stories, calm).",
   "type": "module",
   "license": "MIT",
+  "author": "Sankar D",
   "private": true,
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
     "start": "node server/index.js",
     "test": "node --test"

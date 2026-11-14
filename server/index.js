@@ -28,6 +28,12 @@ app.use(express.json({ limit: '15mb' }));
 // so server/, .env and other private files are never exposed.
 app.get('/', (req, res) => res.sendFile(path.join(ROOT, 'index.html')));
 
+// Health check for the host (Render): answers at once, never calls Gemini, shows no settings.
+app.get('/healthz', (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  res.json({ ok: true });
+});
+
 // Installable app (PWA). The service worker must be served from the root to cover the whole site;
 // both files live in skeleton/pwa and are sent one by one (no static folder at the root).
 app.get('/sw.js', (req, res) => {

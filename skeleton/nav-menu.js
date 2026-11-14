@@ -10,6 +10,7 @@ import { setI18nText, setI18nAttr } from './i18n.js';
 import { createRewardsBar } from './celebrate.js';
 import { createAppIcon } from './app-icons.js';
 import { isLargeText, setLargeText } from './text-size.js';
+import { setupGuide } from './guide.js';
 import { registerServiceWorker, onInstallAvailable, promptInstall, onConnectionChange, needsInternet } from './pwa-client.js';
 
 // ---------------------------------------------------------------------------
@@ -171,6 +172,9 @@ export function createNavMenu(
 
   // The installable app: the service worker keeps the app shell for offline use.
   registerServiceWorker();
+
+  // "▶ How to use" under the app title (opens by itself on the first visit to each app).
+  setupGuide(current);
 
   // --- Drawer and overlay --------------------------------------------------
   const drawer = document.createElement('nav');

@@ -260,7 +260,7 @@ describe('one 3D icon per entry', () => {
 
   test('every Home card shows the icon of the app it opens', () => {
     const cards = [...HOME.matchAll(/data-app-icon="([\w-]+)"[\s\S]*?href="\/apps\/([\w-]+)\//g)];
-    assert.equal(cards.length, 11);
+    assert.equal(cards.length, 12);
     for (const [, icon, app] of cards) assert.equal(icon, app);
   });
 

@@ -629,3 +629,8 @@ Build the Phantom Voice Kit from the ground up: project scaffolding → Express 
   - Tests: tests/unit/pwa.test.js (manifest, PNG icons, never /api, precache list, server routes)
 - [x] 40. Large text mode (Requirement 46)
   - Tests: tests/unit/pwa.test.js (storage, class, 125 %, no fixed width over 320 px)
+
+- [x] 41. Home categories, children in "Who is it for?", demo link (Requirement 47)
+- [x] 42. "How to use" walkthrough on every app (Requirement 48)
+- [x] 43. Render deploy, LICENSE, final README (Requirement 49)
+  - Tests: tests/unit/submission.test.js

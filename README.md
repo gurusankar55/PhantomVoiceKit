@@ -1,133 +1,99 @@
 # Phantom Voice Kit
 
-A reusable skeleton for voice-first web apps, with a spooky ghost / Halloween theme. Built for the Kiroween 2026 Skeleton Crew category.
+A reusable skeleton for voice-first web apps, with a soft 3D ghost / Halloween look, and 12 apps built on it. Entry for the **Kiroween 2026 Skeleton Crew** category.
 
-It is made for people who cannot easily read or type English forms. The whole interface is translated into 20 languages (Arabic and Urdu are right-to-left). Every step can be done by voice, and a text box is always available as a fallback.
+It is made for people who cannot easily read or type English: older people, people working far from home, people who find reading or typing hard, and children who are still learning. Every screen is translated into **20 languages** (Arabic and Urdu are right-to-left), every step can be done by voice, and typing or tapping always works too.
 
-Supported languages: English, Tamil, Hindi, Telugu, Kannada, Malayalam, Korean, Chinese, Japanese, Spanish, French, Arabic, Portuguese, Russian, Bengali, Urdu, Indonesian, German, Vietnamese, Turkish.
+Languages: English, Tamil, Hindi, Telugu, Kannada, Malayalam, Korean, Chinese, Japanese, Spanish, French, Arabic, Portuguese, Russian, Bengali, Urdu, Indonesian, German, Vietnamese, Turkish.
 
-The project has a shared **skeleton/** (speech input and output, language dropdown, dual display, text fallback, theme, API client, translations, rewards) and these apps, all reachable from the Home screen and the menu:
+## The skeleton
 
-| App | Folder | What it does | Uses Gemini |
-| --- | --- | --- | --- |
-| Spirit Clerk | `apps/spirit-clerk` | Fill in any form by speaking, get a filled PDF | Yes |
-| Ghost Tutor | `apps/ghost-tutor` | Learn a topic in 4 spoken segments with quizzes | Yes |
-| Phantom Lens (Form Translator) | `apps/form-translator` | See a form in your own language | Yes |
-| Ghost Echo | `apps/ghost-echo` | Memory game: remember the pictures and say them back | No |
-| Sticker book | `apps/sticker-book` | The stickers you have won in the games | No |
-| My documents | `apps/my-documents` | Your filled PDFs, kept on this device | No |
-| Voice notes | `apps/voice-notes` | Speak or type notes and hear them again | No |
-| Picture book | `apps/picture-book` | 60 big pictures; hear the word, say it back, optionally in a second language too | No |
-| Pumpkin math | `apps/pumpkin-math` | Counting, adding and taking away with pumpkins, 5 levels, answer by tap or voice | No |
-| Story time | `apps/story-time` | 6 kind stories read aloud paragraph by paragraph, remembers where you stopped | No |
-| Calm Ghost (Calm time) | `apps/calm-time` | Meditation with a bell and breathing circle, activity timer, daily routine with reminders | No |
-| Phantom Talk (Voice Translator) | `apps/voice-translator` | Speak or type, hear a natural translation in any of the 20 languages; two-person conversation mode | Yes |
+`skeleton/` holds every shared module, and apps import it by absolute path (`/skeleton/...`), never by copying:
 
-The language you choose is remembered on this device, so every app and every new tab opens in it.
+- speech input (one phrase, or continuous like a voice message with a Done button) and speech output with the best voice per language
+- translations (`i18n.js`, 20 locale files with identical keys), the language picker and a remembered language
+- the shared header: menu with a 3D tile and icon per app, Back, coins, sound on/off, **Aa** large text, language
+- the "How to use" walkthrough, rewards (coins, level-up, gift box, sticker book), the theme, the API client
+- the installable app (manifest, service worker, offline page)
 
-## Prerequisites
+A step-by-step guide for building a new app on it is in [skeleton/README.md](skeleton/README.md).
 
-- Node.js 20 or newer (includes npm)
-- A Gemini API key from [Google AI Studio](https://aistudio.google.com/)
-- **Microsoft Edge (recommended).** Edge has Tamil and many other "Online (Natural)" voices. Google Chrome also works, but has no Tamil voice on Windows.
+## The 12 apps
 
-## Setup (Windows PowerShell)
+| App | Folder | For | What it does | Needs internet |
+| --- | --- | --- | --- | --- |
+| Spirit Clerk (Fill a form by speaking) | `apps/spirit-clerk` | Adults | Upload a form (PDF or photo); each field is asked aloud in your language; get a filled PDF | Yes |
+| Phantom Lens (Translate a form) | `apps/form-translator` | Adults | See a form in your own language and hear it read aloud | Yes |
+| Phantom Talk (Voice Translator) | `apps/voice-translator` | Adults | Speak or type and hear a natural translation; two-person conversation mode on one phone | Yes |
+| My documents | `apps/my-documents` | Adults | Your filled PDFs, kept on this device | No |
+| Voice notes | `apps/voice-notes` | Adults | Speak or type notes and hear them again | No |
+| Ghost Tutor (Learn by speaking) | `apps/ghost-tutor` | Everyone | Any topic in 4 spoken parts with a quiz after each | Yes |
+| Calm Ghost (Calm time) | `apps/calm-time` | Everyone | Meditation with bell and breathing circle, activity timer, daily routine with calendar reminders | No |
+| Ghost Echo (Memory game) | `apps/ghost-echo` | Children | Remember the pictures and say them back in order | No |
+| Picture book | `apps/picture-book` | Children | 60 big pictures; hear the word, say it back, optionally in a second language | No |
+| Pumpkin math | `apps/pumpkin-math` | Children | Count, add and take away with pumpkins; 5 levels; answer by tap or voice | No |
+| Story time | `apps/story-time` | Children | 6 kind stories read aloud paragraph by paragraph | No |
+| Sticker book | `apps/sticker-book` | Children | The stickers won in all the games | No |
+
+On the Home screen, chips filter the cards: **All / For children / For adults / For everyone**, and the choice is remembered. Every app page has a **▶ How to use** button with a 3 or 4 step walkthrough: a finger taps the real buttons and each step is shown and read aloud in your language. It opens by itself once, the first time you open each app.
+
+Other shared features:
+
+- **Large text**: the Aa button makes everything about 125 % bigger in every app.
+- **Installable**: the kit installs like an app. The 8 apps without AI work offline; the 4 AI apps say clearly when they need the internet. `/api` answers are never cached.
+- **Rewards**: coins, level-ups and a gift box with stickers, shared by all the games.
+
+## How Kiro was used
+
+The whole project was built with Kiro, and the `.kiro` folder is committed on purpose.
+
+- **Spec** (`.kiro/specs/phantom-voice-kit/`): `requirements.md` (46 requirements with acceptance criteria), `design.md` (modules, data shapes, storage keys, the route factory pattern) and `tasks.md` (40 tasks, each with the tests that cover it). Every new feature started as a requirement and a task, and the spec was updated in the same commit as the code.
+- **Steering** (`.kiro/steering/`): `product.md` (who it is for, the 20 languages, the theme), `structure.md` (the one skeleton rule: shared code only in `/skeleton`, imported by absolute path) and `tech.md` (the stack, the security rules, the route factory pattern, testing with `node --test` and fast-check, never calling the real Gemini API in tests, PowerShell commands for Windows). These rules kept every change consistent with the rest of the kit.
+- **Hooks** (`.kiro/hooks/sync-locales.kiro.hook`): when `skeleton/locales/en.json` is saved, Kiro brings the other 19 locale files in line with it (new keys translated, removed keys deleted, placeholders kept). `tests/unit/locales.test.js` then checks that all 20 files have the same keys and placeholders.
+
+## Run it locally (Windows PowerShell)
+
+You need Node.js 20 or newer and a Gemini API key from [Google AI Studio](https://aistudio.google.com/). Microsoft Edge is recommended: it has Tamil and many other natural voices. Chrome also works, but it has no Tamil voice on Windows.
 
 ```powershell
-# 1. Install dependencies
 npm install
-
-# 2. Copy the example settings file
 Copy-Item .env.example .env
-
-# 3. Open .env and set GEMINI_API_KEY to your key
-notepad .env
-
-# 4. Start the server
+notepad .env        # set GEMINI_API_KEY (and optionally GEMINI_MODELS)
 npm start
 ```
 
-Then open http://localhost:3000 in Microsoft Edge.
-
-The `.env` file holds:
+Then open http://localhost:3000.
 
 | Variable | Meaning |
 | --- | --- |
-| `GEMINI_API_KEY` | Your Gemini API key. Stays on the server only. |
-| `GEMINI_MODELS` | Models to try in order, main first, for example `gemini-3.5-flash,gemini-3.5-flash-lite,gemini-3.1-flash-lite`. On HTTP 429 or 503 the next model is used. |
-| `PORT` | Server port. Default is `3000`. |
+| `GEMINI_API_KEY` | Your Gemini API key. It stays on the server only. |
+| `GEMINI_MODELS` | Models to try in order, for example `gemini-3.5-flash,gemini-3.5-flash-lite`. On HTTP 429 or 503 the next one is used. |
+| `PORT` | Server port. Default `3000`. |
 
-To run the automated tests:
+Tests (more than 1,250, run with `node --test`; they never call the real Gemini API):
 
 ```powershell
 npm test
 ```
 
-Tests never call the real Gemini API.
+## Deploy (Render, free tier)
 
-## Spirit Clerk
+The repository has a `render.yaml` Blueprint: one free Node web service with `npm install` as the build command, `npm start` as the start command and `/healthz` as the health check.
 
-Upload a form as a PDF or a photo. Spirit Clerk reads the fields, asks each question aloud in your language, and listens to your answer. You see what it heard next to the English meaning, then confirm or say it again. At the end you download a filled PDF summary in English.
+1. Push the repository to GitHub.
+2. In Render, choose **New > Blueprint** and pick the repository.
+3. When Render asks, enter `GEMINI_API_KEY` and `GEMINI_MODELS` in the dashboard. They are marked `sync: false`, so they are never stored in any file.
+4. Deploy. The server listens on Render's `PORT`, and Render's https address lets the app be installed.
 
-<!-- Screenshot placeholder: add docs/spirit-clerk.png and link it here -->
-![Spirit Clerk screenshot (coming soon)](docs/spirit-clerk.png)
-
-## Ghost Tutor
-
-Pick a topic, or type your own. Ghost Tutor explains it in 4 short segments. After each segment it asks a quiz question, listens to your answer, and gives spoken feedback.
-
-<!-- Screenshot placeholder: add docs/ghost-tutor.png and link it here -->
-![Ghost Tutor screenshot (coming soon)](docs/ghost-tutor.png)
-
-## Picture book, Pumpkin math and Story time
-
-These three work fully offline from the server's AI: all words, numbers and stories are written into the locale files in all 20 languages.
-
-- **Picture book**: the ghost says the word for each picture (animals, fruits, colours, numbers, body parts and more). Say it back or tap "I said it". Every 10 words opens a gift box. "Learn another language" also shows and speaks the word in a second language.
-- **Pumpkin math**: count the pumpkins, then add and take away. Answer with the number buttons (0 to 20) or say the number in your language. A wrong answer shows the pumpkins being counted one by one. 5 correct in a row moves you up a level.
-- **Story time**: pick a story; it is read aloud with the current paragraph highlighted. Use A- / A+ for text size, Pause / Resume, Back / Next, or the mic button and say next, back or stop. Finishing a story opens a gift box.
-
-## Calm Ghost
-
-Also fully offline from the AI: the calm phrases and messages are in the locale files in all 20 languages.
-
-- **Meditation**: 5, 10, 20 or 30 minutes. A big round countdown, a soft bell (made with Web Audio) at the start and the end, and an optional bell every 1 or 5 minutes. Optional spoken guidance ("breathe in", "relax your shoulders"…) with a breathing circle that grows and shrinks. Pause, Resume and Stop. The screen stays awake where the Wake Lock API exists.
-- **Activity timer**: walking, running, exercise, reading or your own name, for 15, 30, 45, 60 or any number of minutes. Spoken encouragement at halfway, with 5 minutes left and at the end.
-- **My day**: add items (activity, time, minutes, which days), tick them done, see today's list, the last 7 days and your streak of days with everything done. A finished session or tick gives coins; a full day gives a level-up and the gift box.
-- **Reminders**: "Add reminder" downloads an `.ics` calendar file with a repeating event at that time. Open it on your phone and the calendar app reminds you, even when this page is closed. While the page is open it also reminds you on the page and, if you allow it, with a browser notification.
-
-The timers are worked out from timestamps, so they stay right when the tab is hidden. A hidden tab may play the end bell a little late, because browsers slow down hidden pages.
-
-## Voice Translator (Phantom Talk)
-
-- **Translate**: choose From (your page language at first) and To (remembered). Speak (then tap Done) or type, and get one natural, everyday translation (not word by word) through `/api/translate`, using the same server cache as every other translation. The translation is shown large and read aloud in a voice of the target language. Copy (Clipboard API, with a fallback) shows "Copied"; Share uses the Web Share API and is hidden where it does not exist. ⇄ swaps the languages.
-- **Conversation**: "Me" and "Other person", each with a language picker and a big microphone in its own colour with the language name on it. The other person's words are recognised in their language, translated into mine, shown and read aloud; my reply goes the other way. Every chat bubble shows the original and the translation. "Turn the other side around" rotates the other person's half by 180°, so two people can share one phone across a table. Typing works on both sides too.
-- The last 30 translations are kept on this device (localStorage), each with Copy, Read aloud and Delete.
-
-## Installable app and offline use
-
-The kit is a Progressive Web App: `/manifest.webmanifest` (name, colours, 192 and 512 px icons, also maskable) and a service worker at `/sw.js`. Both files live in `skeleton/pwa/` and are served one by one; there is still no static folder at the repository root.
-
-- The service worker keeps the app shell (Home, the skeleton, the 20 translation files) and every app that needs no AI (Ghost Echo, Sticker book, My documents, Voice notes, Picture book, Pumpkin math, Story time, Calm time), so they work offline.
-- Apps that need Gemini (Spirit Clerk, Ghost Tutor, Form Translator, Voice Translator) show a clear "needs internet" message while offline. A page that was never opened shows a translated offline page.
-- `/api` responses are never cached.
-- When the browser offers it, an "Install app" button appears at the end of the menu.
-- The icons are drawn with plain Node: `node tools/make-icons.mjs` (no packages).
-
-Service workers need `https` or `localhost`.
-
-## Large text
-
-The **Aa** button in every header makes text and buttons about 125 % bigger in every app. The choice is remembered on this device, works in right-to-left languages, and on a 320 px phone the header and buttons wrap instead of scrolling sideways.
+A free service sleeps when nobody uses it, so the first visit after a pause can take about a minute.
 
 ## Privacy
 
-Nothing is saved on the server. Uploaded forms, answers, topics, lessons and the sentences you translate are only sent to Gemini to get a result, and are not stored in any file or database. Your chosen language, text size, game levels, story positions, daily routine, recent translations, documents and notes are kept only in this browser (localStorage / IndexedDB). Your API key stays in `.env` and is never sent to the browser.
-
-## Build your own voice app
-
-See [skeleton/README.md](skeleton/README.md) for a step-by-step guide and a list of every skeleton module.
+- Nothing is stored on the server. Forms, answers, topics and the sentences you translate are sent to Gemini only to get a result, and are not written to any file or database. The server logs only counts and short error codes.
+- The API key stays in the server's environment and is never sent to the browser.
+- Your language, text size, game levels, story positions, routine, recent translations, documents and notes stay in your own browser (localStorage / IndexedDB).
+- The server only serves `/skeleton`, `/apps`, the Home page, the manifest and the service worker; private files such as `server/` and `.env` are never served.
 
 ## License
 
-MIT 2026. See [LICENSE](LICENSE).
+MIT 2026, Sankar D. See [LICENSE](LICENSE).
