@@ -32,10 +32,59 @@
 }
 
 /* Translate | Conversation */
+/* Translate | Conversation | Message helper: side by side when they fit, else on two rows */
 .vt-modes {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 8rem), 1fr));
   gap: var(--space-2);
+}
+
+/* "Speak translations automatically" (off by default) */
+.vt-switch {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch-min);
+  font-weight: 700;
+}
+
+.vt-switch input {
+  flex-shrink: 0;
+  width: 1.6rem;
+  height: 1.6rem;
+}
+
+.vt-switch[hidden] {
+  display: none;
+}
+
+.vt-intro,
+.vt-count {
+  margin: 0;
+  color: var(--color-ghost-dim);
+}
+
+.vt-paste {
+  align-self: flex-start;
+  min-height: 52px;
+}
+
+.vt-result-text--medium {
+  font-size: 1.4rem;
+}
+
+/* Under each chat bubble: "Say it to them" (my replies) and Copy */
+.vt-bubble-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.vt-bubble-buttons .btn {
+  min-height: var(--touch-min);
+  padding-inline: var(--space-3);
+  font-size: 1rem;
 }
 
 .vt-mode {

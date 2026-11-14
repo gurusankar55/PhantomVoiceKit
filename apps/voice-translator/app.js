@@ -1,9 +1,13 @@
 // Voice Translator (Phantom Talk): speak or type, get a natural everyday translation into any of
-// the 20 languages, shown large and read aloud in the target voice, with Copy and Share.
+// the 20 languages, shown large, with Read aloud, Copy and Share. It translates by itself after
+// Done, when the target language changes and 1 s after typing stops.
 // Conversation mode: two people, one phone. Each has a big microphone in their own language;
-// every turn is translated into the other person's language, shown (original + translation)
-// and read aloud. "Turn around" rotates the other person's half so they can use it across a table.
-// The last 30 translations are kept on this device. One /api/translate call per turn (cached).
+// every turn is translated into the other person's language and shown (original + translation).
+// My reply has "Say it to them". "Turn around" rotates the other person's half.
+// Message helper: paste a WhatsApp / Telegram message, see what it means, and get a short
+// reply written in the sender's language.
+// Silent by default: nothing is read aloud unless the user taps a button (or switches on
+// "Speak translations automatically"). The last 30 translations are kept on this device.
 
 import { createLanguageDropdown, getCurrentLanguage, LANGUAGES } from '/skeleton/language-dropdown.js';
 import { createSpeechInput } from '/skeleton/speech-input.js';
@@ -11,8 +15,15 @@ import { createSpeechOutput } from '/skeleton/speech-output.js';
 import { createNavMenu } from '/skeleton/nav-menu.js';
 import { initI18n, t, setI18nText, clearI18n, loadStrings } from '/skeleton/i18n.js';
 import { parseWords } from '/skeleton/voice-commands.js';
-import { translateSpeech } from '/skeleton/api-client.js';
+import { translateSpeech, detectMessage, writeReplies } from '/skeleton/api-client.js';
 import {
+  AUTO_DELAY_MS,
+  MAX_HINT,
+  requestKey,
+  shouldTranslate,
+  detectedLanguage,
+  cleanReplies,
+  nextReplyIndex,
   cleanText,
   findLanguage,
   sameLanguage,
@@ -76,6 +87,33 @@ const el = {
   history: $('history'),
   historyEmpty: $('history-empty'),
   toast: $('toast'),
+  modeHelper: $('mode-helper'),
+  speakAutoRow: $('speak-auto-row'),
+  speakAuto: $('speak-auto'),
+  helperScreen: $('screen-helper'),
+  helperMessage: $('helper-message'),
+  paste: $('paste-button'),
+  helperWorking: $('helper-working'),
+  helperWorkingText: $('helper-working-text'),
+  helperMeaning: $('helper-meaning'),
+  helperMeaningText: $('helper-meaning-text'),
+  helperDetectFailed: $('helper-detect-failed'),
+  helperLang: $('helper-lang'),
+  hintInput: $('hint-input'),
+  hintMic: $('hint-mic'),
+  hintListening: $('hint-listening'),
+  hintDone: $('hint-done'),
+  replyButton: $('reply-button'),
+  replyCard: $('reply-card'),
+  replyLabel: $('reply-label'),
+  replyText: $('reply-text'),
+  replyMeaning: $('reply-meaning'),
+  replyCount: $('reply-count'),
+  meaningButton: $('meaning-button'),
+  meaningLabel: $('meaning-label'),
+  anotherButton: $('another-button'),
+  replyCopy: $('reply-copy'),
+  replyShare: $('reply-share'),
 };
 
 function storage() {
@@ -89,7 +127,20 @@ function storage() {
 const settings = loadSettings(storage(), LANGUAGES);
 let pageLanguage = getCurrentLanguage();
 const state = {
-  mode: settings.mode, // 'single' | 'chat'
+  mode: settings.mode, // 'single' | 'chat' | 'helper'
+  speakAuto: settings.speakAuto, // off by default: nothing is read aloud by itself
+  lastKey: '', // the last Translate request (the same one is never sent twice)
+  entryId: '', // the history entry of the text being typed ('' = the next one is new)
+  pending: false, // a newer text came while a translation was running
+  helper: {
+    lastKey: '', // the last message sent for "what it means"
+    sender: '', // the language of the received message ('' = not known yet)
+    replies: [], // [{ reply, meaning }]
+    index: 0, // the reply shown
+    showMeaning: false,
+    busy: false,
+    pending: false, // the message changed while it was being read
+  },
   from: pageLanguage.bcp47, // default: the page language
   to: settings.to || defaultTarget(pageLanguage.bcp47),
   me: pageLanguage.bcp47,
@@ -105,7 +156,7 @@ let voiceOff = false;
 let toastTimer = null;
 
 function store() {
-  saveSettings(storage(), { to: state.to, other: state.other, mode: state.mode }, LANGUAGES);
+  saveSettings(storage(), { to: state.to, other: state.other, mode: state.mode, speakAuto: state.speakAuto }, LANGUAGES);
 }
 
 const nameOf = (code) => findLanguage(code, LANGUAGES)?.native ?? code;
@@ -120,6 +171,8 @@ createLanguageDropdown(nav.languageEl, {
     if (state.me === pageLanguage.bcp47) state.me = lang.bcp47;
     pageLanguage = lang;
     renderAll();
+    // The meaning of a pasted message is shown in my language: show it in the new one.
+    if (messageText() !== '' && !el.helperMeaning.hidden) understandMessage({ auto: true });
   },
 });
 pageLanguage = getCurrentLanguage();
@@ -167,6 +220,7 @@ el.from.addEventListener('change', () => {
 el.to.addEventListener('change', () => {
   state.to = el.to.value;
   store();
+  translateSingle({ auto: true }); // a new target language: translate again at once
 });
 el.swap.addEventListener('click', () => {
   const swapped = swapLanguages({ from: state.from, to: state.to });
@@ -174,8 +228,24 @@ el.swap.addEventListener('click', () => {
   state.to = swapped.to;
   // The last translation becomes the new text to translate back.
   if (state.last) el.source.value = state.last.translation;
+  state.entryId = ''; // translating back is a new history entry
   store();
   renderSingle();
+  translateSingle({ auto: true });
+});
+
+// Typing: translate 1 second after the last key (the Translate button still works at once).
+let typingTimer = null;
+el.source.addEventListener('input', () => {
+  clearTimeout(typingTimer);
+  if (el.source.value.trim() === '') state.entryId = ''; // the next text is a new entry
+  typingTimer = setTimeout(() => translateSingle({ auto: true }), AUTO_DELAY_MS);
+});
+
+// Silent by default; "Speak translations automatically" brings back reading aloud by itself.
+el.speakAuto.addEventListener('change', () => {
+  state.speakAuto = el.speakAuto.checked;
+  store();
 });
 el.meSelect.addEventListener('change', () => {
   state.me = el.meSelect.value;
@@ -199,12 +269,16 @@ function setMode(mode) {
 function renderMode() {
   el.modeSingle.setAttribute('aria-pressed', String(state.mode === 'single'));
   el.modeChat.setAttribute('aria-pressed', String(state.mode === 'chat'));
+  el.modeHelper.setAttribute('aria-pressed', String(state.mode === 'helper'));
   el.single.hidden = state.mode !== 'single';
   el.chatScreen.hidden = state.mode !== 'chat';
+  el.helperScreen.hidden = state.mode !== 'helper';
+  el.speakAutoRow.hidden = state.mode === 'helper'; // the Message helper never speaks by itself
 }
 
 el.modeSingle.addEventListener('click', () => setMode('single'));
 el.modeChat.addEventListener('click', () => setMode('chat'));
+el.modeHelper.addEventListener('click', () => setMode('helper'));
 
 // ---------- Speech ----------
 
@@ -235,6 +309,10 @@ function createEngine() {
     },
     onInterim: (text) => {
       if (speechInput !== created || !state.listeningFor) return;
+      if (state.listeningFor === 'hint') {
+        el.hintInput.value = text; // the hint is shown in its own box while it is said
+        return;
+      }
       const live = state.listeningFor === 'single' ? el.live : el.chatLive;
       live.textContent = text;
       live.hidden = text === '';
@@ -249,6 +327,7 @@ function setVoiceOff(off) {
   el.speak.hidden = off || state.listeningFor === 'single';
   el.meMic.hidden = off;
   el.otherMic.hidden = off;
+  el.hintMic.hidden = off;
   if (off) showMessage('voiceTranslator.voiceOff'); // typing always works
 }
 
@@ -263,6 +342,9 @@ function setListening(target) {
   el.listening.hidden = target !== 'single';
   el.done.hidden = target !== 'single';
   el.speak.hidden = voiceOff || target === 'single';
+  el.hintListening.hidden = target !== 'hint';
+  el.hintDone.hidden = target !== 'hint';
+  el.hintMic.disabled = target !== '';
   if (target === '') {
     for (const live of [el.live, el.chatLive]) {
       live.hidden = true;
@@ -296,9 +378,12 @@ function handleHeard(text) {
   }
   if (target === 'single') {
     el.source.value = heard;
-    translateSingle();
+    state.entryId = ''; // something new was said: a new history entry
+    translateSingle({ auto: true }); // translated at once after Done
   } else if (target === 'me' || target === 'other') {
     takeTurn(target, heard);
+  } else if (target === 'hint') {
+    el.hintInput.value = heard.slice(0, MAX_HINT);
   }
 }
 
@@ -333,14 +418,20 @@ async function translateText(text, from, to) {
   return { translation };
 }
 
-function remember(entry) {
-  state.history = addEntry(state.history, {
-    id: `t${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`,
-    at: Date.now(),
-    ...entry,
-  });
+const newId = () => `t${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+
+// Keep a translation in the history. With an id, that entry is replaced (typing in the same
+// text box updates one entry instead of adding one per pause).
+function remember(entry, id = newId()) {
+  state.history = addEntry(state.history, { id, at: Date.now(), ...entry });
   if (!saveHistory(storage(), state.history)) showMessage('voiceTranslator.saveFailed');
   renderHistory();
+  return id;
+}
+
+// Read aloud by itself only when the user switched that on.
+function speakIfWanted(text, code) {
+  if (state.speakAuto) readAloud(text, code);
 }
 
 function renderBusy() {
@@ -348,30 +439,47 @@ function renderBusy() {
   el.translate.disabled = state.busy || state.listeningFor !== '';
 }
 
-async function translateSingle() {
+// Translate the text box. auto: started by itself (after Done, a new target language, or 1 s
+// after typing): it says nothing when the box is empty, and never sends the same request twice.
+async function translateSingle({ auto = false } = {}) {
+  clearTimeout(typingTimer);
   const text = cleanText(el.source.value);
   if (text === '') {
-    showMessage('voiceTranslator.emptyText');
-    el.source.focus();
+    if (!auto) {
+      showMessage('voiceTranslator.emptyText');
+      el.source.focus();
+    }
     return;
   }
-  if (state.busy) return;
+  if (state.listeningFor === 'single') return; // still listening: Done translates
+  const { from, to } = state;
+  const key = requestKey(text, from, to);
+  if (auto && !shouldTranslate(key, state.lastKey)) return;
+  if (state.busy) {
+    state.pending = true; // translate the newest text when this one is done
+    return;
+  }
   hideMessage();
   state.busy = true;
   renderBusy();
-  const { from, to } = state;
   const result = await translateText(text, from, to);
   state.busy = false;
   renderBusy();
+  // The text or the languages changed meanwhile: translate the newest version, but only after
+  // this result is handled, so results always appear in order.
+  const rerun = state.pending;
+  state.pending = false;
   if (result.error) {
     showMessage(errorKey(result.error));
-    return;
+  } else {
+    state.lastKey = key;
+    state.last = { text, translation: result.translation, from, to };
+    renderResult();
+    if (!auto) el.resultText.focus(); // never move the focus away from someone who is typing
+    speakIfWanted(result.translation, to);
+    state.entryId = remember({ from, to, text, translation: result.translation, speaker: '' }, state.entryId || newId());
   }
-  state.last = { text, translation: result.translation, from, to };
-  renderResult();
-  el.resultText.focus();
-  readAloud(result.translation, to);
-  remember({ from, to, text, translation: result.translation, speaker: '' });
+  if (rerun) translateSingle({ auto: true });
 }
 
 el.speak.addEventListener('click', () => listen('single', state.from));
@@ -477,7 +585,8 @@ for (const [form, input, side] of [[el.meForm, el.meInput, 'me'], [el.otherForm,
   });
 }
 
-// One turn: the speaker's words, translated into the other language, shown and read aloud.
+// One turn: the speaker's words, translated into the other language and shown as text.
+// Nothing is read aloud by itself (only with "Speak translations automatically" switched on).
 async function takeTurn(speaker, text) {
   const { from, to } = turnLanguages(speaker, state.me, state.other);
   hideMessage();
@@ -495,7 +604,7 @@ async function takeTurn(speaker, text) {
   const turn = { speaker, from, to, text, translation: result.translation };
   state.turns.push(turn);
   renderChat();
-  readAloud(result.translation, to);
+  speakIfWanted(result.translation, to);
   remember(turn);
 }
 
@@ -518,7 +627,34 @@ function renderChat() {
     translated.lang = turn.to;
     translated.dir = 'auto';
     translated.textContent = turn.translation;
-    item.append(who, original, translated);
+    // Silent: my reply is spoken to the other person only when I tap "Say it to them".
+    const buttons = document.createElement('div');
+    buttons.className = 'vt-bubble-buttons';
+    if (turn.speaker === 'me') {
+      const say = document.createElement('button');
+      say.type = 'button';
+      say.className = 'btn vt-say';
+      const icon = document.createElement('span');
+      icon.setAttribute('aria-hidden', 'true');
+      icon.textContent = '🔊';
+      const label = document.createElement('span');
+      label.textContent = t('voiceTranslator.sayIt');
+      say.append(icon, ' ', label);
+      say.addEventListener('click', () => readAloud(turn.translation, turn.to));
+      buttons.appendChild(say);
+    }
+    const copy = document.createElement('button');
+    copy.type = 'button';
+    copy.className = 'btn btn--secondary';
+    const copyIcon = document.createElement('span');
+    copyIcon.setAttribute('aria-hidden', 'true');
+    copyIcon.textContent = '📋';
+    const copyLabel = document.createElement('span');
+    copyLabel.textContent = t('voiceTranslator.copy');
+    copy.append(copyIcon, ' ', copyLabel);
+    copy.addEventListener('click', () => copyText(turn.translation));
+    buttons.appendChild(copy);
+    item.append(who, original, translated, buttons);
     el.chat.appendChild(item);
   }
   el.chat.lastElementChild?.scrollIntoView({ block: 'nearest' });
@@ -589,6 +725,201 @@ function renderHistory() {
   }
 }
 
+// ---------- Message helper: understand and answer a chat message ----------
+// Two Gemini calls at most per message: one for "what it means" (with the language found in
+// the same call) and one for the replies ("Another reply" first shows the other replies already
+// written). Nothing is read aloud in this tab.
+
+const MAX_MESSAGE = 2000;
+const myLang = () => pageLanguage.bcp47;
+const messageText = () => el.helperMessage.value.trim().slice(0, MAX_MESSAGE);
+
+function setHelperWorking(key) {
+  el.helperWorking.hidden = !key;
+  if (key) setI18nText(el.helperWorkingText, key);
+  else clearI18n(el.helperWorkingText);
+  el.replyButton.disabled = Boolean(key);
+  el.anotherButton.disabled = Boolean(key);
+}
+
+function fillHelperLang() {
+  fillSelect(el.helperLang, state.helper.sender);
+  // "—" while the language is not known: the user picks it.
+  const unknown = document.createElement('option');
+  unknown.value = '';
+  unknown.textContent = '—';
+  el.helperLang.prepend(unknown);
+  el.helperLang.value = state.helper.sender;
+}
+
+// "What it means": the language and the meaning in my language, in ONE call.
+let messageTimer = null;
+async function understandMessage({ auto = false } = {}) {
+  clearTimeout(messageTimer);
+  const text = messageText();
+  if (text === '') {
+    if (!auto) showMessage('voiceTranslator.emptyMessage');
+    return false;
+  }
+  const key = `${myLang()}|${text}`;
+  if (key === state.helper.lastKey) return true;
+  if (state.helper.busy) {
+    state.helper.pending = true; // the message changed while it was being read: read it again after
+    return false;
+  }
+  hideMessage();
+  state.helper.busy = true;
+  setHelperWorking('voiceTranslator.understanding');
+  const reply = await detectMessage({ text, targetLang: myLang() });
+  state.helper.busy = false;
+  setHelperWorking('');
+  el.helperMeaning.hidden = false;
+  const rerun = state.helper.pending;
+  state.helper.pending = false;
+  let ok = false;
+  if (reply.error) {
+    showMessage(errorKey(reply.error));
+    el.helperMeaningText.textContent = '';
+    el.helperDetectFailed.hidden = state.helper.sender !== '';
+  } else {
+    state.helper.lastKey = key;
+    state.helper.sender = detectedLanguage(reply.sourceLang, LANGUAGES);
+    el.helperMeaningText.textContent = translationOf(reply) || text;
+    el.helperMeaningText.lang = myLang();
+    el.helperDetectFailed.hidden = state.helper.sender !== '';
+    fillHelperLang();
+    ok = true;
+  }
+  if (rerun) return understandMessage({ auto: true });
+  return ok;
+}
+
+function resetReplies() {
+  state.helper.replies = [];
+  state.helper.index = 0;
+  state.helper.showMeaning = false;
+  el.replyCard.hidden = true;
+}
+
+el.helperMessage.addEventListener('input', () => {
+  clearTimeout(messageTimer);
+  state.helper.sender = ''; // a new message: its language is found again
+  resetReplies();
+  messageTimer = setTimeout(() => understandMessage({ auto: true }), AUTO_DELAY_MS);
+});
+
+el.helperLang.addEventListener('change', () => {
+  state.helper.sender = el.helperLang.value;
+  el.helperDetectFailed.hidden = state.helper.sender !== '';
+  resetReplies(); // the replies must be in the new language
+});
+
+// Paste (Clipboard API); typing or the phone's own paste always work too.
+el.paste.addEventListener('click', async () => {
+  try {
+    const text = await navigator.clipboard.readText();
+    if (text.trim() === '') throw new Error('empty');
+    el.helperMessage.value = text.slice(0, MAX_MESSAGE);
+    state.helper.sender = '';
+    resetReplies();
+    understandMessage({ auto: true });
+  } catch {
+    showMessage('voiceTranslator.pasteFailed');
+    el.helperMessage.focus();
+  }
+});
+
+// "Tell it what to say": typed or said in my language.
+el.hintMic.addEventListener('click', () => listen('hint', myLang()));
+el.hintDone.addEventListener('click', finishListening);
+
+// "Write a reply for me": 3 short replies in the sender's language, with their meanings.
+async function writeReply() {
+  if (state.helper.busy) return;
+  if (messageText() === '') {
+    showMessage('voiceTranslator.emptyMessage');
+    el.helperMessage.focus();
+    return;
+  }
+  if (!state.helper.sender) await understandMessage({ auto: true }); // finds the language first
+  const sender = state.helper.sender;
+  if (!sender) {
+    el.helperMeaning.hidden = false;
+    el.helperDetectFailed.hidden = false;
+    el.helperLang.focus();
+    return;
+  }
+  hideMessage();
+  state.helper.busy = true;
+  setHelperWorking('voiceTranslator.writing');
+  const reply = await writeReplies({ text: messageText(), senderLang: sender, myLang: myLang(), hint: el.hintInput.value.trim().slice(0, MAX_HINT) });
+  state.helper.busy = false;
+  setHelperWorking('');
+  const replies = cleanReplies(reply);
+  if (reply.error || replies.length === 0) {
+    showMessage(errorKey(reply.error || 'empty'));
+    return;
+  }
+  state.helper.replies = replies;
+  state.helper.index = 0;
+  state.helper.showMeaning = false;
+  renderReply();
+  el.replyText.setAttribute('tabindex', '-1');
+  el.replyText.focus();
+}
+
+function currentReply() {
+  return state.helper.replies[state.helper.index] ?? null;
+}
+
+function renderReply() {
+  const reply = currentReply();
+  el.replyCard.hidden = !reply;
+  if (!reply) return;
+  const sender = state.helper.sender;
+  setI18nText(el.replyLabel, 'voiceTranslator.replyIn', { language: nameOf(sender) });
+  el.replyText.textContent = reply.reply; // plain text, never HTML
+  el.replyText.lang = sender;
+  el.replyMeaning.textContent = reply.meaning;
+  el.replyMeaning.lang = myLang();
+  el.replyMeaning.hidden = !state.helper.showMeaning || reply.meaning === '';
+  el.meaningButton.hidden = reply.meaning === '';
+  el.meaningButton.setAttribute('aria-pressed', String(state.helper.showMeaning));
+  if (state.helper.showMeaning) setI18nText(el.meaningLabel, 'voiceTranslator.hideMeaning');
+  else setI18nText(el.meaningLabel, 'voiceTranslator.seeIn', { language: nameOf(myLang()) });
+  const total = state.helper.replies.length;
+  el.replyCount.hidden = total < 2;
+  setI18nText(el.replyCount, 'voiceTranslator.replyCount', { n: state.helper.index + 1, total });
+}
+
+el.replyButton.addEventListener('click', writeReply);
+el.meaningButton.addEventListener('click', () => {
+  state.helper.showMeaning = !state.helper.showMeaning; // no extra call: the meaning came with the reply
+  renderReply();
+});
+el.anotherButton.addEventListener('click', () => {
+  const next = nextReplyIndex(state.helper.index, state.helper.replies.length);
+  if (next === null) {
+    writeReply(); // all shown: write new ones
+    return;
+  }
+  state.helper.index = next;
+  renderReply();
+});
+el.replyCopy.addEventListener('click', () => {
+  const reply = currentReply();
+  if (reply) copyText(reply.reply);
+});
+el.replyShare.addEventListener('click', async () => {
+  const reply = currentReply();
+  if (!reply || !canShareText(navigator)) return;
+  try {
+    await navigator.share({ text: reply.reply });
+  } catch {
+    // the user closed the share sheet
+  }
+});
+
 // ---------- Start ----------
 
 function renderSingle() {
@@ -607,8 +938,13 @@ function renderAll() {
   renderChat();
   renderHistory();
   renderBusy();
+  fillHelperLang();
+  renderReply();
 }
 
 el.share.hidden = !canShareText(navigator);
+el.replyShare.hidden = !canShareText(navigator);
+el.paste.hidden = typeof navigator.clipboard?.readText !== 'function';
+el.speakAuto.checked = state.speakAuto;
 createEngine();
 renderAll();

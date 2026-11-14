@@ -640,3 +640,10 @@ Phantom Voice Kit is a reusable skeleton for voice-first web applications with a
 ### Requirement 49: Ready for submission
 1. The server listens on process.env.PORT and answers GET /healthz; package.json names the Node version; render.yaml describes a free Render web service with GEMINI_API_KEY and GEMINI_MODELS set only in the dashboard.
 2. .gitignore covers .env, node_modules and temp files; LICENSE is MIT by Sankar D; the README is the final version for judges.
+
+### Requirement 50: Voice Translator: silent by default, automatic translation, Message helper
+1. Nothing SHALL be read aloud automatically. In Conversation mode the other person's words appear in my language as text; my reply appears in their language with a "🔊 Say it to them" button that speaks only when tapped. Every chat bubble has Copy. A setting "Speak translations automatically" (off by default, remembered) brings back automatic reading.
+2. Translate mode SHALL translate by itself after Done, when the target language changes, and 1 s after typing stops; the Translate button stays. The same request is never sent twice, and the server cache is reused.
+3. A third tab "Message helper" (Tamil "செய்தி உதவி"): a "Paste the message you received" box with a Paste button (Clipboard API; typing works too). ONE call with style "detect" returns the language code and the meaning in my language; when the language is not found, the user picks it.
+4. "✨ Write a reply for me": ONE call with style "reply" returns 3 short, polite, natural replies IN the sender's language, each with its meaning in my language. An optional hint ("Tell it what to say"), typed or spoken in my language, becomes the meaning of the replies.
+5. The chosen reply is shown large with "👁 See it in <my language>" (shows or hides the meaning, no extra call), "🔄 Another reply" (the next reply already written, then new ones), Copy with a "Copied" toast, and Share (hidden when unsupported). Nothing is read aloud in this tab.

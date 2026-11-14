@@ -19,11 +19,18 @@
   <main id="app" class="vt">
     <h1 class="app-title"><span data-i18n="voiceTranslator.title">Speak and translate</span><span class="brand-sub" lang="en" dir="ltr">Phantom Talk · Voice Translator</span></h1>
 
-    <!-- The two ways of using it -->
+    <!-- The three ways of using it -->
     <div class="vt-modes" role="group" data-i18n-attr="aria-label:voiceTranslator.modeLabel" aria-label="How to translate">
       <button id="mode-single" type="button" class="vt-mode" aria-pressed="true" data-i18n="voiceTranslator.modeSingle">Translate</button>
       <button id="mode-chat" type="button" class="vt-mode" aria-pressed="false" data-i18n="voiceTranslator.modeChat">Conversation</button>
+      <button id="mode-helper" type="button" class="vt-mode" aria-pressed="false" data-i18n="voiceTranslator.modeHelper">Message helper</button>
     </div>
+
+    <!-- Silent by default: translations are only read aloud when the user taps a button -->
+    <label id="speak-auto-row" class="vt-switch">
+      <input id="speak-auto" type="checkbox" />
+      <span data-i18n="voiceTranslator.speakAuto">Speak translations automatically</span>
+    </label>
 
     <p id="message" class="vt-message" role="status" hidden></p>
 
@@ -109,6 +116,58 @@
         </form>
       </section>
       <p id="chat-live" class="vt-live" aria-live="polite" hidden></p>
+    </section>
+
+    <!-- ===== Message helper: understand and answer a chat message ===== -->
+    <section id="screen-helper" class="vt-screen" hidden>
+      <p class="vt-intro" data-i18n="voiceTranslator.helperIntro">Got a message in another language? Paste it here. I show what it means and help you reply.</p>
+      <div class="vt-field">
+        <label for="helper-message" data-i18n="voiceTranslator.messageLabel">Paste the message you received</label>
+        <textarea id="helper-message" maxlength="2000" dir="auto"></textarea>
+      </div>
+      <button id="paste-button" type="button" class="btn btn--secondary vt-paste"><span aria-hidden="true">📋</span> <span data-i18n="voiceTranslator.paste">Paste</span></button>
+      <p id="helper-working" class="vt-working" role="status" hidden><span class="spinner" aria-hidden="true"></span> <span id="helper-working-text"></span></p>
+
+      <!-- What the message means, in my language -->
+      <section id="helper-meaning" class="vt-result" aria-labelledby="helper-meaning-title" hidden>
+        <h2 id="helper-meaning-title" class="vt-result-label" data-i18n="voiceTranslator.meaningTitle">What it means</h2>
+        <p id="helper-meaning-text" class="vt-result-text vt-result-text--medium" dir="auto"></p>
+        <p id="helper-detect-failed" class="vt-message" role="status" data-i18n="voiceTranslator.detectFailed" hidden>I could not tell the language of this message. Please choose it.</p>
+        <div class="vt-field">
+          <label for="helper-lang" data-i18n="voiceTranslator.messageLanguage">Language of the message</label>
+          <select id="helper-lang"></select>
+        </div>
+      </section>
+
+      <!-- Optional: what the reply should say -->
+      <div class="vt-field">
+        <label for="hint-input" data-i18n="voiceTranslator.hintLabel">Tell it what to say (optional)</label>
+        <div class="vt-type">
+          <input id="hint-input" type="text" maxlength="300" dir="auto" autocomplete="off" />
+          <button id="hint-mic" type="button" class="btn btn--secondary" data-i18n-attr="aria-label:voiceTranslator.hintMic" aria-label="Say what the reply should say"><span aria-hidden="true">🎤</span></button>
+        </div>
+      </div>
+      <p id="hint-listening" class="listening-indicator" role="status" hidden>
+        <span class="listening-dot" aria-hidden="true"></span>
+        <span data-i18n="voiceTranslator.listening">Listening… tap Done when you finish.</span>
+      </p>
+      <button id="hint-done" type="button" class="btn vt-done" hidden><span aria-hidden="true">✓</span> <span data-i18n="voiceTranslator.done">Done</span></button>
+
+      <button id="reply-button" type="button" class="btn btn--large vt-big"><span aria-hidden="true">✨</span> <span data-i18n="voiceTranslator.writeReply">Write a reply for me</span></button>
+
+      <!-- The chosen reply, in the sender's language -->
+      <section id="reply-card" class="vt-result" aria-labelledby="reply-label" hidden>
+        <h2 id="reply-label" class="vt-result-label"></h2>
+        <p id="reply-text" class="vt-result-text" dir="auto"></p>
+        <p id="reply-meaning" class="vt-result-original" dir="auto" hidden></p>
+        <p id="reply-count" class="vt-count"></p>
+        <div class="vt-row">
+          <button id="meaning-button" type="button" class="btn btn--secondary" aria-pressed="false"><span aria-hidden="true">👁</span> <span id="meaning-label"></span></button>
+          <button id="another-button" type="button" class="btn btn--secondary"><span aria-hidden="true">🔄</span> <span data-i18n="voiceTranslator.anotherReply">Another reply</span></button>
+          <button id="reply-copy" type="button" class="btn"><span aria-hidden="true">📋</span> <span data-i18n="voiceTranslator.copy">Copy</span></button>
+          <button id="reply-share" type="button" class="btn btn--secondary" hidden><span aria-hidden="true">📤</span> <span data-i18n="voiceTranslator.share">Share</span></button>
+        </div>
+      </section>
     </section>
 
     <!-- ===== The last 30 translations ===== -->

@@ -53,11 +53,60 @@ export function turnLanguages(speaker, me, other) {
 
 // ---------- Settings ----------
 
-/** { to, me, other, mode } with valid codes only ('' = not chosen). */
+export const MODES = Object.freeze(['single', 'chat', 'helper']);
+
+/**
+ * { to, other, mode, speakAuto } with valid codes only ('' = not chosen).
+ * speakAuto: read translations aloud by themselves (off unless the user switched it on).
+ */
 export function cleanSettings(value, languages) {
   const pick = (code) => findLanguage(code, languages)?.bcp47 ?? '';
   const v = value && typeof value === 'object' ? value : {};
-  return { to: pick(v.to), other: pick(v.other), mode: v.mode === 'chat' ? 'chat' : 'single' };
+  return { to: pick(v.to), other: pick(v.other), mode: MODES.includes(v.mode) ? v.mode : 'single', speakAuto: v.speakAuto === true };
+}
+
+// ---------- Translating automatically ----------
+
+export const AUTO_DELAY_MS = 1000; // translate 1 s after typing stops
+
+/**
+ * The same request twice is never sent: the key of a request is its languages and text.
+ * Returns '' when there is nothing to translate.
+ */
+export function requestKey(text, from, to) {
+  const clean = cleanText(text);
+  return clean === '' ? '' : `${from}|${to}|${clean}`;
+}
+
+/** True when a new request should go out (there is text and it differs from the last one). */
+export function shouldTranslate(key, lastKey) {
+  return key !== '' && key !== lastKey;
+}
+
+// ---------- Message helper ----------
+
+export const MAX_HINT = 300;
+
+/** The language found by the server, if it is one of ours ('' otherwise: the user picks it). */
+export function detectedLanguage(code, languages) {
+  return findLanguage(code, languages)?.bcp47 ?? '';
+}
+
+/** The replies from /api/translate (style "reply") as a clean list of at most 3. */
+export function cleanReplies(reply) {
+  const list = Array.isArray(reply?.replies) ? reply.replies : [];
+  return list
+    .map((item) => ({ reply: String(item?.reply ?? '').trim(), meaning: String(item?.meaning ?? '').trim() }))
+    .filter((item) => item.reply !== '')
+    .slice(0, 3);
+}
+
+/**
+ * "Another reply": the next of the replies already written, or null after the last one
+ * (then new replies are asked for).
+ */
+export function nextReplyIndex(index, count) {
+  return index + 1 < count ? index + 1 : null;
 }
 
 export function loadSettings(storage, languages) {

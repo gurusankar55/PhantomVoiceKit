@@ -85,6 +85,21 @@ export function translateSpeech({ text, sourceLang, targetLang }) {
   return postJson('/api/translate', { text, sourceLang, targetLang, style: 'everyday' }, TIMEOUT_TRANSLATE_MS);
 }
 
+// Message helper: the language of a received message and its meaning in mine, in one call.
+// Reply: { translation, sourceLang } (sourceLang is '' when the language was not found).
+export function detectMessage({ text, targetLang }) {
+  return postJson('/api/translate', { text, targetLang, style: 'detect' }, TIMEOUT_TRANSLATE_MS);
+}
+
+// Message helper: 3 short replies to a message, in the sender's language, each with its meaning
+// in mine. hint (optional, in my language) is what the reply should say.
+// Reply: { replies: [{ reply, meaning }] }.
+export function writeReplies({ text, senderLang, myLang, hint = '' }) {
+  const body = { text, sourceLang: senderLang, targetLang: myLang, style: 'reply' };
+  if (hint) body.hint = hint;
+  return postJson('/api/translate', body, TIMEOUT_TRANSLATE_MS);
+}
+
 // Translate the options of a choice field in one call: { list: ['Male', ...], targetLang }.
 // The reply is { translations: [{ label, aliases }] } in the same order (aliases = other ways to say it).
 export function translateList({ list, targetLang }) {

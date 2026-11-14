@@ -81,12 +81,12 @@ describe('remembered settings', () => {
     const storage = memoryStorage();
     assert.equal(saveSettings(storage, { to: 'ja-JP', other: 'es', mode: 'chat' }, LANGUAGES), true);
     assert.ok(storage.data.has(SETTINGS_KEY));
-    assert.deepEqual(loadSettings(storage, LANGUAGES), { to: 'ja-JP', other: 'es-ES', mode: 'chat' });
+    assert.deepEqual(loadSettings(storage, LANGUAGES), { to: 'ja-JP', other: 'es-ES', mode: 'chat', speakAuto: false });
   });
 
   test('unknown codes and broken or blocked storage give empty settings', () => {
-    assert.deepEqual(cleanSettings({ to: 'klingon', mode: 'x' }, LANGUAGES), { to: '', other: '', mode: 'single' });
-    assert.deepEqual(loadSettings(blocked, LANGUAGES), { to: '', other: '', mode: 'single' });
+    assert.deepEqual(cleanSettings({ to: 'klingon', mode: 'x' }, LANGUAGES), { to: '', other: '', mode: 'single', speakAuto: false });
+    assert.deepEqual(loadSettings(blocked, LANGUAGES), { to: '', other: '', mode: 'single', speakAuto: false });
     assert.equal(saveSettings(blocked, {}, LANGUAGES), false);
   });
 });

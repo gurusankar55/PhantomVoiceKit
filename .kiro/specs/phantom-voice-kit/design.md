@@ -938,3 +938,9 @@ The server console gets one line per page: `[translate-layout] ta-IN received=6 
 
 ## Deploy (Requirement 49)
 - `GET /healthz` -> `{ ok: true }`; `render.yaml` (runtime node, plan free, npm install / npm start, healthCheckPath /healthz, secrets with `sync: false`).
+
+## Voice Translator, part 2 (Requirement 50)
+- `translator-utils.js`: settings `{ to, other, mode: 'single' | 'chat' | 'helper', speakAuto }`; `AUTO_DELAY_MS`, `requestKey` / `shouldTranslate` (no repeated request), `detectedLanguage`, `cleanReplies`, `nextReplyIndex`, `MAX_HINT`.
+- `/api/translate` styles: `detect` (`{ text, targetLang }` -> `{ translation, sourceLang }`, cached like every translation) and `reply` (`{ text, sourceLang, targetLang, hint? }` -> `{ replies: [{ reply, meaning }] }`, not cached, so new replies can be asked for). Only real language codes go into the prompts (`cleanLangCode`); text max 2000, hint max 300. `buildDetectPrompt`, `buildReplyPrompt`, `cleanReplyList`.
+- `api-client.js`: `detectMessage`, `writeReplies`.
+- The page: `speakIfWanted()` is the only automatic voice; typing in the text box updates one history entry instead of adding one per pause; a newer request waits until the current result is shown.

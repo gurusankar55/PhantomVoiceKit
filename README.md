@@ -24,7 +24,7 @@ A step-by-step guide for building a new app on it is in [skeleton/README.md](ske
 | --- | --- | --- | --- | --- |
 | Spirit Clerk (Fill a form by speaking) | `apps/spirit-clerk` | Adults | Upload a form (PDF or photo); each field is asked aloud in your language; get a filled PDF | Yes |
 | Phantom Lens (Translate a form) | `apps/form-translator` | Adults | See a form in your own language and hear it read aloud | Yes |
-| Phantom Talk (Voice Translator) | `apps/voice-translator` | Adults | Speak or type and hear a natural translation; two-person conversation mode on one phone | Yes |
+| Phantom Talk (Voice Translator) | `apps/voice-translator` | Adults | Speak or type for a natural translation (automatic, silent unless you tap 🔊); two-person conversation on one phone; Message helper that explains a WhatsApp / Telegram message and writes a polite reply in the sender's language | Yes |
 | My documents | `apps/my-documents` | Adults | Your filled PDFs, kept on this device | No |
 | Voice notes | `apps/voice-notes` | Adults | Speak or type notes and hear them again | No |
 | Ghost Tutor (Learn by speaking) | `apps/ghost-tutor` | Everyone | Any topic in 4 spoken parts with a quiz after each | Yes |

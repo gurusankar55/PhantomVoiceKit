@@ -44,6 +44,32 @@ export function createTranslateRouter(callGemini) {
       return res.status(400).json({ error: 'invalid_input' });
     }
 
+    // Message helper (Voice Translator): find the language of a received message and its meaning
+    // in mine, in ONE call; or write 3 short replies in the sender's language with their meanings.
+    if (style === 'detect' || style === 'reply') {
+      const mine = cleanLangCode(targetLang);
+      const sender = cleanLangCode(sourceLang);
+      const hint = typeof req.body.hint === 'string' ? req.body.hint.trim().slice(0, MAX_HINT_CHARS) : '';
+      if (mine === '' || text.length > MAX_EVERYDAY_CHARS || (style === 'reply' && sender === '')) {
+        return res.status(400).json({ error: 'invalid_input' });
+      }
+      try {
+        if (style === 'detect') {
+          const result = await callGemini({ prompt: buildDetectPrompt(text, mine) });
+          const translation = typeof result?.translation === 'string' ? result.translation.trim() : '';
+          return res.json({ translation, sourceLang: cleanLangCode(typeof result?.language === 'string' ? result.language : '') });
+        }
+        const result = await callGemini({ prompt: buildReplyPrompt(text, sender, mine, hint) });
+        const replies = cleanReplyList(result?.replies);
+        if (replies.length === 0) return res.status(502).json({ error: 'gemini_error' });
+        return res.json({ replies });
+      } catch (err) {
+        if (err && err.code === 'timeout') return res.status(504).json({ error: 'timeout' });
+        if (err && err.code === 'rate_limit') return res.status(429).json({ error: 'busy' });
+        return res.status(502).json({ error: 'gemini_error' });
+      }
+    }
+
     // targetLang must also be a non-empty string.
     if (typeof targetLang !== 'string' || targetLang.trim() === '') {
       return res.status(400).json({ error: 'invalid_input' });
@@ -154,6 +180,50 @@ export function cleanLangCode(value) {
   if (typeof value !== 'string') return '';
   const code = value.trim();
   return /^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8}){0,2}$/.test(code) ? code : '';
+}
+
+// Longest "tell it what to say" hint of the Message helper.
+export const MAX_HINT_CHARS = 300;
+
+// Message helper: the language of a received chat message and its meaning in my language.
+export function buildDetectPrompt(text, myLang) {
+  return (
+    'Someone received the chat message below (for example on WhatsApp or Telegram). ' +
+    'Find the language it is written in, and translate it into the language with BCP-47 code ' +
+    `"${myLang}" in natural, everyday words, keeping its meaning, tone, names, numbers and emoji. ` +
+    'Do not answer the message and do not explain. ' +
+    'Reply with JSON only, in exactly this shape: {"language": "<BCP-47 code of the message language, such as ta, hi, en, es>", "translation": "<the meaning>"}.\n\n' +
+    `Message:\n${text}`
+  );
+}
+
+// Message helper: 3 short, polite replies in the sender's language, each with its meaning in mine.
+export function buildReplyPrompt(text, senderLang, myLang, hint = '') {
+  return (
+    'Someone received the chat message below (for example on WhatsApp or Telegram) and wants to reply. ' +
+    `Write 3 different short replies, IN the language with BCP-47 code "${senderLang}" (the language of the message), ` +
+    'as a polite native speaker would really type them in a chat: natural, warm, 1 or 2 short sentences, no hashtags, ' +
+    'no quotation marks, no names unless the message has them. ' +
+    (hint
+      ? `The user wants the reply to say this (written in the language with BCP-47 code "${myLang}"): "${hint}". Every reply must keep that meaning. `
+      : 'Each reply must fit the message; make them a little different from each other (for example warm, short, more detailed). ') +
+    `For each reply also give its meaning in the language with BCP-47 code "${myLang}": ` +
+    'a faithful translation of that reply itself (not a copy of the hint), so the user can check exactly what it says. ' +
+    'Reply with JSON only, in exactly this shape: {"replies": [{"reply": "<the reply>", "meaning": "<its meaning>"}]}.\n\n' +
+    `Message:\n${text}`
+  );
+}
+
+// The replies from Gemini as a clean list: at most 3, each with text (anything else is dropped).
+export function cleanReplyList(raw) {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((item) => ({
+      reply: typeof item?.reply === 'string' ? item.reply.trim().slice(0, 600) : '',
+      meaning: typeof item?.meaning === 'string' ? item.meaning.trim().slice(0, 600) : '',
+    }))
+    .filter((item) => item.reply !== '')
+    .slice(0, 3);
 }
 
 // Voice Translator: natural, everyday spoken translation (not word by word).
