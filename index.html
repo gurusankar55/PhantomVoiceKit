@@ -367,7 +367,7 @@
       <!-- Shown only when DEMO_VIDEO_URL in skeleton/home-utils.js is filled in -->
       <a id="demo-link" class="btn btn--large btn--secondary demo-btn" target="_blank" rel="noopener noreferrer" hidden>
         <span aria-hidden="true">▶</span>
-        <span data-i18n="home.watchDemo">Watch the 2-minute demo</span>
+        <span data-i18n="home.watchDemo">Watch the demo video</span>
       </a>
       <!-- Shown only when this browser has no voice for the chosen language -->
       <p id="welcome-text" class="welcome-text" hidden></p>
@@ -645,7 +645,7 @@
     }
     showFilter(loadFilter(homeStorage()));
 
-    // ---------- "Watch the 2-minute demo" (hidden until DEMO_VIDEO_URL is filled in) ----------
+    // ---------- "Watch the demo video" (hidden while DEMO_VIDEO_URL is empty) ----------
     const demoLink = document.getElementById('demo-link');
     const demo = demoUrl();
     if (demo) {

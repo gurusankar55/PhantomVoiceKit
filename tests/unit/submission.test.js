@@ -73,9 +73,14 @@ describe('Home categories', () => {
 });
 
 describe('the demo video button', () => {
-  test('hidden while DEMO_VIDEO_URL is empty, opens in a new tab when filled', () => {
-    assert.equal(DEMO_VIDEO_URL, '');
-    assert.equal(demoUrl(), '');
+  test('the demo video link is set and opens in a new tab; an empty link hides the button', () => {
+    assert.equal(DEMO_VIDEO_URL, 'https://youtu.be/aEdtDj24_uc');
+    assert.equal(demoUrl(), 'https://youtu.be/aEdtDj24_uc');
+    assert.equal(demoUrl(''), '', 'empty: the button stays hidden');
+    assert.match(read('README.md'), /Demo video: https:\/\/youtu\.be\/aEdtDj24_uc/);
+    // The button text has no length any more ("2-minute" was removed in every language).
+    for (const code of LOCALES) assert.ok(!/\d/.test(STRINGS[code]['home.watchDemo']), code);
+    assert.equal(STRINGS.en['home.watchDemo'], 'Watch the demo video');
     assert.equal(demoUrl('https://youtu.be/abc'), 'https://youtu.be/abc');
     assert.equal(demoUrl('http://example.com'), '', 'only https');
     assert.equal(demoUrl('javascript:alert(1)'), '');

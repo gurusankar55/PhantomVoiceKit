@@ -1,5 +1,7 @@
 # Phantom Voice Kit
 
+Demo video: https://youtu.be/aEdtDj24_uc
+
 A reusable skeleton for voice-first web apps, with a soft 3D ghost / Halloween look, and 12 apps built on it. Entry for the **Kiroween 2026 Skeleton Crew** category.
 
 It is made for people who cannot easily read or type English: older people, people working far from home, people who find reading or typing hard, and children who are still learning. Every screen is translated into **20 languages** (Arabic and Urdu are right-to-left), every step can be done by voice, and typing or tapping always works too.
