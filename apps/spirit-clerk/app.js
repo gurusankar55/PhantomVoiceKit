@@ -11,7 +11,7 @@
 import { createLanguageDropdown, getCurrentLanguage } from '/skeleton/language-dropdown.js';
 import { createSpeechInput } from '/skeleton/speech-input.js';
 import { createSpeechOutput } from '/skeleton/speech-output.js';
-import { extractFields, translate, translateList } from '/skeleton/api-client.js';
+import { extractFields, translate, translateList, translateSpeech } from '/skeleton/api-client.js';
 import { pdfFilename, cleanLabel, finalAnswer, previousAnswerValue } from '/apps/spirit-clerk/form-utils.js';
 import { renderPageImages } from '/skeleton/page-images.js';
 import { MAX_PAGES, pdfPageSize, splitDataUrl } from '/skeleton/page-images-utils.js';
@@ -45,6 +45,10 @@ import {
   validationMessage,
   englishStep,
   acceptEnglish,
+  needsEnglishTranslation,
+  translateAnswer,
+  sameText,
+  isEnglishLang,
 } from '/apps/spirit-clerk/answer-flow.js';
 
 // Load the translations BEFORE the nav and language dropdown are created.
@@ -1030,8 +1034,8 @@ async function handleAnswerHeard(text) {
   busy = false;
   fillLoading.hidden = true;
   widget.setValue(result.text);
-  // Said in another language: the English value is shown under what was heard.
-  if (result.text && hasNonLatinLetters(heard)) {
+  // Said in another language (or translated): the English value is shown under what was heard.
+  if (result.text && (result.english || hasNonLatinLetters(heard))) {
     const shown = finalAnswer(widget.getValue(), currentFormat.kind);
     englishPreview = { source: shown, english: shown };
     renderEnglish();
@@ -1133,6 +1137,12 @@ async function interpretAnswer(heard, format) {
   const lang = state.language.bcp47;
   if (format.kind === 'checkbox' && lang === 'en-US') return { text: checkboxValue(heard) };
 
+  // A text or address answer on a non-English page is ALWAYS translated into English (style
+  // "everyday"), whatever script it was said in: Spanish "Calle Mayor 12, segundo piso, Madrid"
+  // too. When that fails, an answer in Latin letters is kept as it is, with no error.
+  const translated = await translateAnswer(heard, format, lang, translateSpeech);
+  if (translated) return translated.failed ? { text: '', unavailable: true } : { text: translated.text, english: true };
+
   // Numbers said as words ("மூணு ஒண்ணு") become digits before the text is cleaned.
   const prepared = NUMERIC_KINDS.includes(format.kind) ? numbersToDigits(heard, lang) : heard;
   const local = cleanByKind(prepared, format.kind, words, format.pattern);
@@ -1142,7 +1152,7 @@ async function interpretAnswer(heard, format) {
   const english = await toEnglish(heard, format);
   if (english !== null) return { text: english };
   // Gemini did not answer: an English speaker keeps the cleaned text; others type the English.
-  return lang === 'en-US' ? { text: local } : { text: '', unavailable: true };
+  return isEnglishLang(lang) ? { text: local } : { text: '', unavailable: true };
 }
 
 // The answer box has been filled by voice: show what is wrong, or offer "correct" / "wrong" by voice.
@@ -1209,7 +1219,7 @@ function doConfirm() {
 
   // An e-mail address is kept in lower case and a name in Title Case, whatever the user typed.
   const value = finalAnswer(widget.getValue(), currentFormat.kind);
-  const step = englishStep(value, englishPreview);
+  const step = englishStep(value, englishPreview, needsEnglishTranslation(currentFormat.kind, value, state.language.bcp47));
   if (step.action === 'convert') {
     convertBeforeKeeping(value);
     return;
@@ -1230,10 +1240,29 @@ async function convertBeforeKeeping(value) {
   fillLoading.hidden = false;
   clearFillMessage();
   updateButtons();
-  const english = await toEnglish(value, currentFormat);
-  if (myId !== askId) return; // question changed while waiting
-  busy = false;
-  fillLoading.hidden = true;
+  const lang = state.language.bcp47;
+  let english;
+  if (needsEnglishTranslation(currentFormat.kind, value, lang)) {
+    // A text or address answer of a non-English page: translated with style "everyday".
+    const translated = await translateAnswer(value, currentFormat, lang, translateSpeech);
+    if (myId !== askId) return; // question changed while waiting
+    busy = false;
+    fillLoading.hidden = true;
+    // Already English, or the translation failed for an answer in Latin letters: keep it now,
+    // with no second check and no error message.
+    if (!translated.failed && (!translated.translated || sameText(translated.text, value))) {
+      stopEverything();
+      storeAnswer(heardParts.join(' ').trim() || value, translated.translated ? translated.text : value, false);
+      advance();
+      return;
+    }
+    english = translated.failed ? null : translated.text;
+  } else {
+    english = await toEnglish(value, currentFormat);
+    if (myId !== askId) return; // question changed while waiting
+    busy = false;
+    fillLoading.hidden = true;
+  }
   if (english === null) {
     englishPreview = null;
     renderEnglish();

@@ -95,7 +95,63 @@ export function needsGemini(format, heardText, localValue, uiLang) {
   // Digits are cleaned on the device. Only when nothing could be read from the words (a number said in a way the tables do not know) Gemini helps.
   if (kind === 'number' || kind === 'phone') return String(localValue ?? '').trim() === '' && uiLang !== 'en-US' && String(heardText ?? '').trim() !== '';
   if (kind === 'code' || kind === 'email') return hasNonLatinLetters(localValue);
-  return uiLang !== 'en-US' && String(heardText ?? '').trim() !== '';
+  // A name is never translated: it is only transliterated when it is not in English letters.
+  if (kind === 'name') return hasNonLatinLetters(heardText);
+  return !isEnglishLang(uiLang) && String(heardText ?? '').trim() !== '';
+}
+
+// ---------------------------------------------------------------------------
+// Text and address answers on a non-English page: always translated into English
+// ---------------------------------------------------------------------------
+
+// Free-text kinds whose answer is translated (numbers, dates, phones, e-mails, codes, names,
+// choices and signatures never are).
+export const TRANSLATED_KINDS = Object.freeze(['text', 'address']);
+
+/**
+ * Must this answer be translated into English before it is kept? Yes for every text and address
+ * answer with letters when the page language is not English, whatever script it is written in:
+ * "Calle Mayor 12, segundo piso, Madrid" (Spanish, Latin letters) needs it as much as Tamil does.
+ * @param {string} kind
+ * @param {string} text
+ * @param {string} uiLang  BCP-47 code of the page language
+ */
+export function needsEnglishTranslation(kind, text, uiLang) {
+  return TRANSLATED_KINDS.includes(kind) && !isEnglishLang(uiLang) && /\p{L}/u.test(String(text ?? ''));
+}
+
+/**
+ * The English of a text or address answer: ONE /api/translate call (style "everyday", target
+ * English), the reply tidied for its kind. null when no translation is needed.
+ *   { text, translated: true }   the English value
+ *   { text, translated: false }  translation failed, the original (in Latin letters) is kept,
+ *                                without an error message
+ *   { text: '', failed: true }   translation failed and the original is not in Latin letters:
+ *                                it cannot go on the English form (the user is told, as before)
+ * @param {string} text
+ * @param {{kind:string, pattern?:string}} format
+ * @param {string} uiLang
+ * @param {(args:{text:string, sourceLang:string, targetLang:string}) => Promise<any>} translateSpeech
+ */
+export async function translateAnswer(text, format, uiLang, translateSpeech) {
+  if (!needsEnglishTranslation(format.kind, text, uiLang)) return null;
+  let reply = null;
+  try {
+    reply = await translateSpeech({ text, sourceLang: uiLang, targetLang: 'en-US' });
+  } catch {
+    reply = null; // api-client never throws, but a missing network must never break the form
+  }
+  const english = acceptEnglish(reply && !reply.error ? reply.translation : null, format);
+  if (english !== null) return { text: english, translated: true };
+  const original = finalAnswer(cleanByKind(text, format.kind), format.kind);
+  if (original !== '' && !hasNonLatinLetters(original)) return { text: original, translated: false };
+  return { text: '', translated: false, failed: true };
+}
+
+/** The same text apart from case and spaces ("Main Street 5" = "main  street 5"). */
+export function sameText(a, b) {
+  const norm = (s) => String(s ?? '').trim().replace(/\s+/g, ' ').toLowerCase();
+  return norm(a) === norm(b);
 }
 
 /** "Yes" or "No" for a checkbox answer said in English; other text is kept. */
@@ -140,7 +196,8 @@ export function validationMessage(result) {
 
 /**
  * What "✓ Correct" does with the answer in the box (already tidied by finalAnswer):
- *   - only English (Latin) letters: keep it                                  -> { action: 'store', text }
+ *   - only English (Latin) letters, and not a text / address answer of a non-English page
+ *     (mustTranslate): keep it                                               -> { action: 'store', text }
  *   - other letters, and its English was already shown for EXACTLY this text -> { action: 'store', text: english }
  *   - other letters, no English shown yet: convert it first (one Gemini call),
  *     show the English and wait for a second "Correct"                       -> { action: 'convert' }
@@ -149,9 +206,11 @@ export function validationMessage(result) {
  * @param {{source:string, english:string}|null} preview  the English shown under the heard text
  * @returns {{action:'store'|'convert', text?:string}}
  */
-export function englishStep(value, preview) {
+export function englishStep(value, preview, mustTranslate = false) {
   const text = String(value ?? '');
-  if (!hasNonLatinLetters(text)) return { action: 'store', text };
+  // mustTranslate (a text or address answer on a non-English page): Latin letters are not enough,
+  // the English must have been shown for exactly this text.
+  if (!mustTranslate && !hasNonLatinLetters(text)) return { action: 'store', text };
   const shown = preview && preview.source === text ? String(preview.english ?? '').trim() : '';
   if (shown !== '' && !hasNonLatinLetters(shown)) return { action: 'store', text: shown };
   return { action: 'convert' };
