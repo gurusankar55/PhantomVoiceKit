@@ -632,7 +632,7 @@ Phantom Voice Kit is a reusable skeleton for voice-first web applications with a
 
 ### Requirement 47: Home categories and demo
 1. "Who is it for?" SHALL include children. Filter chips All / For children / For adults / For everyone SHALL show the matching Home cards (children: Memory game, Picture book, Pumpkin math, Story time, Sticker book; adults: Fill a form, Translate a form, Voice Translator, My documents, Voice notes; everyone: Learn by speaking, Calm Ghost); the chosen chip is remembered.
-2. A "Watch the demo video" link SHALL open DEMO_VIDEO_URL (https only, set to https://youtu.be/aEdtDj24_uc) in a new tab and stay hidden while it is empty.
+2. A "Watch the demo video" link SHALL open DEMO_VIDEO_URL (https only, set to https://youtu.be/Imi-Y5hDKcc) in a new tab and stay hidden while it is empty.
 
 ### Requirement 48: "How to use" guides
 1. Every app page SHALL have a "▶ How to use" button that opens a 3 or 4 step walkthrough: the real button of each step is highlighted, an animated finger taps it, and the step is shown and read aloud in the chosen language, with Skip / Next / Done. It opens by itself once on the first visit to each app. Reduced motion stops the animation.

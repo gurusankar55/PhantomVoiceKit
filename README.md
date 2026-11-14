@@ -1,6 +1,6 @@
 # Phantom Voice Kit
 
-Demo video: https://youtu.be/aEdtDj24_uc
+Demo video: https://youtu.be/Imi-Y5hDKcc
 
 A reusable skeleton for voice-first web apps, with a soft 3D ghost / Halloween look, and 12 apps built on it. Entry for the **Kiroween 2026 Skeleton Crew** category.
 

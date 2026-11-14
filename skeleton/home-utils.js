@@ -58,7 +58,7 @@ export function saveFilter(storage, filter) {
 
 // The link to the demo video (2 min 35 s, on YouTube). The Home "Watch the demo video" button
 // opens it in a new tab; while this is empty, the button stays hidden.
-export const DEMO_VIDEO_URL = 'https://youtu.be/aEdtDj24_uc';
+export const DEMO_VIDEO_URL = 'https://youtu.be/Imi-Y5hDKcc';
 
 /** The demo link when it is a real https address, else '' (the button stays hidden). */
 export function demoUrl(value = DEMO_VIDEO_URL) {
