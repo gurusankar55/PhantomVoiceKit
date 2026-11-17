@@ -108,11 +108,18 @@ const LEVEL1 = [...LEVELS[0].lessons];
 const TAMIL = /\p{Script=Tamil}/u;
 const DEVANAGARI = /\p{Script=Devanagari}/u;
 const LATIN = /[A-Za-z]/;
+const KANNADA = /\p{Script=Kannada}/u;
+const TELUGU = /\p{Script=Telugu}/u;
+const MALAYALAM = /\p{Script=Malayalam}/u;
+const OTHER_SOUTH = [KANNADA, TELUGU, MALAYALAM];
 const SCRIPTS = {
   'ta-hi': { text: DEVANAGARI, say: TAMIL, meaning: TAMIL },
   'ta-en': { text: LATIN, say: TAMIL, meaning: TAMIL },
   'en-hi': { text: DEVANAGARI, say: LATIN, meaning: LATIN },
   'en-es': { text: LATIN, say: LATIN, meaning: LATIN },
+  'ta-kn': { text: KANNADA, say: TAMIL, meaning: TAMIL },
+  'ta-te': { text: TELUGU, say: TAMIL, meaning: TAMIL },
+  'ta-ml': { text: MALAYALAM, say: TAMIL, meaning: TAMIL },
 };
 const NOT = {
   // what must not be mixed into each field
@@ -120,6 +127,9 @@ const NOT = {
   'ta-en': { text: [TAMIL, DEVANAGARI], say: [LATIN, DEVANAGARI], meaning: [LATIN, DEVANAGARI] },
   'en-hi': { text: [LATIN, TAMIL], say: [TAMIL, DEVANAGARI], meaning: [TAMIL, DEVANAGARI] },
   'en-es': { text: [TAMIL, DEVANAGARI], say: [TAMIL, DEVANAGARI], meaning: [TAMIL, DEVANAGARI] },
+  'ta-kn': { text: [LATIN, TAMIL, DEVANAGARI, TELUGU, MALAYALAM], say: [LATIN, ...OTHER_SOUTH], meaning: [LATIN, ...OTHER_SOUTH] },
+  'ta-te': { text: [LATIN, TAMIL, DEVANAGARI, KANNADA, MALAYALAM], say: [LATIN, ...OTHER_SOUTH], meaning: [LATIN, ...OTHER_SOUTH] },
+  'ta-ml': { text: [LATIN, TAMIL, DEVANAGARI, KANNADA, TELUGU], say: [LATIN, ...OTHER_SOUTH], meaning: [LATIN, ...OTHER_SOUTH] },
 };
 
 function load(pair, id) {
@@ -128,7 +138,7 @@ function load(pair, id) {
 
 describe('built-in lesson files', () => {
   test('the index lists exactly the pairs and lessons that exist on disk', () => {
-    assert.deepEqual(PAIRS.sort(), ['en-es', 'en-hi', 'ta-en', 'ta-hi']);
+    assert.deepEqual([...PAIRS].sort(), ['en-es', 'en-hi', 'ta-en', 'ta-hi', 'ta-kn', 'ta-ml', 'ta-te']);
     const folders = readdirSync(new URL(`${LESSON_DIR}/`, ROOT), { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => d.name).sort();
     assert.deepEqual(folders, [...PAIRS].sort());
     for (const pair of PAIRS) {
@@ -139,9 +149,8 @@ describe('built-in lesson files', () => {
     }
   });
 
-  test('this release: all 36 lessons for Tamil to Hindi and Tamil to English; the 14 Level 1 lessons for English to Hindi and English to Spanish', () => {
-    assert.deepEqual([...index['ta-hi']], [...LESSONS]);
-    assert.deepEqual([...index['ta-en']], [...LESSONS]);
+  test('all 36 lessons for Tamil to Hindi, English, Kannada, Telugu and Malayalam; the 14 Level 1 lessons for English to Hindi and English to Spanish', () => {
+    for (const pair of ['ta-hi', 'ta-en', 'ta-kn', 'ta-te', 'ta-ml']) assert.deepEqual([...index[pair]], [...LESSONS], pair);
     assert.deepEqual([...index['en-hi']], LEVEL1);
     assert.deepEqual([...index['en-es']], LEVEL1);
   });
@@ -154,7 +163,7 @@ describe('built-in lesson files', () => {
     for (const pair of PAIRS) assert.ok(existsSync(new URL(`${LESSON_DIR}/${pair}/${index[pair][0]}.json`, ROOT)));
   });
 
-  for (const pair of ['ta-hi', 'ta-en', 'en-hi', 'en-es']) {
+  for (const pair of ['ta-hi', 'ta-en', 'ta-kn', 'ta-te', 'ta-ml', 'en-hi', 'en-es']) {
     test(`${pair}: every file is valid JSON in exactly the lesson shape`, () => {
       for (const id of index[pair]) {
         const where = `${pair}/${id}`;
@@ -196,13 +205,16 @@ describe('built-in lesson files', () => {
   }
 
   test('no Latin letters are glued into Tamil or Hindi words', () => {
-    for (const [pair, lang] of [['ta-hi', 'ta'], ['ta-en', 'ta']]) {
+    for (const [pair, lang] of [['ta-hi', 'ta'], ['ta-en', 'ta'], ['ta-kn', 'ta'], ['ta-te', 'ta'], ['ta-ml', 'ta']]) {
       for (const id of index[pair]) {
         const raw = load(pair, id);
         for (const line of raw.lines) assert.equal(countGluedLatin(`${line.say} ${line.meaning}`, lang), 0, `${pair}/${id}: ${line.say}`);
       }
     }
     for (const id of index['ta-hi']) for (const line of load('ta-hi', id).lines) assert.equal(countGluedLatin(line.text, 'hi'), 0, id);
+    for (const [pair, lang] of [['ta-kn', 'kn'], ['ta-te', 'te'], ['ta-ml', 'ml']]) {
+      for (const id of index[pair]) for (const line of load(pair, id).lines) assert.equal(countGluedLatin(line.text, lang), 0, `${pair}/${id}`);
+    }
   });
 
   test('short, simple lines: at most 14 words and 140 characters, key words at most 4 words', () => {
@@ -235,6 +247,12 @@ describe('built-in lesson files', () => {
       const taEn = load('ta-en', id);
       assert.equal(taHi.lines.length, taEn.lines.length, id);
       taHi.lines.forEach((line, i) => assert.equal(line.meaning, taEn.lines[i].meaning, `${id} line ${i}: same Tamil meaning`));
+      for (const pair of ['ta-kn', 'ta-te', 'ta-ml']) {
+        const other = load(pair, id);
+        assert.equal(other.lines.length, taHi.lines.length, `${pair}/${id}`);
+        other.lines.forEach((line, i) => assert.equal(line.meaning, taHi.lines[i].meaning, `${pair}/${id} line ${i}: same Tamil meaning`));
+        other.keyWords.forEach((entry, i) => assert.equal(entry.meaning, taHi.keyWords[i].meaning, `${pair}/${id} key word ${i}`));
+      }
       if (LEVEL1.includes(id)) {
         const enHi = load('en-hi', id);
         const enEs = load('en-es', id);
@@ -261,9 +279,9 @@ describe('built-in lesson files', () => {
   });
 
   test('a Tamil speaker can read the Hindi "say" aloud: it only uses Tamil letters, digits and punctuation', () => {
-    for (const pair of ['ta-hi', 'ta-en']) {
+    for (const pair of ['ta-hi', 'ta-en', 'ta-kn', 'ta-te', 'ta-ml']) {
       for (const id of index[pair]) {
-        for (const line of load(pair, id).lines) assert.match(line.say, /^[\p{Script=Tamil}\s.,?!'’"“”:;\-()0-9ஃ]+$/u, `${pair}/${id}: ${line.say}`);
+        for (const line of [...load(pair, id).lines, ...load(pair, id).keyWords]) assert.match(line.say, /^[\p{Script=Tamil}\s.,?!'’"“”:;\-()0-9ஃ]+$/u, `${pair}/${id}: ${line.say}`);
       }
     }
   });

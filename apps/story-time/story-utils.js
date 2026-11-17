@@ -28,7 +28,12 @@ export function paragraphKey(id, index) {
 
 /** A paragraph number from 0 to 7 (anything else is made into one). */
 export function clampParagraph(index) {
-  const n = Math.floor(Number(index));
+  let n;
+  try {
+    n = Math.floor(Number(index));
+  } catch {
+    return 0; // an object that cannot become a number (for example { toString: '' }) from damaged saved data
+  }
   if (!Number.isFinite(n) || n < 0) return 0;
   return Math.min(PARAGRAPHS - 1, n);
 }

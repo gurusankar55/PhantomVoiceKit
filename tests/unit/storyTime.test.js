@@ -80,6 +80,12 @@ describe('the 6 stories in all 20 languages', () => {
 });
 
 describe('clampParagraph', () => {
+  test('a value that cannot become a number gives the first paragraph (it used to throw)', () => {
+    assert.equal(clampParagraph({ toString: '' }), 0);
+    assert.equal(clampParagraph({ valueOf: null, toString: null }), 0);
+    assert.equal(clampParagraph(Object.create(null)), 0);
+  });
+
   test('always a whole number from 0 to 7 (100 runs)', () => {
     fc.assert(fc.property(fc.anything(), (value) => {
       const n = clampParagraph(value);

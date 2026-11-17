@@ -661,3 +661,7 @@ Build the Phantom Voice Kit from the ground up: project scaffolding → Express 
   - [x] 47.6b Cancel aborts the request and never saves; a busy answer stops prefetch for the browser session; the browser check waits for the server calls instead of fixed sleeps
   - [x] 47.6 Tests: `tests/unit/talkLearn.test.js` and `tests/unit/talkLearnLessons.test.js` (every built-in file valid and in the lesson shape, the index, load order, prefetch rules with fakes, levels and progress per level)
     - _Requirements: R53_
+
+- [x] 48. Talk & Learn 2.0, part A-2: Tamil to Kannada, Telugu and Malayalam, 36 lessons each (Requirement 54)
+  - Tests: tests/unit/talkLearnLessons.test.js (every built-in file of the seven pairs: shape, scripts, Tamil-letter say, same Tamil meaning, quiz)
+    - _Requirements: R54_
