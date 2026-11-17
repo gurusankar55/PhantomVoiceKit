@@ -1,0 +1,582 @@
+/* Talk & Learn: lessons, chat bubbles for person A and B, big practice cards (mobile first).
+   Start / end properties are used everywhere so Arabic and Urdu (right to left) work too. */
+
+.tl {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-width: 44rem;
+  margin: 0 auto;
+}
+
+.app-title {
+  text-align: center;
+  margin: var(--space-3) 0 0;
+}
+
+.tl-screen,
+.tl-body,
+.tl-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.tl-intro {
+  margin: 0;
+  text-align: center;
+  font-size: 1.15rem;
+}
+
+/* ---------- The two languages ---------- */
+.tl-langs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  gap: var(--space-3);
+}
+
+.tl-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.tl-label {
+  margin: 0;
+  font-weight: 700;
+  color: var(--color-ghost-dim);
+}
+
+/* "I speak": the UI language, shown like a box that cannot be changed here */
+.tl-fixed {
+  display: flex;
+  align-items: center;
+  min-height: var(--touch-min);
+  margin: 0;
+  padding: 0.6rem 0.75rem;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: var(--color-ghost);
+  background-color: var(--color-surface);
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius);
+}
+
+.tl-progress {
+  margin: 0;
+  text-align: center;
+  color: var(--color-ghost-dim);
+}
+
+/* ---------- The 14 lessons ---------- */
+.tl-lessons {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tl-lesson {
+  justify-content: flex-start;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 64px;
+  padding: var(--space-2) var(--space-3);
+  text-align: start;
+  color: var(--color-ghost);
+  background-color: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: 16px;
+}
+
+.tl-lesson:hover {
+  color: var(--color-ghost);
+  border-color: var(--color-orange);
+  background-color: var(--color-bg-alt);
+}
+
+.tl-lesson-number {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  font-weight: 800;
+  color: var(--color-bg);
+  background-color: var(--color-orange);
+  border-radius: 50%;
+}
+
+.tl-lesson-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.tl-tick {
+  flex: 0 0 auto;
+  color: #9cff57;
+  font-size: 1.6rem;
+  font-weight: 800;
+}
+
+/* ---------- One lesson ---------- */
+.tl-top {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.tl-small {
+  min-height: var(--touch-min);
+  font-weight: 800;
+}
+
+.tl-lesson-title {
+  margin: 0;
+  text-align: center;
+}
+
+/* The friendly ghost while a lesson is made */
+.tl-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  padding: var(--space-3);
+  text-align: center;
+  background-color: var(--color-bg-alt);
+  border: 2px dashed var(--color-border);
+  border-radius: 16px;
+}
+
+.tl-ghost {
+  font-size: 3.5rem;
+  line-height: 1;
+  animation: tl-float 2.4s ease-in-out infinite;
+}
+
+.tl-loading-message {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--color-orange-light);
+}
+
+@keyframes tl-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-0.6rem);
+  }
+}
+
+/* The three levels of the lesson list */
+.tl-levels {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.tl-level {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.tl-level-heading {
+  margin: 0;
+  font-size: 1.4rem;
+  color: var(--color-orange);
+  border-bottom: 2px solid var(--color-border);
+  padding-bottom: var(--space-1);
+}
+
+.tl-note {
+  margin: 0;
+  text-align: center;
+  color: var(--color-ghost-dim);
+}
+
+.tl-error-text {
+  margin: 0 0 var(--space-2);
+}
+
+/* Listen | Line by line | Practice: side by side when they fit, else on two rows */
+.tl-modes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 7rem), 1fr));
+  gap: var(--space-2);
+}
+
+.tl-mode {
+  min-height: 56px;
+  font-size: 1.1rem;
+  color: var(--color-ghost);
+  background-color: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+.tl-mode[aria-pressed="true"] {
+  color: #1a0f2e;
+  background-color: var(--color-orange);
+  border-color: var(--color-orange-dark);
+}
+
+/* "Audio is not available": the text stays */
+.tl-notice,
+.tl-message,
+.tl-status {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  font-weight: 700;
+  background-color: var(--color-bg-alt);
+  border-inline-start: 6px solid var(--color-orange);
+  border-radius: var(--radius);
+}
+
+.tl-status {
+  color: var(--color-orange-light);
+}
+
+/* ---------- Lines of a conversation ---------- */
+.tl-lines {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tl-line {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  max-width: 100%;
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: 16px;
+  transition: background-color 0.3s ease;
+}
+
+/* Person A at the start of the screen, person B at the end (like a chat) */
+.tl-line--a {
+  align-self: flex-start;
+  border-start-start-radius: 4px;
+}
+
+.tl-line--b {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+  background-color: var(--color-bg-alt);
+  border-color: var(--color-orange);
+  border-start-end-radius: 4px;
+}
+
+.tl-line-body,
+.tl-card-body,
+.tl-keyword-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+  text-align: start;
+}
+
+.tl-line--b .tl-line-body {
+  text-align: start;
+}
+
+/* The line being spoken */
+.tl-line--now {
+  color: var(--color-bg);
+  background-color: #ffe9a8;
+  border-color: var(--color-orange);
+}
+
+.tl-line--now .tl-say,
+.tl-line--now .tl-meaning {
+  color: #4a2a00;
+}
+
+.tl-who {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  font-weight: 800;
+  color: var(--color-bg);
+  background-color: var(--color-ghost-dim);
+  border-radius: 50%;
+}
+
+.tl-line--b .tl-who,
+.tl-card--b .tl-who {
+  background-color: var(--color-orange);
+}
+
+.tl-text {
+  font-size: 1.3rem;
+  font-weight: 800;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.tl-say {
+  font-size: 1.05rem;
+  color: var(--color-orange-light);
+  overflow-wrap: anywhere;
+}
+
+.tl-meaning {
+  font-size: 1rem;
+  color: var(--color-ghost-dim);
+  overflow-wrap: anywhere;
+}
+
+/* One big line (Line by line, my turn, the result) */
+.tl-card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background-color: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: 16px;
+  box-shadow: var(--depth-panel);
+}
+
+.tl-card--b {
+  border-color: var(--color-orange);
+}
+
+.tl-card .tl-text {
+  font-size: 1.6rem;
+}
+
+.tl-card .tl-say {
+  font-size: 1.2rem;
+}
+
+.tl-card .tl-meaning {
+  font-size: 1.1rem;
+}
+
+/* ---------- Buttons ---------- */
+.tl-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr));
+  gap: var(--space-2);
+}
+
+.tl-big {
+  flex-wrap: wrap; /* the icon may go above the text; the words themselves never break */
+  gap: 0.35rem;
+  min-height: 64px;
+  padding-inline: var(--space-2);
+  font-size: 1.15rem;
+  font-weight: 700;
+  border-radius: 14px;
+}
+
+.tl-finish {
+  min-height: var(--touch-min);
+}
+
+[dir="rtl"] .tl-arrow {
+  display: inline-block;
+  transform: scaleX(-1);
+}
+
+/* ---------- Practice ---------- */
+.tl-turn,
+.tl-result {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.tl-prompt {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 800;
+  text-align: center;
+  color: var(--color-orange-light);
+}
+
+.tl-stars {
+  margin: 0;
+  text-align: center;
+  font-size: 3rem;
+  line-height: 1;
+  letter-spacing: 0.2rem;
+  color: #ffd23f;
+}
+
+.tl-score {
+  margin: 0;
+  text-align: center;
+  font-weight: 800;
+  font-size: 1.2rem;
+}
+
+.tl-feedback {
+  margin: 0;
+  text-align: center;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.tl-heard {
+  margin: 0;
+  text-align: center;
+  color: var(--color-ghost-dim);
+}
+
+.tl-type {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* ---------- Key words and quiz ---------- */
+.tl-heading {
+  margin: 0;
+  text-align: center;
+}
+
+.tl-keywords {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tl-keyword {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: 16px;
+}
+
+.tl-hear {
+  flex: 0 0 auto;
+  min-width: var(--touch-min);
+  min-height: var(--touch-min);
+  font-size: 1.3rem;
+}
+
+.tl-quiz {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.tl-quiz-question {
+  margin: 0;
+  text-align: center;
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.tl-quiz-say {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  margin: 0;
+  text-align: center;
+}
+
+.tl-quiz-word {
+  font-size: 2rem;
+  font-weight: 800;
+}
+
+.tl-options {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-2);
+}
+
+.tl-option {
+  min-height: 64px;
+  font-size: 1.15rem;
+  text-align: center;
+}
+
+.tl-option--right,
+.tl-option--right:disabled {
+  color: #ffffff;
+  background-color: #1f7a45;
+  border-color: #1f7a45;
+  opacity: 1;
+}
+
+.tl-option--wrong,
+.tl-option--wrong:disabled {
+  color: #ffffff;
+  background-color: #6b1d2a;
+  border-color: #6b1d2a;
+  opacity: 1;
+}
+
+/* A mark next to the colour, so the answer is not shown by colour alone */
+.tl-option--right::before {
+  content: "✓ ";
+}
+
+.tl-option--wrong::before {
+  content: "✗ ";
+}
+
+.tl-done {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  text-align: center;
+  background-color: var(--color-bg-alt);
+  border: 2px solid #9cff57;
+  border-radius: 16px;
+}
+
+.tl-done-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 2rem;
+  color: var(--color-orange);
+}
+
+@media (min-width: 600px) {
+  .tl-lessons {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tl-line {
+    transition: none;
+  }
+
+  .tl-ghost {
+    animation: none;
+  }
+}

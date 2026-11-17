@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "हमारे होटल में स्वागत है। क्या आपने बुकिंग की है?",
+      "say": "hamaare hotal mein svaagat hai. kyaa aapne buking kee hai?",
+      "meaning": "Welcome to our hotel. Do you have a booking?"
+    },
+    {
+      "speaker": "B",
+      "text": "जी हाँ, सुरेश के नाम से। दो रातों के लिए।",
+      "say": "jee haan, suresh ke naam se. do raaton ke liye.",
+      "meaning": "Yes, under the name Suresh. Two nights, please."
+    },
+    {
+      "speaker": "A",
+      "text": "आपका कमरा दो सौ पाँच नंबर है। यह चाबी लीजिए।",
+      "say": "aapkaa kamraa do sau paanch nambar hai. yeh chaabee leejiye.",
+      "meaning": "Your room is number two zero five. Here is the key."
+    },
+    {
+      "speaker": "B",
+      "text": "नाश्ता कितने बजे मिलता है?",
+      "say": "naashtaa kitne baje miltaa hai?",
+      "meaning": "What time is breakfast?"
+    },
+    {
+      "speaker": "A",
+      "text": "नाश्ता सुबह सात से दस बजे तक है।",
+      "say": "naashtaa subah saat se das baje tak hai.",
+      "meaning": "Breakfast is from seven to ten in the morning."
+    },
+    {
+      "speaker": "B",
+      "text": "धन्यवाद। मेरे कमरे में पानी भिजवा दीजिए।",
+      "say": "dhanyavaad. mere kamre mein paanee bhijvaa deejiye.",
+      "meaning": "Thank you. Please send some water to my room."
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "कमरा",
+      "say": "kamraa",
+      "meaning": "Room"
+    },
+    {
+      "word": "चाबी",
+      "say": "chaabee",
+      "meaning": "Key"
+    },
+    {
+      "word": "नाश्ता",
+      "say": "naashtaa",
+      "meaning": "Breakfast"
+    },
+    {
+      "word": "रात",
+      "say": "raat",
+      "meaning": "Night"
+    }
+  ]
+}

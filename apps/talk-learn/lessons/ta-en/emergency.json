@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "Help! Please help me! There is an accident!",
+      "say": "ஹெல்ப்! ப்லீஸ் ஹெல்ப் மீ! தேர் இஸ் அன் ஆக்ஸிடென்ட்!",
+      "meaning": "உதவுங்கள்! தயவுசெய்து உதவுங்கள்! விபத்து நடந்துவிட்டது!"
+    },
+    {
+      "speaker": "B",
+      "text": "Stay calm. Where are you? Is anyone hurt?",
+      "say": "ஸ்டேக் காம். வெர் ஆர் யூ? இஸ் எனிவன் ஹர்ட்?",
+      "meaning": "அமைதியாக இருங்கள். நீங்கள் எங்கே இருக்கிறீர்கள்? யாருக்காவது அடிபட்டதா?"
+    },
+    {
+      "speaker": "A",
+      "text": "I am near the main road. One man is hurt.",
+      "say": "ஐ ஆம் நீர் த மேன் ரோட். வன் மான் இஸ் ஹர்ட்.",
+      "meaning": "நான் பிரதான சாலைக்கு அருகில் இருக்கிறேன். ஒருவருக்கு அடிபட்டிருக்கிறது."
+    },
+    {
+      "speaker": "B",
+      "text": "I am calling an ambulance and the police now.",
+      "say": "ஐ ஆம் காலிங் அன் அம்ப்யுலன்ஸ் ஆன்ட் த பலீஸ் நௌ.",
+      "meaning": "நான் இப்போதே ஆம்புலன்ஸ், காவல்துறைக்கு அழைக்கிறேன்."
+    },
+    {
+      "speaker": "A",
+      "text": "Please hurry. He cannot move.",
+      "say": "ப்லீஸ் ஹர்ரி. ஹீ கானாட் மூவ்.",
+      "meaning": "தயவுசெய்து விரைவாக வாருங்கள். அவரால் அசைய முடியவில்லை."
+    },
+    {
+      "speaker": "B",
+      "text": "Help is coming. Stay with him. Do not worry.",
+      "say": "ஹெல்ப் இஸ் கம்மிங். ஸ்டே வித் ஹிம். டூ நாட் வரி.",
+      "meaning": "உதவி வந்துகொண்டிருக்கிறது. அவருடன் இருங்கள். கவலைப்பட வேண்டாம்."
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "Help",
+      "say": "ஹெல்ப்",
+      "meaning": "உதவி"
+    },
+    {
+      "word": "Ambulance",
+      "say": "அம்ப்யுலன்ஸ்",
+      "meaning": "ஆம்புலன்ஸ்"
+    },
+    {
+      "word": "Police",
+      "say": "பலீஸ்",
+      "meaning": "காவல்துறை"
+    },
+    {
+      "word": "Hurry",
+      "say": "ஹர்ரி",
+      "meaning": "விரைவாக"
+    }
+  ]
+}

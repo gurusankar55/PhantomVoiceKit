@@ -189,7 +189,7 @@ describe('Install app button and the "needs internet" notice', () => {
     assert.match(nav, /if \(needsInternet\(current\)\)/);
     assert.match(nav, /'pwa\.needsInternet'/);
     assert.match(nav, /registerServiceWorker\(\)/);
-    assert.deepEqual([...ONLINE_ONLY_APPS].sort(), ['form-translator', 'ghost-tutor', 'spirit-clerk', 'voice-translator']);
+    assert.deepEqual([...ONLINE_ONLY_APPS].sort(), ['form-translator', 'ghost-tutor', 'spirit-clerk', 'talk-learn', 'voice-translator']);
   });
 });
 

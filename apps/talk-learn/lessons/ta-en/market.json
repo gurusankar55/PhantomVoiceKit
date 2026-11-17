@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "Sir, how much is this shirt?",
+      "say": "ஸர், ஹௌ மச் இஸ் திஸ் ஷர்ட்?",
+      "meaning": "ஐயா, இந்தச் சட்டை என்ன விலை?"
+    },
+    {
+      "speaker": "B",
+      "text": "It is eight hundred rupees. It is good cotton.",
+      "say": "இட் இஸ் ஏட் ஹன்ட்ரட் ரூப்பீஸ். இட் இஸ் குட் காட்டன்.",
+      "meaning": "எண்ணூறு ரூபாய். நல்ல பருத்தி."
+    },
+    {
+      "speaker": "A",
+      "text": "That is too much. I will give five hundred.",
+      "say": "தாட் இஸ் டூ மச். ஐ வில் கிவ் ஃபைவ் ஹன்ட்ரட்.",
+      "meaning": "அது மிக அதிகம். ஐநூறு தருகிறேன்."
+    },
+    {
+      "speaker": "B",
+      "text": "Five hundred is not possible. Seven hundred, last price.",
+      "say": "ஃபைவ் ஹன்ட்ரட் இஸ் நாட் பாஸிபிள். ஸெவென் ஹன்ட்ரட், லாஸ்ட் ப்ரைஸ்.",
+      "meaning": "ஐநூறு முடியாது. எழுநூறு, கடைசி விலை."
+    },
+    {
+      "speaker": "A",
+      "text": "Please make it six hundred. I will buy two shirts.",
+      "say": "ப்லீஸ் மேக் இட் ஸிக்ஸ் ஹன்ட்ரட். ஐ வில் பை டூ ஷர்ட்ஸ்.",
+      "meaning": "அறுநூறு ஆக்குங்கள். இரண்டு சட்டை வாங்குவேன்."
+    },
+    {
+      "speaker": "B",
+      "text": "All right, six hundred for each. Take them.",
+      "say": "ஆல்ரைட், ஸிக்ஸ் ஹன்ட்ரட் ஃபார் ஈச். டேக் தெம்.",
+      "meaning": "சரி, ஒன்றுக்கு அறுநூறு. எடுத்துக்கொள்ளுங்கள்."
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "Shirt",
+      "say": "ஷர்ட்",
+      "meaning": "சட்டை"
+    },
+    {
+      "word": "Price",
+      "say": "ப்ரைஸ்",
+      "meaning": "விலை"
+    },
+    {
+      "word": "Too much",
+      "say": "டூ மச்",
+      "meaning": "அதிகம்"
+    },
+    {
+      "word": "Last price",
+      "say": "லாஸ்ட் ப்ரைஸ்",
+      "meaning": "கடைசி விலை"
+    }
+  ]
+}

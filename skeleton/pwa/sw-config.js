@@ -45,7 +45,7 @@
 
   // Apps that need the internet (Gemini): kept only after they were opened once; offline they
   // show "needs internet".
-  var ONLINE_APPS = ['spirit-clerk', 'ghost-tutor', 'form-translator', 'voice-translator'];
+  var ONLINE_APPS = ['spirit-clerk', 'ghost-tutor', 'form-translator', 'voice-translator', 'talk-learn'];
 
   var PRECACHE = ['/', '/manifest.webmanifest', OFFLINE_PAGE, '/skeleton/pwa/icons/icon-192.png', '/skeleton/pwa/icons/icon-512.png']
     .concat(SKELETON.map(function (file) { return '/skeleton/' + file; }))

@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "Excuse me, I have a complaint about this phone.",
+      "say": "இக்ஸ்க்யூஸ் மீ, ஐ ஹாவ் அ கம்ப்ளெயின்ட் அபௌட் திஸ் ஃபோன்.",
+      "meaning": "மன்னிக்கவும், இந்த போனைப் பற்றி எனக்கு ஒரு புகார் உள்ளது."
+    },
+    {
+      "speaker": "B",
+      "text": "I am sorry to hear that. What is the problem?",
+      "say": "ஐ ஆம் ஸாரி டூ ஹீர் தாட். வாட் இஸ் த ப்ராப்லம்?",
+      "meaning": "அதைக் கேட்க வருந்துகிறேன். என்ன பிரச்சினை?"
+    },
+    {
+      "speaker": "A",
+      "text": "The battery finishes in two hours. I bought it last week.",
+      "say": "த பாட்ரி ஃபினிஷிஸ் இன் டூ ஆவெர்ஸ். ஐ பொர்ட் இட் லாஸ்ட் வீக்.",
+      "meaning": "பேட்டரி இரண்டு மணி நேரத்தில் தீர்ந்துவிடுகிறது. கடந்த வாரம்தான் வாங்கினேன்."
+    },
+    {
+      "speaker": "B",
+      "text": "Do you have the bill with you?",
+      "say": "டூ யூ ஹாவ் த பில் வித் யூ?",
+      "meaning": "பில் உங்களிடம் இருக்கிறதா?"
+    },
+    {
+      "speaker": "A",
+      "text": "Yes, here it is. I would like a new phone or my money back.",
+      "say": "யெஸ், ஹீர் இட் இஸ். ஐ வுட் லைக் அ ந்யூ ஃபோன் ஓர் மை மனி பக்.",
+      "meaning": "ஆம், இதோ. புதிய போன் அல்லது என் பணத்தைத் திருப்பித் தர வேண்டும்."
+    },
+    {
+      "speaker": "B",
+      "text": "We will change it for you today. Sorry for the trouble.",
+      "say": "வீ வில் சேஞ்ஜ் இட் ஃபார் யூ டுடே. ஸாரி ஃபார் த டிரபிள்.",
+      "meaning": "இன்றே மாற்றித் தருகிறோம். சிரமத்துக்கு வருந்துகிறோம்."
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "Complaint",
+      "say": "கம்ப்ளெயின்ட்",
+      "meaning": "புகார்"
+    },
+    {
+      "word": "Problem",
+      "say": "ப்ராப்லம்",
+      "meaning": "பிரச்சினை"
+    },
+    {
+      "word": "Money back",
+      "say": "மனி பக்",
+      "meaning": "பணம் திரும்ப"
+    },
+    {
+      "word": "Change",
+      "say": "சேஞ்ஜ்",
+      "meaning": "மாற்று"
+    }
+  ]
+}

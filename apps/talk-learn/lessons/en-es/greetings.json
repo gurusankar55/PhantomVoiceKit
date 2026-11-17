@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "¡Hola! ¿Cómo estás?",
+      "say": "OH-la! KOH-mo es-TAHS?",
+      "meaning": "Hello! How are you?"
+    },
+    {
+      "speaker": "B",
+      "text": "Estoy bien, gracias. ¿Y tú?",
+      "say": "es-TOY byen, GRAH-syas. ee TOO?",
+      "meaning": "I am fine, thank you. And you?"
+    },
+    {
+      "speaker": "A",
+      "text": "Mucho gusto. ¿Cómo te llamas?",
+      "say": "MOO-cho GOOS-to. KOH-mo te YAH-mas?",
+      "meaning": "Nice to meet you. What is your name?"
+    },
+    {
+      "speaker": "B",
+      "text": "Me llamo Ravi. Soy de Chennai.",
+      "say": "me YAH-mo RAH-vee. soy de CHEN-nay.",
+      "meaning": "My name is Ravi. I am from Chennai."
+    },
+    {
+      "speaker": "A",
+      "text": "Buenos días, Ravi. Siéntate, por favor.",
+      "say": "BWE-nos DEE-as, RAH-vee. SYEN-ta-te, por fa-VOR.",
+      "meaning": "Good morning, Ravi. Please sit down."
+    },
+    {
+      "speaker": "B",
+      "text": "Gracias. ¡Hasta mañana!",
+      "say": "GRAH-syas. AHS-ta ma-NYAH-na!",
+      "meaning": "Thank you. See you again!"
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "Hola",
+      "say": "OH-la",
+      "meaning": "Hello"
+    },
+    {
+      "word": "Gracias",
+      "say": "GRAH-syas",
+      "meaning": "Thank you"
+    },
+    {
+      "word": "Mucho gusto",
+      "say": "MOO-cho GOOS-to",
+      "meaning": "Nice to meet you"
+    },
+    {
+      "word": "Bien",
+      "say": "byen",
+      "meaning": "Well, fine"
+    }
+  ]
+}

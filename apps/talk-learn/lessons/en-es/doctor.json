@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "Buenos días. ¿Cuál es el problema?",
+      "say": "BWE-nos DEE-as. kwal es el pro-BLE-ma?",
+      "meaning": "Good morning. What is the problem?"
+    },
+    {
+      "speaker": "B",
+      "text": "Tengo fiebre y dolor de cabeza desde ayer.",
+      "say": "TEN-go FYE-bre ee do-LOR de ka-BE-sa DES-de a-YER.",
+      "meaning": "I have a fever and a headache since yesterday."
+    },
+    {
+      "speaker": "A",
+      "text": "¿Tiene tos o resfriado?",
+      "say": "TYE-ne tos o res-FRYA-do?",
+      "meaning": "Do you have a cough or a cold?"
+    },
+    {
+      "speaker": "B",
+      "text": "No, solo la fiebre. Me siento débil.",
+      "say": "no, SO-lo la FYE-bre. me SYEN-to DE-beel.",
+      "meaning": "No, only the fever. I feel weak."
+    },
+    {
+      "speaker": "A",
+      "text": "Tome esta medicina tres veces al día. Beba agua caliente.",
+      "say": "TO-me ES-ta me-dee-SEE-na tres BE-ses al DEE-a. BE-ba A-gwa ka-LYEN-te.",
+      "meaning": "Take this medicine three times a day. Drink warm water."
+    },
+    {
+      "speaker": "B",
+      "text": "Gracias, doctor. ¿Cuándo vuelvo?",
+      "say": "GRAH-syas, dok-TOR. KWAN-do BWEL-bo?",
+      "meaning": "Thank you, doctor. When should I come again?"
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "fiebre",
+      "say": "FYE-bre",
+      "meaning": "Fever"
+    },
+    {
+      "word": "dolor de cabeza",
+      "say": "do-LOR de ka-BE-sa",
+      "meaning": "Headache"
+    },
+    {
+      "word": "medicina",
+      "say": "me-dee-SEE-na",
+      "meaning": "Medicine"
+    },
+    {
+      "word": "débil",
+      "say": "DE-beel",
+      "meaning": "Weak"
+    }
+  ]
+}

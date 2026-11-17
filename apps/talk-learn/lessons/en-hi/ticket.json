@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "शुभ संध्या। आपको कहाँ जाना है?",
+      "say": "shubh sandhyaa. aapko kahaan jaanaa hai?",
+      "meaning": "Good evening. Where do you want to travel?"
+    },
+    {
+      "speaker": "B",
+      "text": "मुंबई का एक टिकट दीजिए। कितने का है?",
+      "say": "mumbayee kaa ek ticket deejiye. kitne kaa hai?",
+      "meaning": "One ticket to Mumbai, please. What is the price?"
+    },
+    {
+      "speaker": "A",
+      "text": "चार सौ रुपये। गाड़ी छह बजे जाएगी।",
+      "say": "chaar sau rupaye. gaadee chhah baje jaayegee.",
+      "meaning": "It is four hundred rupees. The train leaves at six."
+    },
+    {
+      "speaker": "B",
+      "text": "गाड़ी किस प्लेटफ़ॉर्म से जाएगी?",
+      "say": "gaadee kis pletfaarm se jaayegee?",
+      "meaning": "Which platform does the train go from?"
+    },
+    {
+      "speaker": "A",
+      "text": "प्लेटफ़ॉर्म नंबर तीन। जल्दी आइए।",
+      "say": "pletfaarm nambar teen. jaldee aayiye.",
+      "meaning": "Platform number three. Please be early."
+    },
+    {
+      "speaker": "B",
+      "text": "धन्यवाद। मैं जल्दी आऊँगा।",
+      "say": "dhanyavaad. main jaldee aaoongaa.",
+      "meaning": "Thank you. I will come early."
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "टिकट",
+      "say": "ticket",
+      "meaning": "Ticket"
+    },
+    {
+      "word": "गाड़ी",
+      "say": "gaadee",
+      "meaning": "Train"
+    },
+    {
+      "word": "प्लेटफ़ॉर्म",
+      "say": "pletfaarm",
+      "meaning": "Platform"
+    },
+    {
+      "word": "जल्दी",
+      "say": "jaldee",
+      "meaning": "Early"
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "सुप्रभात। क्या तकलीफ़ है?",
+      "say": "suprabhaat. kyaa takleef hai?",
+      "meaning": "Good morning. What is the problem?"
+    },
+    {
+      "speaker": "B",
+      "text": "कल से मुझे बुखार और सिरदर्द है।",
+      "say": "kal se mujhe bukhaar aur sirdard hai.",
+      "meaning": "I have a fever and a headache since yesterday."
+    },
+    {
+      "speaker": "A",
+      "text": "क्या खाँसी या ज़ुकाम भी है?",
+      "say": "kyaa khaansee yaa zukaam bhee hai?",
+      "meaning": "Do you have a cough or a cold?"
+    },
+    {
+      "speaker": "B",
+      "text": "नहीं, सिर्फ़ बुखार है। कमज़ोरी लग रही है।",
+      "say": "nahin, sirf bukhaar hai. kamzoree lag rahee hai.",
+      "meaning": "No, only the fever. I feel weak."
+    },
+    {
+      "speaker": "A",
+      "text": "यह दवा दिन में तीन बार लीजिए। गर्म पानी पीजिए।",
+      "say": "yeh davaa din mein teen baar leejiye. garm paanee peejiye.",
+      "meaning": "Take this medicine three times a day. Drink warm water."
+    },
+    {
+      "speaker": "B",
+      "text": "धन्यवाद डॉक्टर। मैं दोबारा कब आऊँ?",
+      "say": "dhanyavaad doctor. main dobaaraa kab aaoon?",
+      "meaning": "Thank you, doctor. When should I come again?"
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "बुखार",
+      "say": "bukhaar",
+      "meaning": "Fever"
+    },
+    {
+      "word": "सिरदर्द",
+      "say": "sirdard",
+      "meaning": "Headache"
+    },
+    {
+      "word": "दवा",
+      "say": "davaa",
+      "meaning": "Medicine"
+    },
+    {
+      "word": "कमज़ोरी",
+      "say": "kamzoree",
+      "meaning": "Weak"
+    }
+  ]
+}

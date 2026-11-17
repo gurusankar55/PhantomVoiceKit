@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "Hello, you are new here, right? I am Priya.",
+      "say": "ஹெலோ, யூ ஆர் ந்யூ ஹீர், ரைட்? ஐ ஆம் ப்ரியா.",
+      "meaning": "வணக்கம், நீங்கள் இங்கே புதியவர்தானே? நான் பிரியா."
+    },
+    {
+      "speaker": "B",
+      "text": "Yes, today is my first day. I am Arun.",
+      "say": "யெஸ், டுடே இஸ் மை ஃபர்ஸ்ட் டே. ஐ ஆம் அருன்.",
+      "meaning": "ஆம், இன்று என் முதல் நாள். நான் அருண்."
+    },
+    {
+      "speaker": "A",
+      "text": "Welcome, Arun. Your desk is near the window.",
+      "say": "வெல்கம், அருன். யூர் டெஸ்க் இஸ் நீர் த வின்டோ.",
+      "meaning": "வரவேற்கிறேன் அருண். உங்கள் மேசை ஜன்னல் அருகில் உள்ளது."
+    },
+    {
+      "speaker": "B",
+      "text": "Thank you. What time is lunch?",
+      "say": "தேங்க் யூ. வாட் டைம் இஸ் லஞ்ச்?",
+      "meaning": "நன்றி. மதிய உணவு எத்தனை மணிக்கு?"
+    },
+    {
+      "speaker": "A",
+      "text": "Lunch is at one o'clock. We eat together.",
+      "say": "லஞ்ச் இஸ் ஆட் வன் ஒக்லாக். வீ ஈட் டுகெதர்.",
+      "meaning": "ஒரு மணிக்கு மதிய உணவு. நாம் சேர்ந்து சாப்பிடுவோம்."
+    },
+    {
+      "speaker": "B",
+      "text": "That is nice. Please help me if I have a question.",
+      "say": "தாட் இஸ் நைஸ். ப்லீஸ் ஹெல்ப் மீ இஃப் ஐ ஹாவ் அ க்வெஸ்சன்.",
+      "meaning": "நல்லது. எனக்குச் சந்தேகம் இருந்தால் உதவுங்கள்."
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "New",
+      "say": "ந்யூ",
+      "meaning": "புதிய"
+    },
+    {
+      "word": "Desk",
+      "say": "டெஸ்க்",
+      "meaning": "மேசை"
+    },
+    {
+      "word": "Together",
+      "say": "டுகெதர்",
+      "meaning": "சேர்ந்து"
+    },
+    {
+      "word": "First",
+      "say": "ஃபர்ஸ்ட்",
+      "meaning": "முதல்"
+    }
+  ]
+}

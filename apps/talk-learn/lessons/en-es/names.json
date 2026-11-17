@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "¿Cómo te llamas?",
+      "say": "KOH-mo te YAH-mas?",
+      "meaning": "What is your name?"
+    },
+    {
+      "speaker": "B",
+      "text": "Me llamo Anita. ¿Y tú?",
+      "say": "me YAH-mo a-NEE-ta. ee TOO?",
+      "meaning": "My name is Anita. And your name?"
+    },
+    {
+      "speaker": "A",
+      "text": "Soy Kumar. ¿De dónde eres?",
+      "say": "soy koo-MAR. de DON-de E-res?",
+      "meaning": "I am Kumar. Where are you from?"
+    },
+    {
+      "speaker": "B",
+      "text": "Soy de Madurai. ¿Eres de aquí?",
+      "say": "soy de ma-DOO-rai. E-res de a-KEE?",
+      "meaning": "I am from Madurai. Are you from here?"
+    },
+    {
+      "speaker": "A",
+      "text": "No, soy de Delhi. Ahora vivo aquí.",
+      "say": "no, soy de DE-lee. a-OH-ra VEE-vo a-KEE.",
+      "meaning": "No, I am from Delhi. I live here now."
+    },
+    {
+      "speaker": "B",
+      "text": "Mucho gusto, Kumar.",
+      "say": "MOO-cho GOOS-to, koo-MAR.",
+      "meaning": "Nice to meet you, Kumar."
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "Me llamo",
+      "say": "me YAH-mo",
+      "meaning": "My name is"
+    },
+    {
+      "word": "dónde",
+      "say": "DON-de",
+      "meaning": "Where"
+    },
+    {
+      "word": "aquí",
+      "say": "a-KEE",
+      "meaning": "Here"
+    },
+    {
+      "word": "vivo",
+      "say": "VEE-vo",
+      "meaning": "I live"
+    }
+  ]
+}

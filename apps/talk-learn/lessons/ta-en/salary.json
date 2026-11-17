@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "Excuse me, I did not get my salary yet.",
+      "say": "இக்ஸ்க்யூஸ் மீ, ஐ டிட்ன்ட் கெட் மை ஸாலரி யெட்.",
+      "meaning": "மன்னிக்கவும், எனக்கு இன்னும் சம்பளம் வரவில்லை."
+    },
+    {
+      "speaker": "B",
+      "text": "Salary is paid on the fifth of every month.",
+      "say": "ஸாலரி இஸ் பேட் ஆன் த ஃபிஃப்த் ஆவ் எவ்ரி மன்த்.",
+      "meaning": "ஒவ்வொரு மாதமும் ஐந்தாம் தேதி சம்பளம் வழங்கப்படும்."
+    },
+    {
+      "speaker": "A",
+      "text": "Today is the seventh. The money is not in my account.",
+      "say": "டுடே இஸ் த ஸெவென்த். த மனி இஸ் நாட் இன் மை அக்கௌன்ட்.",
+      "meaning": "இன்று ஏழாம் தேதி. என் கணக்கில் பணம் வரவில்லை."
+    },
+    {
+      "speaker": "B",
+      "text": "Let me check. Can you give me your bank details?",
+      "say": "லெட் மீ செக். கேன் யூ கிவ் மீ யூர் பைங்க் டீட்டேல்ஸ்?",
+      "meaning": "பார்க்கிறேன். உங்கள் வங்கி விவரங்களைத் தர முடியுமா?"
+    },
+    {
+      "speaker": "A",
+      "text": "Here is my account number. Please send me a receipt also.",
+      "say": "ஹீர் இஸ் மை அக்கௌன்ட் நம்பெர். ப்லீஸ் ஸென்ட் மீ அ ரிஸீட் ஆல்ஸோ.",
+      "meaning": "இதோ என் கணக்கு எண். ரசீதையும் அனுப்புங்கள்."
+    },
+    {
+      "speaker": "B",
+      "text": "The payment will be done tomorrow by bank transfer.",
+      "say": "த பேமன்ட் வில் பீ டன் டுமாரோ பை பைங்க் ட்ரான்ஸ்ஃபர்.",
+      "meaning": "நாளை வங்கிப் பரிமாற்றம் மூலம் பணம் செலுத்தப்படும்."
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "Salary",
+      "say": "ஸாலரி",
+      "meaning": "சம்பளம்"
+    },
+    {
+      "word": "Payment",
+      "say": "பேமன்ட்",
+      "meaning": "பணம் செலுத்துதல்"
+    },
+    {
+      "word": "Receipt",
+      "say": "ரிஸீட்",
+      "meaning": "ரசீது"
+    },
+    {
+      "word": "Transfer",
+      "say": "ட்ரான்ஸ்ஃபர்",
+      "meaning": "பரிமாற்றம்"
+    }
+  ]
+}

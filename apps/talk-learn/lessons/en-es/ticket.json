@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "Buenas tardes. ¿A dónde quiere viajar?",
+      "say": "BWE-nas TAR-des. a DON-de KYE-re bya-HAR?",
+      "meaning": "Good evening. Where do you want to travel?"
+    },
+    {
+      "speaker": "B",
+      "text": "Un billete a Mumbai, por favor. ¿Cuánto cuesta?",
+      "say": "oon bee-YE-te a MOOM-bay, por fa-VOR. KWAN-to KWES-ta?",
+      "meaning": "One ticket to Mumbai, please. What is the price?"
+    },
+    {
+      "speaker": "A",
+      "text": "Cuesta cuatrocientas rupias. El tren sale a las seis.",
+      "say": "KWES-ta kwa-tro-SYEN-tas ROO-pyas. el tren SA-le a las SEYS.",
+      "meaning": "It is four hundred rupees. The train leaves at six."
+    },
+    {
+      "speaker": "B",
+      "text": "¿De qué andén sale el tren?",
+      "say": "de ke an-DEN SA-le el tren?",
+      "meaning": "Which platform does the train go from?"
+    },
+    {
+      "speaker": "A",
+      "text": "Del andén número tres. Llegue temprano, por favor.",
+      "say": "del an-DEN NOO-me-ro tres. YE-ge tem-PRA-no, por fa-VOR.",
+      "meaning": "Platform number three. Please be early."
+    },
+    {
+      "speaker": "B",
+      "text": "Gracias. Llegaré temprano.",
+      "say": "GRAH-syas. ye-ga-RE tem-PRA-no.",
+      "meaning": "Thank you. I will come early."
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "billete",
+      "say": "bee-YE-te",
+      "meaning": "Ticket"
+    },
+    {
+      "word": "tren",
+      "say": "TREN",
+      "meaning": "Train"
+    },
+    {
+      "word": "andén",
+      "say": "an-DEN",
+      "meaning": "Platform"
+    },
+    {
+      "word": "temprano",
+      "say": "tem-PRA-no",
+      "meaning": "Early"
+    }
+  ]
+}

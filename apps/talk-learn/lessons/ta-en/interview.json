@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "Good morning. Please tell me about yourself.",
+      "say": "குட் மார்னிங். ப்லீஸ் டெல் மீ அபௌட் யூர்ஸெல்ஃப்.",
+      "meaning": "காலை வணக்கம். உங்களைப் பற்றிச் சொல்லுங்கள்."
+    },
+    {
+      "speaker": "B",
+      "text": "Good morning. My name is Deepa. I have three years of experience in sales.",
+      "say": "குட் மார்னிங். மை நேம் இஸ் டீப்பா. ஐ ஹாவ் த்ரீ இயர்ஸ் ஆவ் இக்ஸ்பீரியன்ஸ் இன் ஸேல்ஸ்.",
+      "meaning": "காலை வணக்கம். என் பெயர் தீபா. விற்பனையில் எனக்கு மூன்று ஆண்டு அனுபவம் உண்டு."
+    },
+    {
+      "speaker": "A",
+      "text": "What are your strengths?",
+      "say": "வாட் ஆர் யூர் ஸ்ட்ரெங்த்ஸ்?",
+      "meaning": "உங்கள் பலங்கள் என்ன?"
+    },
+    {
+      "speaker": "B",
+      "text": "I work hard, I learn fast, and I am good with people.",
+      "say": "ஐ வர்க் ஹார்ட், ஐ லர்ன் ஃபாஸ்ட், ஆன்ட் ஐ ஆம் குட் வித் பீப்பிள்.",
+      "meaning": "நான் கடினமாக உழைக்கிறேன், விரைவாகக் கற்கிறேன், மக்களுடன் நன்றாகப் பழகுவேன்."
+    },
+    {
+      "speaker": "A",
+      "text": "Why do you want this job?",
+      "say": "வை டூ யூ வான்ட் திஸ் ஜாப்?",
+      "meaning": "இந்த வேலை ஏன் வேண்டும்?"
+    },
+    {
+      "speaker": "B",
+      "text": "I like your company. May I ask when I can start?",
+      "say": "ஐ லைக் யூர் கம்பனி. மே ஐ ஆஸ்க் வென் ஐ கேன் ஸ்டார்ட்?",
+      "meaning": "உங்கள் நிறுவனம் எனக்குப் பிடிக்கும். எப்போது தொடங்கலாம் என்று கேட்கலாமா?"
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "Experience",
+      "say": "இக்ஸ்பீரியன்ஸ்",
+      "meaning": "அனுபவம்"
+    },
+    {
+      "word": "Strengths",
+      "say": "ஸ்ட்ரெங்த்ஸ்",
+      "meaning": "பலங்கள்"
+    },
+    {
+      "word": "Job",
+      "say": "ஜாப்",
+      "meaning": "வேலை"
+    },
+    {
+      "word": "Company",
+      "say": "கம்பனி",
+      "meaning": "நிறுவனம்"
+    }
+  ]
+}

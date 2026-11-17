@@ -2,7 +2,7 @@
 
 Demo video: https://youtu.be/Imi-Y5hDKcc
 
-A reusable skeleton for voice-first web apps, with a soft 3D ghost / Halloween look, and 12 apps built on it. Entry for the **Kiroween 2026 Skeleton Crew** category.
+A reusable skeleton for voice-first web apps, with a soft 3D ghost / Halloween look, and 13 apps built on it. Entry for the **Kiroween 2026 Skeleton Crew** category.
 
 It is made for people who cannot easily read or type English: older people, people working far from home, people who find reading or typing hard, and children who are still learning. Every screen is translated into **20 languages** (Arabic and Urdu are right-to-left), every step can be done by voice, and typing or tapping always works too.
 
@@ -20,7 +20,7 @@ Languages: English, Tamil, Hindi, Telugu, Kannada, Malayalam, Korean, Chinese, J
 
 A step-by-step guide for building a new app on it is in [skeleton/README.md](skeleton/README.md).
 
-## The 12 apps
+## The 13 apps
 
 | App | Folder | For | What it does | Needs internet |
 | --- | --- | --- | --- | --- |
@@ -29,6 +29,7 @@ A step-by-step guide for building a new app on it is in [skeleton/README.md](ske
 | Phantom Talk (Voice Translator) | `apps/voice-translator` | Adults | Speak or type for a natural translation (automatic, silent unless you tap 🔊); two-person conversation on one phone; Message helper that explains a WhatsApp / Telegram message and writes a polite reply in the sender's language | Yes |
 | My documents | `apps/my-documents` | Adults | Your filled PDFs, kept on this device | No |
 | Voice notes | `apps/voice-notes` | Adults | Speak or type notes and hear them again | No |
+| Talk & Learn (Talk and learn) | `apps/talk-learn` | Everyone | Learn to speak another language with 14 everyday two-person conversations (greetings, shop, taxi, doctor, bank, emergency...). Listen, go line by line, or practise as person B with the microphone and get 1 to 3 stars; then key words and a 3-question quiz. Each lesson is saved in the browser, so it is asked from Gemini only once | Yes (once per lesson) |
 | Ghost Tutor (Learn by speaking) | `apps/ghost-tutor` | Everyone | Any topic in 4 spoken parts with a quiz after each | Yes |
 | Calm Ghost (Calm time) | `apps/calm-time` | Everyone | Meditation with bell and breathing circle, activity timer, daily routine with calendar reminders | No |
 | Ghost Echo (Memory game) | `apps/ghost-echo` | Children | Remember the pictures and say them back in order | No |
@@ -42,7 +43,7 @@ On the Home screen, chips filter the cards: **All / For children / For adults / 
 Other shared features:
 
 - **Large text**: the Aa button makes everything about 125 % bigger in every app.
-- **Installable**: the kit installs like an app. The 8 apps without AI work offline; the 4 AI apps say clearly when they need the internet. `/api` answers are never cached.
+- **Installable**: the kit installs like an app. The 8 apps without AI work offline; the 5 AI apps say clearly when they need the internet. `/api` answers are never cached.
 - **Rewards**: coins, level-ups and a gift box with stickers, shared by all the games.
 
 ## How Kiro was used

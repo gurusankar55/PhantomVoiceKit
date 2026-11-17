@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "What are you going to do tomorrow?",
+      "say": "வாட் ஆர் யூ கொயிங் டூ டூ டுமாரோ?",
+      "meaning": "நாளை நீங்கள் என்ன செய்யப் போகிறீர்கள்?"
+    },
+    {
+      "speaker": "B",
+      "text": "I will go to the bank in the morning. Then I will visit my aunt.",
+      "say": "ஐ வில் கோ டூ த பைங்க் இன் த மார்னிங். தென் ஐ வில் விஸிட் மை ஆன்ட்.",
+      "meaning": "காலையில் வங்கிக்குப் போவேன். பிறகு என் அத்தையைப் பார்க்கப் போவேன்."
+    },
+    {
+      "speaker": "A",
+      "text": "Will you come back for dinner?",
+      "say": "வில் யூ கம் பக் ஃபார் டினர்?",
+      "meaning": "இரவு உணவுக்குத் திரும்பி வருவீர்களா?"
+    },
+    {
+      "speaker": "B",
+      "text": "Yes, I will be home by seven. What about you?",
+      "say": "யெஸ், ஐ வில் பீ ஹோம் பை ஸெவென். வாட் அபௌட் யூ?",
+      "meaning": "ஆம், ஏழு மணிக்குள் வீட்டில் இருப்பேன். நீங்கள்?"
+    },
+    {
+      "speaker": "A",
+      "text": "I will meet my friends if the weather is good.",
+      "say": "ஐ வில் மீட் மை ஃப்ரென்ட்ஸ் இஃப் த வெதர் இஸ் குட்.",
+      "meaning": "வானிலை நன்றாக இருந்தால் நண்பர்களைச் சந்திப்பேன்."
+    },
+    {
+      "speaker": "B",
+      "text": "And if it rains, we will stay at home and watch a film.",
+      "say": "ஆன்ட் இஃப் இட் ரேன்ஸ், வீ வில் ஸ்டே ஆட் ஹோம் ஆன்ட் வாச் அ ஃபில்ம்.",
+      "meaning": "மழை பெய்தால் வீட்டிலேயே இருந்து படம் பார்ப்போம்."
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "Tomorrow",
+      "say": "டுமாரோ",
+      "meaning": "நாளை"
+    },
+    {
+      "word": "Will go",
+      "say": "வில் கோ",
+      "meaning": "போவேன்"
+    },
+    {
+      "word": "If",
+      "say": "இஃப்",
+      "meaning": "என்றால்"
+    },
+    {
+      "word": "Weather",
+      "say": "வெதர்",
+      "meaning": "வானிலை"
+    }
+  ]
+}

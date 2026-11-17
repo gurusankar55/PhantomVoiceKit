@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "Welcome to our hotel. Do you have a booking?",
+      "say": "வெல்கம் டூ ஆர் ஹோட்டல். டூ யூ ஹாவ் அ புக்கிங்?",
+      "meaning": "எங்கள் ஹோட்டலுக்கு வரவேற்கிறோம். முன்பதிவு செய்திருக்கிறீர்களா?"
+    },
+    {
+      "speaker": "B",
+      "text": "Yes, under the name Suresh. Two nights, please.",
+      "say": "யெஸ், அன்டர் த நேம் ஸுரெஷ். டூ நைட்ஸ், ப்லீஸ்.",
+      "meaning": "ஆம், சுரேஷ் பெயரில். இரண்டு இரவுகள்."
+    },
+    {
+      "speaker": "A",
+      "text": "Your room is number two zero five. Here is the key.",
+      "say": "யூர் ரூம் இஸ் டூ ஓ ஃபைவ். ஹீர் இஸ் த கீ.",
+      "meaning": "உங்கள் அறை எண் இருநூற்று ஐந்து. இதோ சாவி."
+    },
+    {
+      "speaker": "B",
+      "text": "What time is breakfast?",
+      "say": "வாட் டைம் இஸ் ப்ரெக்ஃபஸ்ட்?",
+      "meaning": "காலை உணவு எத்தனை மணிக்கு?"
+    },
+    {
+      "speaker": "A",
+      "text": "Breakfast is from seven to ten in the morning.",
+      "say": "ப்ரெக்ஃபஸ்ட் இஸ் ஃப்ரம் ஸெவென் டூ டென் இன் த மார்னிங்.",
+      "meaning": "காலை உணவு ஏழு மணி முதல் பத்து மணி வரை."
+    },
+    {
+      "speaker": "B",
+      "text": "Thank you. Please send some water to my room.",
+      "say": "தேங்க் யூ. ப்லீஸ் ஸென்ட் ஸம் வாட்டர் டூ மை ரூம்.",
+      "meaning": "நன்றி. என் அறைக்குக் கொஞ்சம் தண்ணீர் அனுப்புங்கள்."
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "Room",
+      "say": "ரூம்",
+      "meaning": "அறை"
+    },
+    {
+      "word": "Key",
+      "say": "கீ",
+      "meaning": "சாவி"
+    },
+    {
+      "word": "Breakfast",
+      "say": "ப்ரெக்ஃபஸ்ட்",
+      "meaning": "காலை உணவு"
+    },
+    {
+      "word": "Night",
+      "say": "நைட்",
+      "meaning": "இரவு"
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "Hello, I saw your advertisement. Is the house still available?",
+      "say": "ஹெலோ, ஐ ஸோ யூர் அட்வர்டிஸ்மென்ட். இஸ் த ஹௌஸ் ஸ்டில் அவைலபிள்?",
+      "meaning": "வணக்கம், உங்கள் விளம்பரத்தைப் பார்த்தேன். வீடு இன்னும் காலியாக இருக்கிறதா?"
+    },
+    {
+      "speaker": "B",
+      "text": "Yes. It has two rooms, a kitchen and a bathroom.",
+      "say": "யெஸ். இட் ஹாஸ் டூ ரூம்ஸ், அ கிச்சன் ஆன்ட் அ பாத்ரூம்.",
+      "meaning": "ஆம். இரண்டு அறைகள், சமையலறை, குளியலறை உள்ளன."
+    },
+    {
+      "speaker": "A",
+      "text": "What is the rent? And how much is the deposit?",
+      "say": "வாட் இஸ் த ரென்ட்? ஆன்ட் ஹௌ மச் இஸ் த டிப்பாஸிட்?",
+      "meaning": "வாடகை எவ்வளவு? முன்பணம் எவ்வளவு?"
+    },
+    {
+      "speaker": "B",
+      "text": "The rent is eight thousand a month. The deposit is twenty thousand.",
+      "say": "த ரென்ட் இஸ் ஏட் தௌஸன்ட் அ மன்த். த டிப்பாஸிட் இஸ் ட்வென்டி தௌஸன்ட்.",
+      "meaning": "வாடகை மாதம் எட்டாயிரம். முன்பணம் இருபதாயிரம்."
+    },
+    {
+      "speaker": "A",
+      "text": "Is water and electricity free?",
+      "say": "இஸ் வாட்டர் ஆன்ட் எலெக்ட்ரிஸிட்டி ஃப்ரீ?",
+      "meaning": "தண்ணீரும் மின்சாரமும் இலவசமா?"
+    },
+    {
+      "speaker": "B",
+      "text": "No, you pay the bill. You can move in next week.",
+      "say": "நோ, யூ பே த பில். யூ கேன் மூவ் இன் நெக்ஸ்ட் வீக்.",
+      "meaning": "இல்லை, கட்டணத்தை நீங்கள் செலுத்த வேண்டும். அடுத்த வாரம் குடிவரலாம்."
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "Rent",
+      "say": "ரென்ட்",
+      "meaning": "வாடகை"
+    },
+    {
+      "word": "Deposit",
+      "say": "டிப்பாஸிட்",
+      "meaning": "முன்பணம்"
+    },
+    {
+      "word": "Kitchen",
+      "say": "கிச்சன்",
+      "meaning": "சமையலறை"
+    },
+    {
+      "word": "Move in",
+      "say": "மூவ் இன்",
+      "meaning": "குடிவருதல்"
+    }
+  ]
+}

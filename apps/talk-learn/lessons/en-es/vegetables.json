@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "¿Qué verduras quiere hoy?",
+      "say": "ke ber-DOO-ras KYE-re oy?",
+      "meaning": "What vegetables do you want today?"
+    },
+    {
+      "speaker": "B",
+      "text": "Deme medio kilo de tomates y cebollas.",
+      "say": "DE-me ME-dyo KEE-lo de to-MA-tes ee se-BO-yas.",
+      "meaning": "Give me half a kilo of tomatoes and onions."
+    },
+    {
+      "speaker": "A",
+      "text": "Los tomates están frescos. Cuarenta rupias el kilo.",
+      "say": "los to-MA-tes es-TAN FRES-kos. kwa-REN-ta ROO-pyas el KEE-lo.",
+      "meaning": "The tomatoes are fresh. Forty rupees a kilo."
+    },
+    {
+      "speaker": "B",
+      "text": "Es un poco caro. Déjelo en treinta, por favor.",
+      "say": "es oon PO-ko KA-ro. DE-he-lo en TREYN-ta, por fa-VOR.",
+      "meaning": "That is a little expensive. Please make it thirty."
+    },
+    {
+      "speaker": "A",
+      "text": "Está bien, llévelo. ¿Quiere también cilantro?",
+      "say": "es-TA byen, YE-be-lo. KYE-re tam-BYEN see-LAN-tro?",
+      "meaning": "All right, take it. Do you want some coriander also?"
+    },
+    {
+      "speaker": "B",
+      "text": "Sí, un manojo pequeño. Gracias.",
+      "say": "see, oon ma-NO-ho pe-KE-nyo. GRAH-syas.",
+      "meaning": "Yes, a small bunch. Thank you."
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "tomates",
+      "say": "to-MA-tes",
+      "meaning": "Tomatoes"
+    },
+    {
+      "word": "cebollas",
+      "say": "se-BO-yas",
+      "meaning": "Onions"
+    },
+    {
+      "word": "caro",
+      "say": "KA-ro",
+      "meaning": "Expensive"
+    },
+    {
+      "word": "frescos",
+      "say": "FRES-kos",
+      "meaning": "Fresh"
+    }
+  ]
+}

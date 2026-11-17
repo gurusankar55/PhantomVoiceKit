@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "नमस्ते, आप यहाँ नए हैं न? मैं प्रिया हूँ।",
+      "say": "namaste, aap yahaan naye hain naa? main priyaa hoon.",
+      "meaning": "Hello, you are new here, right? I am Priya."
+    },
+    {
+      "speaker": "B",
+      "text": "जी हाँ, आज मेरा पहला दिन है। मैं अरुण हूँ।",
+      "say": "jee haan, aaj meraa pehlaa din hai. main arun hoon.",
+      "meaning": "Yes, today is my first day. I am Arun."
+    },
+    {
+      "speaker": "A",
+      "text": "स्वागत है अरुण। आपकी मेज़ खिड़की के पास है।",
+      "say": "svaagat hai arun. aapkee mez khidkee ke paas hai.",
+      "meaning": "Welcome, Arun. Your desk is near the window."
+    },
+    {
+      "speaker": "B",
+      "text": "धन्यवाद। दोपहर का खाना कितने बजे है?",
+      "say": "dhanyavaad. dopehar kaa khaanaa kitne baje hai?",
+      "meaning": "Thank you. What time is lunch?"
+    },
+    {
+      "speaker": "A",
+      "text": "एक बजे खाना है। हम साथ में खाते हैं।",
+      "say": "ek baje khaanaa hai. ham saath mein khaate hain.",
+      "meaning": "Lunch is at one o'clock. We eat together."
+    },
+    {
+      "speaker": "B",
+      "text": "यह अच्छा है। कोई सवाल हो तो मेरी मदद कीजिए।",
+      "say": "yeh achchhaa hai. koyee savaal ho to meree madad keejiye.",
+      "meaning": "That is nice. Please help me if I have a question."
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "नए",
+      "say": "naye",
+      "meaning": "New"
+    },
+    {
+      "word": "मेज़",
+      "say": "mez",
+      "meaning": "Desk"
+    },
+    {
+      "word": "साथ",
+      "say": "saath",
+      "meaning": "Together"
+    },
+    {
+      "word": "पहला",
+      "say": "pehlaa",
+      "meaning": "First"
+    }
+  ]
+}

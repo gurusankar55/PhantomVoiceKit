@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "Hello, I am near the post office. How do I reach your house?",
+      "say": "ஹெலோ, ஐ ஆம் நீர் த போஸ்ட் ஆஃபிஸ். ஹௌ டூ ஐ ரீச் யூர் ஹௌஸ்?",
+      "meaning": "வணக்கம், நான் அஞ்சல் நிலையம் அருகில் இருக்கிறேன். உங்கள் வீட்டுக்கு எப்படி வருவது?"
+    },
+    {
+      "speaker": "B",
+      "text": "Walk straight on this road for two hundred metres.",
+      "say": "வாக் ஸ்ட்ரேட் ஆன் திஸ் ரோட் ஃபார் டூ ஹன்ட்ரட் மீட்டர்ஸ்.",
+      "meaning": "இந்தச் சாலையில் இருநூறு மீட்டர் நேராக நடங்கள்."
+    },
+    {
+      "speaker": "A",
+      "text": "Then turn right at the big temple. Is that correct?",
+      "say": "தென் டர்ன் ரைட் ஆட் த பிக் டெம்பிள். இஸ் தாட் கெரெக்ட்?",
+      "meaning": "பிறகு பெரிய கோயிலில் வலப்பக்கம் திரும்ப வேண்டுமா?"
+    },
+    {
+      "speaker": "B",
+      "text": "Yes. After the temple, you will see a green gate on the left.",
+      "say": "யெஸ். ஆஃப்டர் த டெம்பிள், யூ வில் ஸீ அ க்ரீன் கேட் ஆன் த லெஃப்ட்.",
+      "meaning": "ஆம். கோயிலுக்குப் பிறகு இடப்பக்கம் ஒரு பச்சை வாயில் தெரியும்."
+    },
+    {
+      "speaker": "A",
+      "text": "That is my house. It is number twelve, on the first floor.",
+      "say": "தாட் இஸ் மை ஹௌஸ். இட் இஸ் நம்பெர் ட்வெல்வ், ஆன் த ஃபர்ஸ்ட் ஃப்ளோர்.",
+      "meaning": "அதுதான் என் வீடு. பன்னிரண்டாம் எண், முதல் மாடி."
+    },
+    {
+      "speaker": "B",
+      "text": "I will be there in ten minutes. Thank you.",
+      "say": "ஐ வில் பீ தேர் இன் டென் மினிட்ஸ். தேங்க் யூ.",
+      "meaning": "பத்து நிமிடத்தில் அங்கே இருப்பேன். நன்றி."
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "Right",
+      "say": "ரைட்",
+      "meaning": "வலது"
+    },
+    {
+      "word": "Gate",
+      "say": "கேட்",
+      "meaning": "வாயில்"
+    },
+    {
+      "word": "Floor",
+      "say": "ஃப்ளோர்",
+      "meaning": "மாடி"
+    },
+    {
+      "word": "Turn",
+      "say": "டர்ன்",
+      "meaning": "திரும்பு"
+    }
+  ]
+}

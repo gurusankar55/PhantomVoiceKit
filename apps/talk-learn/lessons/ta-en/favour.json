@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "Hello, Sunil. Can I ask you for a small favour?",
+      "say": "ஹெலோ, ஸுனீல். கேன் ஐ ஆஸ்க் யூ ஃபார் அ ஸ்மால் ஃபேவர்?",
+      "meaning": "வணக்கம் சுனில். ஒரு சிறிய உதவி கேட்கலாமா?"
+    },
+    {
+      "speaker": "B",
+      "text": "Of course. What is it?",
+      "say": "ஆவ் கோர்ஸ். வாட் இஸ் இட்?",
+      "meaning": "நிச்சயமாக. என்ன அது?"
+    },
+    {
+      "speaker": "A",
+      "text": "My mother is sick. Could you drop my daughter at school today?",
+      "say": "மை மதர் இஸ் ஸிக். குட் யூ ட்ராப் மை டொட்டர் ஆட் ஸ்கூல் டுடே?",
+      "meaning": "என் அம்மாவுக்கு உடல்நலமில்லை. என் மகளை இன்று பள்ளியில் விட முடியுமா?"
+    },
+    {
+      "speaker": "B",
+      "text": "Sure, no problem. I am going that way anyway.",
+      "say": "ஷொர், நோ ப்ராப்லம். ஐ ஆம் கொயிங் தாட் வே எனிவே.",
+      "meaning": "சரி, பிரச்சினையில்லை. நான் அந்த வழியாகத்தான் போகிறேன்."
+    },
+    {
+      "speaker": "A",
+      "text": "Thank you so much. I really appreciate your help.",
+      "say": "தேங்க் யூ ஸோ மச். ஐ ரீலி அப்ரிஷியேட் யூர் ஹெல்ப்.",
+      "meaning": "மிக்க நன்றி. உங்கள் உதவியை மிகவும் மதிக்கிறேன்."
+    },
+    {
+      "speaker": "B",
+      "text": "You are welcome. Please call me if you need anything else.",
+      "say": "யூ ஆர் வெல்கம். ப்லீஸ் கால் மீ இஃப் யூ நீட் எனிட்டிங் எல்ஸ்.",
+      "meaning": "பரவாயில்லை. வேறு ஏதாவது தேவையென்றால் அழையுங்கள்."
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "Favour",
+      "say": "ஃபேவர்",
+      "meaning": "உதவி"
+    },
+    {
+      "word": "Drop",
+      "say": "ட்ராப்",
+      "meaning": "விடு"
+    },
+    {
+      "word": "No problem",
+      "say": "நோ ப்ராப்லம்",
+      "meaning": "பிரச்சினையில்லை"
+    },
+    {
+      "word": "Appreciate",
+      "say": "அப்ரிஷியேட்",
+      "meaning": "மதிக்கிறேன்"
+    }
+  ]
+}

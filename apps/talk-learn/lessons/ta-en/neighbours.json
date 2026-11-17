@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "Good evening! The weather is nice today.",
+      "say": "குட் ஈவ்னிங்! த வெதர் இஸ் நைஸ் டுடே.",
+      "meaning": "மாலை வணக்கம்! இன்று வானிலை நன்றாக இருக்கிறது."
+    },
+    {
+      "speaker": "B",
+      "text": "Yes, it is cool after the rain. How are your children?",
+      "say": "யெஸ், இட் இஸ் கூல் ஆஃப்டர் த ரேன். ஹௌ ஆர் யூர் சில்ட்ரென்?",
+      "meaning": "ஆம், மழைக்குப் பிறகு குளிர்ச்சியாக இருக்கிறது. உங்கள் குழந்தைகள் எப்படி இருக்கிறார்கள்?"
+    },
+    {
+      "speaker": "A",
+      "text": "They are fine. They are playing in the park now.",
+      "say": "தே ஆர் ஃபைன். தே ஆர் ப்லேயிங் இன் த பார்க் நௌ.",
+      "meaning": "நலமாக இருக்கிறார்கள். இப்போது பூங்காவில் விளையாடுகிறார்கள்."
+    },
+    {
+      "speaker": "B",
+      "text": "Our building is very quiet. The new neighbours are nice, no?",
+      "say": "ஆர் பில்ட்டிங் இஸ் வெரி க்வையெட். த ந்யூ நேபர்ஸ் ஆர் நைஸ், நோ?",
+      "meaning": "எங்கள் கட்டிடம் மிக அமைதியாக இருக்கிறது. புதிய அண்டை வீட்டார் நல்லவர்கள், இல்லையா?"
+    },
+    {
+      "speaker": "A",
+      "text": "Yes, they helped me carry my bags yesterday.",
+      "say": "யெஸ், தே ஹெல்ப்ட் மீ காரி மை பாக்ஸ் யெஸ்டர்டே.",
+      "meaning": "ஆம், நேற்று என் பைகளைத் தூக்க உதவினார்கள்."
+    },
+    {
+      "speaker": "B",
+      "text": "If you need any help, please knock on our door anytime.",
+      "say": "இஃப் யூ நீட் எனி ஹெல்ப், ப்லீஸ் நாக் ஆன் ஆர் டோர் எனிட்டைம்.",
+      "meaning": "ஏதாவது உதவி தேவைப்பட்டால் எப்போது வேண்டுமானாலும் எங்கள் கதவைத் தட்டுங்கள்."
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "Neighbour",
+      "say": "நேபர்",
+      "meaning": "அண்டை வீட்டார்"
+    },
+    {
+      "word": "Weather",
+      "say": "வெதர்",
+      "meaning": "வானிலை"
+    },
+    {
+      "word": "Children",
+      "say": "சில்ட்ரென்",
+      "meaning": "குழந்தைகள்"
+    },
+    {
+      "word": "Door",
+      "say": "டோர்",
+      "meaning": "கதவு"
+    }
+  ]
+}

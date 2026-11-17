@@ -5,8 +5,12 @@
 //   const out = createSpeechOutput({ lang: 'ta-IN' });
 //   out.speak('Hello', { onStart, onEnd, onError });
 //   out.stop();
+//
+// For a conversation between two people (Talk & Learn):
+//   out.speak(text, { role: 'a' | 'b', rate: 0.7 })  two different voices of the SAME language
+//   await out.canSpeak()                              true when the device has a voice for it
 
-import { selectVoice } from './speech-output-utils.js';
+import { selectVoice, pickVoicePair } from './speech-output-utils.js';
 
 // How long (ms) we wait for the browser to finish loading its voice list
 // before we decide that no voice is available.
@@ -58,8 +62,11 @@ export function createSpeechOutput({ lang }) {
    * onEnd:   called when the utterance finishes.
    * onError: called with { audioUnavailable: true } if no voice exists,
    *          or with an error object if speaking fails.
+   * role:    'a' or 'b' picks one of two different voices of this language (strict: a voice of
+   *          another language is never used). Without a role the best voice is used, as before.
+   * rate:    speaking speed, 1 is normal (0.7 is slow). pitch: 1 is normal.
    */
-  function speak(text, { onStart, onEnd, onError } = {}) {
+  function speak(text, { onStart, onEnd, onError, role, rate, pitch } = {}) {
     // If the browser has no speech synthesis at all, report it.
     if (typeof window === 'undefined' || !window.speechSynthesis) {
       if (onError) onError({ audioUnavailable: true });
@@ -69,7 +76,16 @@ export function createSpeechOutput({ lang }) {
     // Picks a voice and speaks. Runs once voices are available.
     function run(voices) {
       voicesReady = true;
-      const voice = selectVoice(voices, lang);
+      let voice;
+      let voicePitch = pitch;
+      if (role === 'a' || role === 'b') {
+        const pair = pickVoicePair(voices, lang);
+        voice = pair ? pair[role] : null;
+        // Only one voice on this device: person B gets a higher pitch so the two can be told apart.
+        if (pair && role === 'b' && !pair.distinct) voicePitch = Math.min(2, (pitch ?? 1) + 0.35);
+      } else {
+        voice = selectVoice(voices, lang);
+      }
 
       // No matching voice: do not speak; the caller shows the text instead.
       if (!voice) {
@@ -80,6 +96,8 @@ export function createSpeechOutput({ lang }) {
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.voice = voice;
       utterance.lang = lang;
+      if (typeof rate === 'number') utterance.rate = rate;
+      if (typeof voicePitch === 'number') utterance.pitch = voicePitch;
 
       utterance.onend = () => {
         if (onEnd) onEnd();
@@ -102,6 +120,14 @@ export function createSpeechOutput({ lang }) {
     }
   }
 
+  /** Resolves true when the device has at least one voice for this language (never another one). */
+  async function canSpeak() {
+    if (typeof window === 'undefined' || !window.speechSynthesis) return false;
+    const voices = await loadVoices();
+    if (voices.length > 0) voicesReady = true; // the next speak() can start at once
+    return pickVoicePair(voices, lang) !== null;
+  }
+
   /** Stop any speech that is playing or queued. */
   function stop() {
     if (typeof window !== 'undefined' && window.speechSynthesis) {
@@ -109,5 +135,5 @@ export function createSpeechOutput({ lang }) {
     }
   }
 
-  return { speak, stop };
+  return { speak, stop, canSpeak };
 }

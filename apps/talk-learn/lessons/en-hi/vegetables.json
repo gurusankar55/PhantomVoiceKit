@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "आज आपको कौन सी सब्ज़ी चाहिए?",
+      "say": "aaj aapko kaun see sabzee chaahiye?",
+      "meaning": "What vegetables do you want today?"
+    },
+    {
+      "speaker": "B",
+      "text": "आधा किलो टमाटर और प्याज़ दीजिए।",
+      "say": "aadhaa kilo tamaatar aur pyaaz deejiye.",
+      "meaning": "Give me half a kilo of tomatoes and onions."
+    },
+    {
+      "speaker": "A",
+      "text": "टमाटर ताज़े हैं। चालीस रुपये किलो।",
+      "say": "tamaatar taaze hain. chaaleess rupaye kilo.",
+      "meaning": "The tomatoes are fresh. Forty rupees a kilo."
+    },
+    {
+      "speaker": "B",
+      "text": "यह थोड़ा महँगा है। तीस में दे दीजिए।",
+      "say": "yeh thodaa mahengaa hai. tees mein de deejiye.",
+      "meaning": "That is a little expensive. Please make it thirty."
+    },
+    {
+      "speaker": "A",
+      "text": "ठीक है, ले लीजिए। क्या धनिया भी चाहिए?",
+      "say": "theek hai, le leejiye. kyaa dhaniyaa bhee chaahiye?",
+      "meaning": "All right, take it. Do you want some coriander also?"
+    },
+    {
+      "speaker": "B",
+      "text": "हाँ, एक छोटी गड्डी दे दीजिए। धन्यवाद।",
+      "say": "haan, ek chhotee gaddee de deejiye. dhanyavaad.",
+      "meaning": "Yes, a small bunch. Thank you."
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "टमाटर",
+      "say": "tamaatar",
+      "meaning": "Tomatoes"
+    },
+    {
+      "word": "प्याज़",
+      "say": "pyaaz",
+      "meaning": "Onions"
+    },
+    {
+      "word": "महँगा",
+      "say": "mahengaa",
+      "meaning": "Expensive"
+    },
+    {
+      "word": "ताज़े",
+      "say": "taaze",
+      "meaning": "Fresh"
+    }
+  ]
+}

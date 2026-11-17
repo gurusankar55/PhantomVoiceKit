@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "Good morning. I want to see the doctor.",
+      "say": "குட் மார்னிங். ஐ வான்ட் டூ ஸீ த டாக்டர்.",
+      "meaning": "காலை வணக்கம். நான் மருத்துவரைப் பார்க்க வேண்டும்."
+    },
+    {
+      "speaker": "B",
+      "text": "Please register first. What is your name and age?",
+      "say": "ப்லீஸ் ரெஜிஸ்டர் ஃபர்ஸ்ட். வாட் இஸ் யூர் நேம் ஆன்ட் ஏஜ்?",
+      "meaning": "முதலில் பதிவு செய்யுங்கள். உங்கள் பெயர் மற்றும் வயது என்ன?"
+    },
+    {
+      "speaker": "A",
+      "text": "My name is Lakshmi. I am forty-five years old.",
+      "say": "மை நேம் இஸ் லக்ஷ்மி. ஐ ஆம் ஃபோர்ட்டி-ஃபைவ் இயர்ஸ் ஓல்ட்.",
+      "meaning": "என் பெயர் லட்சுமி. எனக்கு நாற்பத்தைந்து வயது."
+    },
+    {
+      "speaker": "B",
+      "text": "The doctor will see you after ten minutes. Please wait.",
+      "say": "த டாக்டர் வில் ஸீ யூ ஆஃப்டர் டென் மினிட்ஸ். ப்லீஸ் வேட்.",
+      "meaning": "பத்து நிமிடம் கழித்து மருத்துவர் உங்களைப் பார்ப்பார். காத்திருங்கள்."
+    },
+    {
+      "speaker": "A",
+      "text": "The doctor says you need a blood test.",
+      "say": "த டாக்டர் ஸெஸ் யூ நீட் அ ப்லட் டெஸ்ட்.",
+      "meaning": "ரத்தப் பரிசோதனை செய்ய வேண்டும் என்று மருத்துவர் சொல்கிறார்."
+    },
+    {
+      "speaker": "B",
+      "text": "Where is the lab? And when will the report come?",
+      "say": "வெர் இஸ் த லாப்? ஆன்ட் வென் வில் த ரிப்பூர்ட் கம்?",
+      "meaning": "ஆய்வகம் எங்கே? அறிக்கை எப்போது வரும்?"
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "Doctor",
+      "say": "டாக்டர்",
+      "meaning": "மருத்துவர்"
+    },
+    {
+      "word": "Blood test",
+      "say": "ப்லட் டெஸ்ட்",
+      "meaning": "ரத்தப் பரிசோதனை"
+    },
+    {
+      "word": "Report",
+      "say": "ரிப்பூர்ட்",
+      "meaning": "அறிக்கை"
+    },
+    {
+      "word": "Wait",
+      "say": "வேட்",
+      "meaning": "காத்திரு"
+    }
+  ]
+}

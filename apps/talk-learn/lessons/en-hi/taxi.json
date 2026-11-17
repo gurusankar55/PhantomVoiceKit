@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "आपको कहाँ जाना है?",
+      "say": "aapko kahaan jaanaa hai?",
+      "meaning": "Where do you want to go?"
+    },
+    {
+      "speaker": "B",
+      "text": "रेलवे स्टेशन चलिए। कितना लगेगा?",
+      "say": "relve steshan chaliye. kitnaa lagegaa?",
+      "meaning": "To the railway station, please. How much will it be?"
+    },
+    {
+      "speaker": "A",
+      "text": "एक सौ पचास रुपये लगेंगे।",
+      "say": "ek sau pachaas rupaye lagenge.",
+      "meaning": "It will be one hundred and fifty rupees."
+    },
+    {
+      "speaker": "B",
+      "text": "यह बहुत ज़्यादा है। मीटर से चलिए।",
+      "say": "yeh bahut zyaadaa hai. meetar se chaliye.",
+      "meaning": "That is too much. Please use the meter."
+    },
+    {
+      "speaker": "A",
+      "text": "ठीक है, मीटर से चलता हूँ। बैठिए।",
+      "say": "theek hai, meetar se chaltaa hoon. baithiye.",
+      "meaning": "All right, I will use the meter. Please sit."
+    },
+    {
+      "speaker": "B",
+      "text": "यहीं रोक दीजिए। धन्यवाद।",
+      "say": "yaheen rok deejiye. dhanyavaad.",
+      "meaning": "Please stop here. Thank you."
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "स्टेशन",
+      "say": "steshan",
+      "meaning": "Station"
+    },
+    {
+      "word": "मीटर",
+      "say": "meetar",
+      "meaning": "Meter"
+    },
+    {
+      "word": "ज़्यादा",
+      "say": "zyaadaa",
+      "meaning": "Too much"
+    },
+    {
+      "word": "रोक",
+      "say": "rok",
+      "meaning": "Stop"
+    }
+  ]
+}

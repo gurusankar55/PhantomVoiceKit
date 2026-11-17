@@ -6,7 +6,7 @@
 
 // Apps that need the internet (they call Gemini through our server). Offline they show a clear
 // "needs internet" message; every other app works offline.
-export const ONLINE_ONLY_APPS = Object.freeze(['spirit-clerk', 'ghost-tutor', 'form-translator', 'voice-translator']);
+export const ONLINE_ONLY_APPS = Object.freeze(['spirit-clerk', 'ghost-tutor', 'form-translator', 'voice-translator', 'talk-learn']);
 
 /** True when the app with this menu id needs the internet. */
 export function needsInternet(appId) {

@@ -21,6 +21,7 @@ export const APP_ICON_IDS = Object.freeze([
   'story-time',
   'calm-time',
   'voice-translator',
+  'talk-learn',
 ]);
 
 let counter = 0; // makes the gradient ids unique on the page
@@ -208,6 +209,19 @@ const ICONS = {
       `<path d="M21 18h19a4 4 0 014 4v11a4 4 0 01-4 4h-1v5l-6-5H21a4 4 0 01-4-4V22a4 4 0 014-4z" fill="url(#${u('right')})" stroke="#0b4d4d" stroke-width="0.8"/>` +
       '<path d="M20.5 21.5h14" stroke="#fff" stroke-width="1.6" stroke-linecap="round" opacity="0.5"/>' +
       '<text x="25" y="33" font-family="Nirmala UI, Latha, Noto Sans Tamil, sans-serif" font-size="11" font-weight="700" fill="#06302e">அ</text>',
+  }),
+
+  // A smiling ghost with a speech bubble that holds a star
+  'talk-learn': (u) => ({
+    defs: lin(u('bubble'), '#ffb066', '#d85f00') + rad(u('ghost'), '#ffffff', '#cbbdf0') + rad(u('star'), '#fff6b8', '#ffad00'),
+    body:
+      `<path d="M22 4H40a5 5 0 015 5V18a5 5 0 01-5 5H31L25 28V23H22a5 5 0 01-5-5V9a5 5 0 015-5z" fill="url(#${u('bubble')})" stroke="#8a3a00" stroke-width="0.8" stroke-linejoin="round"/>` +
+      '<path d="M20 7h14" stroke="#fff" stroke-width="1.6" stroke-linecap="round" opacity="0.5"/>' +
+      `<path d="M31 7.6L32.53 11.7L36.9 11.88L33.47 14.6L34.64 18.82L31 16.4L27.36 18.82L28.53 14.6L25.1 11.88L29.47 11.7Z" fill="url(#${u('star')})" stroke="#9a6a00" stroke-width="0.6" stroke-linejoin="round"/>` +
+      `<path d="M3 44V32C3 25 8 20 14 20S25 25 25 32V44L21.5 41L18 44L14.5 41L11 44L7.5 41Z" fill="url(#${u('ghost')})" stroke="#a99bd6" stroke-width="0.8" stroke-linejoin="round"/>` +
+      '<circle cx="9.5" cy="31" r="1.9" fill="#2a1648"/><circle cx="18.5" cy="31" r="1.9" fill="#2a1648"/>' +
+      '<path d="M10 36Q14 39.5 18 36" fill="none" stroke="#2a1648" stroke-width="1.8" stroke-linecap="round"/>' +
+      '<ellipse cx="8" cy="25.5" rx="1.6" ry="3" fill="#fff" opacity="0.85"/>',
   }),
 
   // Lotus with a timer ring

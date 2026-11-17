@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "Hola, ¿quién habla?",
+      "say": "OH-la, kyen A-bla?",
+      "meaning": "Hello, who is speaking?"
+    },
+    {
+      "speaker": "B",
+      "text": "Hola, soy Meena. ¿Puedo hablar con Rajesh?",
+      "say": "OH-la, soy MEE-na. PWE-do a-BLAR kon ra-HESH?",
+      "meaning": "Hello, this is Meena. May I speak to Rajesh?"
+    },
+    {
+      "speaker": "A",
+      "text": "Ahora no está. ¿Quiere dejar un mensaje?",
+      "say": "a-OH-ra no es-TA. KYE-re de-HAR oon men-SA-he?",
+      "meaning": "He is not here right now. Can I take a message?"
+    },
+    {
+      "speaker": "B",
+      "text": "Sí, dígale que me llame.",
+      "say": "see, DEE-ga-le ke me YA-me.",
+      "meaning": "Yes, please tell him to call me back."
+    },
+    {
+      "speaker": "A",
+      "text": "Claro. ¿Su número es el mismo?",
+      "say": "KLA-ro. soo NOO-me-ro es el MEES-mo?",
+      "meaning": "Sure. Is your number the same?"
+    },
+    {
+      "speaker": "B",
+      "text": "Sí, es el mismo. Muchas gracias.",
+      "say": "see, es el MEES-mo. MOO-chas GRAH-syas.",
+      "meaning": "Yes, it is the same. Thank you very much."
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "mensaje",
+      "say": "men-SA-he",
+      "meaning": "Message"
+    },
+    {
+      "word": "número",
+      "say": "NOO-me-ro",
+      "meaning": "Number"
+    },
+    {
+      "word": "hablar",
+      "say": "a-BLAR",
+      "meaning": "Speak"
+    },
+    {
+      "word": "mismo",
+      "say": "MEES-mo",
+      "meaning": "Same"
+    }
+  ]
+}

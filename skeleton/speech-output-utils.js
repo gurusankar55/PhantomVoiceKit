@@ -13,6 +13,50 @@ function pickPreferred(matches) {
   return matches[0];
 }
 
+// The language part of a tag, lower case: "hi-IN", "hi_IN" (Android) and "hi" all give "hi".
+// The old Android code "in" for Indonesian is the same as "id".
+function languageOf(tag) {
+  const base = String(tag ?? '').split(/[-_]/)[0].toLowerCase();
+  return base === 'in' ? 'id' : base;
+}
+
+function regionOf(tag) {
+  return String(tag ?? '').split(/[-_]/)[1]?.toUpperCase() ?? '';
+}
+
+// Every voice that really speaks this language, best first: the exact region, then names with
+// "Natural", then names with "Online", then the rest in their own order. A voice of another
+// language is never returned, and the Cantonese voice (zh-HK) never stands in for Mandarin.
+export function voicesForLanguage(voices, bcp47) {
+  const list = Array.isArray(voices) ? voices : [];
+  const base = languageOf(bcp47);
+  if (base === '') return [];
+  const wanted = String(bcp47).replace(/_/g, '-').toLowerCase();
+  const asksForHongKong = regionOf(bcp47) === 'HK';
+  const same = list.filter((voice) => {
+    if (!voice || typeof voice.lang !== 'string' || languageOf(voice.lang) !== base) return false;
+    return !(base === 'zh' && regionOf(voice.lang) === 'HK' && !asksForHongKong);
+  });
+  const points = (voice) =>
+    (voice.lang.replace(/_/g, '-').toLowerCase() === wanted ? 100 : 0) +
+    (voice.name && voice.name.includes('Natural') ? 10 : 0) +
+    (voice.name && voice.name.includes('Online') ? 1 : 0);
+  // sort() is stable, so voices with the same points keep the browser's order.
+  return [...same].sort((a, b) => points(b) - points(a));
+}
+
+// Two voices for the two people of a conversation: a is the best voice, b is the next best voice
+// with another name. { distinct: false } means the device has only one voice for this language
+// (b is then the same voice; the caller can change its pitch). null when there is no voice.
+export function pickVoicePair(voices, bcp47) {
+  const ranked = voicesForLanguage(voices, bcp47);
+  if (ranked.length === 0) return null;
+  const a = ranked[0];
+  const idOf = (voice) => voice.voiceURI || voice.name || '';
+  const b = ranked.find((voice) => voice !== a && idOf(voice) !== idOf(a));
+  return b ? { a, b, distinct: true } : { a, b: a, distinct: false };
+}
+
 // Choose a voice for a BCP-47 language tag such as "ta-IN".
 // Step 1: voices whose lang matches exactly.
 // Step 2: voices whose language prefix matches (e.g. "ta").

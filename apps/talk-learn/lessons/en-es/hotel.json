@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "Bienvenido a nuestro hotel. ¿Tiene una reserva?",
+      "say": "byen-be-NEE-do a NWES-tro o-TEL. TYE-ne OO-na rre-SER-ba?",
+      "meaning": "Welcome to our hotel. Do you have a booking?"
+    },
+    {
+      "speaker": "B",
+      "text": "Sí, a nombre de Suresh. Dos noches, por favor.",
+      "say": "see, a NOM-bre de soo-RESH. dos NO-ches, por fa-VOR.",
+      "meaning": "Yes, under the name Suresh. Two nights, please."
+    },
+    {
+      "speaker": "A",
+      "text": "Su habitación es la doscientos cinco. Aquí tiene la llave.",
+      "say": "soo a-bee-ta-SYON es la dos-SYEN-tos SEEN-ko. a-KEE TYE-ne la YA-be.",
+      "meaning": "Your room is number two zero five. Here is the key."
+    },
+    {
+      "speaker": "B",
+      "text": "¿A qué hora es el desayuno?",
+      "say": "a ke O-ra es el de-sa-YOO-no?",
+      "meaning": "What time is breakfast?"
+    },
+    {
+      "speaker": "A",
+      "text": "El desayuno es de siete a diez de la mañana.",
+      "say": "el de-sa-YOO-no es de SYE-te a dyes de la ma-NYA-na.",
+      "meaning": "Breakfast is from seven to ten in the morning."
+    },
+    {
+      "speaker": "B",
+      "text": "Gracias. Mande agua a mi habitación, por favor.",
+      "say": "GRAH-syas. MAN-de A-gwa a mee a-bee-ta-SYON, por fa-VOR.",
+      "meaning": "Thank you. Please send some water to my room."
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "habitación",
+      "say": "a-bee-ta-SYON",
+      "meaning": "Room"
+    },
+    {
+      "word": "llave",
+      "say": "YA-be",
+      "meaning": "Key"
+    },
+    {
+      "word": "desayuno",
+      "say": "de-sa-YOO-no",
+      "meaning": "Breakfast"
+    },
+    {
+      "word": "noche",
+      "say": "NO-che",
+      "meaning": "Night"
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "Hola, eres nuevo aquí, ¿verdad? Soy Priya.",
+      "say": "OH-la, E-res NWE-bo a-KEE, ber-DAD? soy PREE-ya.",
+      "meaning": "Hello, you are new here, right? I am Priya."
+    },
+    {
+      "speaker": "B",
+      "text": "Sí, hoy es mi primer día. Soy Arun.",
+      "say": "see, oy es mee pree-MER DEE-a. soy a-ROON.",
+      "meaning": "Yes, today is my first day. I am Arun."
+    },
+    {
+      "speaker": "A",
+      "text": "Bienvenido, Arun. Tu escritorio está junto a la ventana.",
+      "say": "byen-be-NEE-do, a-ROON. too es-kree-TO-ryo es-TA HOON-to a la ben-TA-na.",
+      "meaning": "Welcome, Arun. Your desk is near the window."
+    },
+    {
+      "speaker": "B",
+      "text": "Gracias. ¿A qué hora es el almuerzo?",
+      "say": "GRAH-syas. a ke O-ra es el al-MWER-so?",
+      "meaning": "Thank you. What time is lunch?"
+    },
+    {
+      "speaker": "A",
+      "text": "El almuerzo es a la una. Comemos juntos.",
+      "say": "el al-MWER-so es a la OO-na. ko-ME-mos HOON-tos.",
+      "meaning": "Lunch is at one o'clock. We eat together."
+    },
+    {
+      "speaker": "B",
+      "text": "Qué bien. Ayúdame, por favor, si tengo una pregunta.",
+      "say": "ke byen. a-YOO-da-me, por fa-VOR, see TEN-go OO-na pre-GOON-ta.",
+      "meaning": "That is nice. Please help me if I have a question."
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "nuevo",
+      "say": "NWE-bo",
+      "meaning": "New"
+    },
+    {
+      "word": "escritorio",
+      "say": "es-kree-TO-ryo",
+      "meaning": "Desk"
+    },
+    {
+      "word": "juntos",
+      "say": "HOON-tos",
+      "meaning": "Together"
+    },
+    {
+      "word": "primer",
+      "say": "pree-MER",
+      "meaning": "First"
+    }
+  ]
+}

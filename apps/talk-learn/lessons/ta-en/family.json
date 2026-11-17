@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "Tell me about your family. How many are you?",
+      "say": "டெல் மீ அபௌட் யூர் ஃபாமிலி. ஹௌ மெனி ஆர் யூ?",
+      "meaning": "உங்கள் குடும்பத்தைப் பற்றிச் சொல்லுங்கள். நீங்கள் எத்தனை பேர்?"
+    },
+    {
+      "speaker": "B",
+      "text": "We are five: my parents, my wife, my son and I.",
+      "say": "வீ ஆர் ஃபைவ்: மை பேரன்ட்ஸ், மை வைஃப், மை ஸன் ஆன்ட் ஐ.",
+      "meaning": "நாங்கள் ஐந்து பேர்: பெற்றோர், மனைவி, மகன், நான்."
+    },
+    {
+      "speaker": "A",
+      "text": "Do you have brothers or sisters?",
+      "say": "டூ யூ ஹாவ் ப்ரதர்ஸ் ஓர் ஸிஸ்டர்ஸ்?",
+      "meaning": "உங்களுக்கு அண்ணன் தம்பி அல்லது சகோதரிகள் இருக்கிறார்களா?"
+    },
+    {
+      "speaker": "B",
+      "text": "I have one younger brother. He lives in Pune.",
+      "say": "ஐ ஹாவ் வன் யஙர் ப்ரதர். ஹீ லிவ்ஸ் இன் பூனே.",
+      "meaning": "எனக்கு ஒரு தம்பி இருக்கிறான். அவன் புனேயில் இருக்கிறான்."
+    },
+    {
+      "speaker": "A",
+      "text": "My uncle and aunt live near us. We meet every Sunday.",
+      "say": "மை அங்கல் ஆன்ட் ஆன்ட் லிவ் நீர் அஸ். வீ மீட் எவ்ரி ஸன்டே.",
+      "meaning": "என் மாமாவும் அத்தையும் எங்கள் அருகில் இருக்கிறார்கள். ஒவ்வொரு ஞாயிறும் சந்திப்போம்."
+    },
+    {
+      "speaker": "B",
+      "text": "That is lovely. Family is very important.",
+      "say": "தாட் இஸ் லவ்லி. ஃபாமிலி இஸ் வெரி இம்பொர்டன்ட்.",
+      "meaning": "அது அருமை. குடும்பம் மிக முக்கியம்."
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "Family",
+      "say": "ஃபாமிலி",
+      "meaning": "குடும்பம்"
+    },
+    {
+      "word": "Brother",
+      "say": "ப்ரதர்",
+      "meaning": "சகோதரன்"
+    },
+    {
+      "word": "Sister",
+      "say": "ஸிஸ்டர்",
+      "meaning": "சகோதரி"
+    },
+    {
+      "word": "Parents",
+      "say": "பேரன்ட்ஸ்",
+      "meaning": "பெற்றோர்"
+    }
+  ]
+}

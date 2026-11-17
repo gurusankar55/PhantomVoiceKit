@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "¿A dónde quiere ir?",
+      "say": "a DON-de KYE-re eer?",
+      "meaning": "Where do you want to go?"
+    },
+    {
+      "speaker": "B",
+      "text": "A la estación de tren, por favor. ¿Cuánto costará?",
+      "say": "a la es-ta-SYON de tren, por fa-VOR. KWAN-to kos-ta-RA?",
+      "meaning": "To the railway station, please. How much will it be?"
+    },
+    {
+      "speaker": "A",
+      "text": "Serán ciento cincuenta rupias.",
+      "say": "se-RAN SYEN-to seen-KWEN-ta ROO-pyas.",
+      "meaning": "It will be one hundred and fifty rupees."
+    },
+    {
+      "speaker": "B",
+      "text": "Es demasiado. Use el taxímetro, por favor.",
+      "say": "es de-ma-SYA-do. OO-se el tak-SEE-me-tro, por fa-VOR.",
+      "meaning": "That is too much. Please use the meter."
+    },
+    {
+      "speaker": "A",
+      "text": "Está bien, uso el taxímetro. Siéntese.",
+      "say": "es-TA byen, OO-so el tak-SEE-me-tro. SYEN-te-se.",
+      "meaning": "All right, I will use the meter. Please sit."
+    },
+    {
+      "speaker": "B",
+      "text": "Pare aquí, por favor. Gracias.",
+      "say": "PA-re a-KEE, por fa-VOR. GRAH-syas.",
+      "meaning": "Please stop here. Thank you."
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "estación",
+      "say": "es-ta-SYON",
+      "meaning": "Station"
+    },
+    {
+      "word": "taxímetro",
+      "say": "tak-SEE-me-tro",
+      "meaning": "Meter"
+    },
+    {
+      "word": "demasiado",
+      "say": "de-ma-SYA-do",
+      "meaning": "Too much"
+    },
+    {
+      "word": "Pare",
+      "say": "PA-re",
+      "meaning": "Stop"
+    }
+  ]
+}

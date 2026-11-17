@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "Good morning. How can I help you?",
+      "say": "குட் மார்னிங். ஹௌ கேன் ஐ ஹெல்ப் யூ?",
+      "meaning": "காலை வணக்கம். நான் எப்படி உதவலாம்?"
+    },
+    {
+      "speaker": "B",
+      "text": "I want to open a savings account.",
+      "say": "ஐ வான்ட் டூ ஓப்பன் அ ஸேவிங்ஸ் அக்கௌன்ட்.",
+      "meaning": "நான் ஒரு சேமிப்புக் கணக்கு தொடங்க விரும்புகிறேன்."
+    },
+    {
+      "speaker": "A",
+      "text": "Please fill this form. I need your photo and Aadhaar card.",
+      "say": "ப்லீஸ் ஃபில் திஸ் ஃபொர்ம். ஐ நீட் யூர் ஃபொட்டோ ஆன்ட் ஆதார் கார்டு.",
+      "meaning": "இந்தப் படிவத்தை நிரப்புங்கள். உங்கள் புகைப்படமும் ஆதார் அட்டையும் வேண்டும்."
+    },
+    {
+      "speaker": "B",
+      "text": "Here you are. How much money should I put in?",
+      "say": "ஹீர் யூ ஆர். ஹௌ மச் மனி ஷுட் ஐ புட் இன்?",
+      "meaning": "இதோ. எவ்வளவு பணம் போட வேண்டும்?"
+    },
+    {
+      "speaker": "A",
+      "text": "Five hundred rupees is enough. Please sign here.",
+      "say": "ஃபைவ் ஹன்ட்ரட் ரூப்பீஸ் இஸ் இனஃப். ப்லீஸ் ஸைன் ஹீர்.",
+      "meaning": "ஐநூறு ரூபாய் போதும். இங்கே கையெழுத்துப் போடுங்கள்."
+    },
+    {
+      "speaker": "B",
+      "text": "Done. Your passbook will come in one week.",
+      "say": "டன். யூர் பாஸ்புக் வில் கம் இன் வன் வீக்.",
+      "meaning": "முடிந்தது. உங்கள் வங்கிப் புத்தகம் ஒரு வாரத்தில் வரும்."
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "Account",
+      "say": "அக்கௌன்ட்",
+      "meaning": "கணக்கு"
+    },
+    {
+      "word": "Form",
+      "say": "ஃபொர்ம்",
+      "meaning": "படிவம்"
+    },
+    {
+      "word": "Sign",
+      "say": "ஸைன்",
+      "meaning": "கையெழுத்து"
+    },
+    {
+      "word": "Enough",
+      "say": "இனஃப்",
+      "meaning": "போதும்"
+    }
+  ]
+}

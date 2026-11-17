@@ -1,7 +1,7 @@
 {
   "name": "phantom-voice-kit",
   "version": "1.0.0",
-  "description": "A reusable skeleton for voice-first web apps in 20 languages, with 12 apps built on it (forms, learning, translation, games, stories, calm).",
+  "description": "A reusable skeleton for voice-first web apps in 20 languages, with 13 apps built on it (forms, learning, translation, games, stories, calm).",
   "type": "module",
   "license": "MIT",
   "author": "Sankar D",

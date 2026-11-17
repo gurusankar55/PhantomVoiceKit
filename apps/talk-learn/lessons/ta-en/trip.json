@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "Hello, I want to book a trip to Goa.",
+      "say": "ஹெலோ, ஐ வான்ட் டூ புக் அ ட்ரிப் டூ கோவா.",
+      "meaning": "வணக்கம், நான் கோவாவுக்கு ஒரு பயணம் முன்பதிவு செய்ய வேண்டும்."
+    },
+    {
+      "speaker": "B",
+      "text": "Of course. For how many people and which dates?",
+      "say": "ஆவ் கோர்ஸ். ஃபார் ஹௌ மெனி பீப்பிள் ஆன்ட் விச் ஏட்ஸ்?",
+      "meaning": "சரி. எத்தனை பேருக்கு, எந்தத் தேதிகளில்?"
+    },
+    {
+      "speaker": "A",
+      "text": "Four people, from the tenth to the fourteenth of December.",
+      "say": "ஃபார் பீப்பிள், ஃப்ரம் த டென்த் டூ த ஃபோர்ட்டீன்த் ஆவ் டிஸெம்பர்.",
+      "meaning": "நான்கு பேர், டிசம்பர் பத்து முதல் பதினான்கு வரை."
+    },
+    {
+      "speaker": "B",
+      "text": "The train tickets and the hotel together cost twenty thousand rupees.",
+      "say": "த ட்ரேன் டிக்கிட்ஸ் ஆன்ட் த ஹோட்டல் டுகெதர் காஸ்ட் ட்வென்டி தௌஸன்ட் ரூப்பீஸ்.",
+      "meaning": "ரயில் டிக்கெட்டும் ஹோட்டலும் சேர்த்து இருபதாயிரம் ரூபாய்."
+    },
+    {
+      "speaker": "A",
+      "text": "That is fine. Is breakfast included?",
+      "say": "தாட் இஸ் ஃபைன். இஸ் ப்ரெக்ஃபஸ்ட் இங்க்லூடிட்?",
+      "meaning": "சரி. காலை உணவும் சேர்ந்ததா?"
+    },
+    {
+      "speaker": "B",
+      "text": "Yes. Please pay half now and half later.",
+      "say": "யெஸ். ப்லீஸ் பே ஹாஃப் நௌ ஆன்ட் ஹாஃப் லேட்டர்.",
+      "meaning": "ஆம். இப்போது பாதி, பிறகு பாதி செலுத்துங்கள்."
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "Trip",
+      "say": "ட்ரிப்",
+      "meaning": "பயணம்"
+    },
+    {
+      "word": "Dates",
+      "say": "டேட்ஸ்",
+      "meaning": "தேதிகள்"
+    },
+    {
+      "word": "Included",
+      "say": "இங்க்லூடிட்",
+      "meaning": "சேர்ந்தது"
+    },
+    {
+      "word": "Half",
+      "say": "ஹாஃப்",
+      "meaning": "பாதி"
+    }
+  ]
+}

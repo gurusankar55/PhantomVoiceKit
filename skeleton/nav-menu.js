@@ -75,6 +75,7 @@ const MENU_LINKS = [
   { id: 'story-time', labelKey: 'nav.storyTime', href: '/apps/story-time/index.html', subtitle: 'Story Time · Read Aloud' },
   { id: 'calm-time', labelKey: 'nav.calmTime', href: '/apps/calm-time/index.html', subtitle: 'Calm Ghost · Meditation and Routine' },
   { id: 'voice-translator', labelKey: 'nav.voiceTranslator', href: '/apps/voice-translator/index.html', subtitle: 'Phantom Talk · Voice Translator' },
+  { id: 'talk-learn', labelKey: 'nav.talkLearn', href: '/apps/talk-learn/index.html', subtitle: 'Talk & Learn · Speak a New Language' },
 ];
 
 // Stop any speech that is currently playing (safe if unsupported).

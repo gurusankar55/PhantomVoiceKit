@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "Where do you want to go?",
+      "say": "வெர் டூ யூ வான்ட் டூ கோ?",
+      "meaning": "நீங்கள் எங்கே போக வேண்டும்?"
+    },
+    {
+      "speaker": "B",
+      "text": "To the railway station, please. How much will it be?",
+      "say": "டூ த ரயில்வே ஸ்டேஷன், ப்லீஸ். ஹௌ மச் வில் இட் பீ?",
+      "meaning": "ரயில் நிலையத்துக்கு, தயவுசெய்து. எவ்வளவு ஆகும்?"
+    },
+    {
+      "speaker": "A",
+      "text": "It will be one hundred and fifty rupees.",
+      "say": "இட் வில் பீ வன் ஹன்ட்ரட் ஆன்ட் ஃபிஃப்டி ரூப்பீஸ்.",
+      "meaning": "நூற்று ஐம்பது ரூபாய் ஆகும்."
+    },
+    {
+      "speaker": "B",
+      "text": "That is too much. Please use the meter.",
+      "say": "தாட் இஸ் டூ மச். ப்லீஸ் யூஸ் த மீட்டர்.",
+      "meaning": "அது அதிகம். மீட்டர் போடுங்கள்."
+    },
+    {
+      "speaker": "A",
+      "text": "All right, I will use the meter. Please sit.",
+      "say": "ஆல்ரைட், ஐ வில் யூஸ் த மீட்டர். ப்லீஸ் ஸிட்.",
+      "meaning": "சரி, மீட்டர் போடுகிறேன். உட்காருங்கள்."
+    },
+    {
+      "speaker": "B",
+      "text": "Please stop here. Thank you.",
+      "say": "ப்லீஸ் ஸ்டாப் ஹீர். தேங்க் யூ.",
+      "meaning": "இங்கே நிறுத்துங்கள். நன்றி."
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "Station",
+      "say": "ஸ்டேஷன்",
+      "meaning": "நிலையம்"
+    },
+    {
+      "word": "Meter",
+      "say": "மீட்டர்",
+      "meaning": "மீட்டர்"
+    },
+    {
+      "word": "Too much",
+      "say": "டூ மச்",
+      "meaning": "அதிகம்"
+    },
+    {
+      "word": "Stop",
+      "say": "ஸ்டாப்",
+      "meaning": "நிறுத்து"
+    }
+  ]
+}

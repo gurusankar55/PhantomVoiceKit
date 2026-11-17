@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "आपका नाम क्या है?",
+      "say": "aapkaa naam kyaa hai?",
+      "meaning": "What is your name?"
+    },
+    {
+      "speaker": "B",
+      "text": "मेरा नाम अनीता है। और आपका?",
+      "say": "meraa naam aneetaa hai. aur aapkaa?",
+      "meaning": "My name is Anita. And your name?"
+    },
+    {
+      "speaker": "A",
+      "text": "मैं कुमार हूँ। आप कहाँ से हैं?",
+      "say": "main kumaar hoon. aap kahaan se hain?",
+      "meaning": "I am Kumar. Where are you from?"
+    },
+    {
+      "speaker": "B",
+      "text": "मैं मदुरै से हूँ। क्या आप यहीं के हैं?",
+      "say": "main madurai se hoon. kyaa aap yaheen ke hain?",
+      "meaning": "I am from Madurai. Are you from here?"
+    },
+    {
+      "speaker": "A",
+      "text": "नहीं, मैं दिल्ली से हूँ। अब मैं यहाँ रहता हूँ।",
+      "say": "nahin, main dillee se hoon. ab main yahaan rehtaa hoon.",
+      "meaning": "No, I am from Delhi. I live here now."
+    },
+    {
+      "speaker": "B",
+      "text": "आपसे मिलकर अच्छा लगा, कुमार।",
+      "say": "aapse milkar achchhaa lagaa, kumaar.",
+      "meaning": "Nice to meet you, Kumar."
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "नाम",
+      "say": "naam",
+      "meaning": "Name"
+    },
+    {
+      "word": "कहाँ",
+      "say": "kahaan",
+      "meaning": "Where"
+    },
+    {
+      "word": "यहाँ",
+      "say": "yahaan",
+      "meaning": "Here"
+    },
+    {
+      "word": "रहता",
+      "say": "rehtaa",
+      "meaning": "Live"
+    }
+  ]
+}

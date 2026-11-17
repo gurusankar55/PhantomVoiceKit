@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "Good morning. What is the problem?",
+      "say": "குட் மார்னிங். வாட் இஸ் த ப்ராப்லம்?",
+      "meaning": "காலை வணக்கம். என்ன பிரச்சினை?"
+    },
+    {
+      "speaker": "B",
+      "text": "I have a fever and a headache since yesterday.",
+      "say": "ஐ ஹாவ் அ ஃபீவர் ஆன்ட் அ ஹெடேக் ஸின்ஸ் யெஸ்டர்டே.",
+      "meaning": "நேற்றிலிருந்து எனக்குக் காய்ச்சலும் தலைவலியும் இருக்கிறது."
+    },
+    {
+      "speaker": "A",
+      "text": "Do you have a cough or a cold?",
+      "say": "டூ யூ ஹாவ் அ காஃப் ஓர் அ கோல்ட்?",
+      "meaning": "இருமல் அல்லது சளி இருக்கிறதா?"
+    },
+    {
+      "speaker": "B",
+      "text": "No, only the fever. I feel weak.",
+      "say": "நோ, ஓன்லி த ஃபீவர். ஐ ஃபீல் வீக்.",
+      "meaning": "இல்லை, காய்ச்சல் மட்டும்தான். பலவீனமாக உணர்கிறேன்."
+    },
+    {
+      "speaker": "A",
+      "text": "Take this medicine three times a day. Drink warm water.",
+      "say": "டேக் திஸ் மெடிஸின் த்ரீ டைம்ஸ் அ டே. ட்ரிங்க் வார்ம் வாட்டர்.",
+      "meaning": "இந்த மருந்தை நாளுக்கு மூன்று முறை சாப்பிடுங்கள். வெந்நீர் குடியுங்கள்."
+    },
+    {
+      "speaker": "B",
+      "text": "Thank you, doctor. When should I come again?",
+      "say": "தேங்க் யூ, டாக்டர். வென் ஷுட் ஐ கம் அகேன்?",
+      "meaning": "நன்றி டாக்டர். மீண்டும் எப்போது வர வேண்டும்?"
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "Fever",
+      "say": "ஃபீவர்",
+      "meaning": "காய்ச்சல்"
+    },
+    {
+      "word": "Headache",
+      "say": "ஹெடேக்",
+      "meaning": "தலைவலி"
+    },
+    {
+      "word": "Medicine",
+      "say": "மெடிஸின்",
+      "meaning": "மருந்து"
+    },
+    {
+      "word": "Weak",
+      "say": "வீக்",
+      "meaning": "பலவீனம்"
+    }
+  ]
+}

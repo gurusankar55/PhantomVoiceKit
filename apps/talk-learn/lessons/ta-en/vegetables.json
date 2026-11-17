@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "What vegetables do you want today?",
+      "say": "வாட் வெஜிடபுல்ஸ் டூ யூ வான்ட் டுடே?",
+      "meaning": "இன்று என்ன காய்கறி வேண்டும்?"
+    },
+    {
+      "speaker": "B",
+      "text": "Give me half a kilo of tomatoes and onions.",
+      "say": "கிவ் மீ ஹாஃப் அ கீலோ ஆவ் டமாட்டோ ஆன்ட் அன்யன்.",
+      "meaning": "அரை கிலோ தக்காளியும் வெங்காயமும் கொடுங்கள்."
+    },
+    {
+      "speaker": "A",
+      "text": "The tomatoes are fresh. Forty rupees a kilo.",
+      "say": "த டமாட்டோ ஆர் ஃப்ரெஷ். ஃபோர்ட்டி ரூப்பீஸ் அ கீலோ.",
+      "meaning": "தக்காளி புதியது. கிலோ நாற்பது ரூபாய்."
+    },
+    {
+      "speaker": "B",
+      "text": "That is a little expensive. Please make it thirty.",
+      "say": "தாட் இஸ் அ லிட்டில் இக்ஸ்பென்ஸிவ். ப்லீஸ் மேக் இட் தர்டி.",
+      "meaning": "இது கொஞ்சம் அதிகம். முப்பது ரூபாய்க்குத் தாருங்கள்."
+    },
+    {
+      "speaker": "A",
+      "text": "All right, take it. Do you want some coriander also?",
+      "say": "ஆல்ரைட், டேக் இட். டூ யூ வான்ட் கொரியாண்டர் ஆல்ஸோ?",
+      "meaning": "சரி, எடுத்துக்கொள்ளுங்கள். கொத்தமல்லியும் வேண்டுமா?"
+    },
+    {
+      "speaker": "B",
+      "text": "Yes, a small bunch. Thank you.",
+      "say": "யெஸ், அ ஸ்மால் பஞ்ச். தேங்க் யூ.",
+      "meaning": "ஆம், ஒரு சிறிய கட்டு. நன்றி."
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "Tomatoes",
+      "say": "டமாட்டோ",
+      "meaning": "தக்காளி"
+    },
+    {
+      "word": "Onions",
+      "say": "அன்யன்",
+      "meaning": "வெங்காயம்"
+    },
+    {
+      "word": "Expensive",
+      "say": "இக்ஸ்பென்ஸிவ்",
+      "meaning": "விலை அதிகம்"
+    },
+    {
+      "word": "Fresh",
+      "say": "ஃப்ரெஷ்",
+      "meaning": "புதிய"
+    }
+  ]
+}

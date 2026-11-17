@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "What is your name?",
+      "say": "வாட் இஸ் யூர் நேம்?",
+      "meaning": "உங்கள் பெயர் என்ன?"
+    },
+    {
+      "speaker": "B",
+      "text": "My name is Anita. And your name?",
+      "say": "மை நேம் இஸ் அனீட்டா. ஆன்ட் யூர் நேம்?",
+      "meaning": "என் பெயர் அனிதா. உங்கள் பெயர்?"
+    },
+    {
+      "speaker": "A",
+      "text": "I am Kumar. Where are you from?",
+      "say": "ஐ ஆம் குமார். வெர் ஆர் யூ ஃப்ரம்?",
+      "meaning": "நான் குமார். நீங்கள் எந்த ஊர்?"
+    },
+    {
+      "speaker": "B",
+      "text": "I am from Madurai. Are you from here?",
+      "say": "ஐ ஆம் ஃப்ரம் மதுரை. ஆர் யூ ஃப்ரம் ஹீர்?",
+      "meaning": "நான் மதுரையிலிருந்து வருகிறேன். நீங்கள் இங்கேயா?"
+    },
+    {
+      "speaker": "A",
+      "text": "No, I am from Delhi. I live here now.",
+      "say": "நோ, ஐ ஆம் ஃப்ரம் டெல்லி. ஐ லிவ் ஹீர் நௌ.",
+      "meaning": "இல்லை, நான் டெல்லியிலிருந்து வருகிறேன். இப்போது இங்கே வசிக்கிறேன்."
+    },
+    {
+      "speaker": "B",
+      "text": "Nice to meet you, Kumar.",
+      "say": "நைஸ் டூ மீட் யூ, குமார்.",
+      "meaning": "உங்களைச் சந்தித்ததில் மகிழ்ச்சி, குமார்."
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "Name",
+      "say": "நேம்",
+      "meaning": "பெயர்"
+    },
+    {
+      "word": "Where",
+      "say": "வெர்",
+      "meaning": "எங்கே"
+    },
+    {
+      "word": "Here",
+      "say": "ஹீர்",
+      "meaning": "இங்கே"
+    },
+    {
+      "word": "Live",
+      "say": "லிவ்",
+      "meaning": "வசி"
+    }
+  ]
+}

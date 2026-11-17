@@ -11,6 +11,7 @@ import { createTranslateRouter } from './routes/translate.js';
 import { createExtractFieldsRouter } from './routes/extract-fields.js';
 import { createLessonRouter } from './routes/lesson.js';
 import { createEvaluateRouter } from './routes/evaluate.js';
+import { createConversationRouter } from './routes/conversation.js';
 import { createTranslateLayoutRouter } from './routes/translate-layout.js';
 import { parseLayoutReply } from './routes/layout-parser.js';
 import { createCache, withCache } from './cache.js';
@@ -70,6 +71,8 @@ app.use('/api/translate', createTranslateRouter(cachedTranslate));
 app.use('/api/extract-fields', createExtractFieldsRouter(cachedExtract));
 app.use('/api/lesson', createLessonRouter(callGemini));
 app.use('/api/evaluate', createEvaluateRouter(callGemini));
+// Talk & Learn: a lesson is saved in the browser, so the server does not cache it.
+app.use('/api/conversation', createConversationRouter(callGemini));
 app.use('/api/translate-layout', createTranslateLayoutRouter(cachedLayout));
 
 // Generic error handler: never leak stack traces to the browser.

@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "Hello, who is speaking?",
+      "say": "ஹெலோ, ஹூ இஸ் ஸ்பீக்கிங்?",
+      "meaning": "ஹலோ, யார் பேசுகிறீர்கள்?"
+    },
+    {
+      "speaker": "B",
+      "text": "Hello, this is Meena. May I speak to Rajesh?",
+      "say": "ஹெலோ, திஸ் இஸ் மீனா. கேன் ஐ ஸ்பீக் டூ ராஜெஷ்?",
+      "meaning": "ஹலோ, நான் மீனா பேசுகிறேன். ராஜேஷிடம் பேசலாமா?"
+    },
+    {
+      "speaker": "A",
+      "text": "He is not here right now. Can I take a message?",
+      "say": "ஹீ இஸ் நாட் ஹீர் ரைட் நௌ. கேன் ஐ டேக் அ மெசேஜ்?",
+      "meaning": "அவர் இப்போது இங்கே இல்லை. செய்தி ஏதாவது சொல்கிறீர்களா?"
+    },
+    {
+      "speaker": "B",
+      "text": "Yes, please tell him to call me back.",
+      "say": "யெஸ், ப்லீஸ் டெல் ஹிம் டூ கால் மீ பக்.",
+      "meaning": "ஆம், அவரை என்னைத் திரும்ப அழைக்கச் சொல்லுங்கள்."
+    },
+    {
+      "speaker": "A",
+      "text": "Sure. Is your number the same?",
+      "say": "ஷொர். இஸ் யூர் நம்பெர் த ஸேம்?",
+      "meaning": "சரி. உங்கள் எண் அதேதானா?"
+    },
+    {
+      "speaker": "B",
+      "text": "Yes, it is the same. Thank you very much.",
+      "say": "யெஸ், இட் இஸ் த ஸேம். தேங்க் யூ வெரி மச்.",
+      "meaning": "ஆம், அதேதான். மிக்க நன்றி."
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "Message",
+      "say": "மெசேஜ்",
+      "meaning": "செய்தி"
+    },
+    {
+      "word": "Number",
+      "say": "நம்பெர்",
+      "meaning": "எண்"
+    },
+    {
+      "word": "Speak",
+      "say": "ஸ்பீக்",
+      "meaning": "பேசு"
+    },
+    {
+      "word": "Same",
+      "say": "ஸேம்",
+      "meaning": "அதே"
+    }
+  ]
+}

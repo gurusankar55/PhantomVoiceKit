@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "मदद कीजिए! कृपया मेरी मदद कीजिए! दुर्घटना हो गई है!",
+      "say": "madad keejiye! kripayaa meree madad keejiye! durghatnaa ho gayee hai!",
+      "meaning": "Help! Please help me! There is an accident!"
+    },
+    {
+      "speaker": "B",
+      "text": "शांत रहिए। आप कहाँ हैं? क्या किसी को चोट लगी है?",
+      "say": "shaant rahiye. aap kahaan hain? kyaa kisee ko chot lagee hai?",
+      "meaning": "Stay calm. Where are you? Is anyone hurt?"
+    },
+    {
+      "speaker": "A",
+      "text": "मैं मुख्य सड़क के पास हूँ। एक आदमी घायल है।",
+      "say": "main mukhya sadak ke paas hoon. ek aadmee ghaayal hai.",
+      "meaning": "I am near the main road. One man is hurt."
+    },
+    {
+      "speaker": "B",
+      "text": "मैं अभी एम्बुलेंस और पुलिस को फ़ोन कर रहा हूँ।",
+      "say": "main abhee embulens aur pulis ko fon kar rahaa hoon.",
+      "meaning": "I am calling an ambulance and the police now."
+    },
+    {
+      "speaker": "A",
+      "text": "कृपया जल्दी आइए। वह हिल नहीं पा रहे हैं।",
+      "say": "kripayaa jaldee aayiye. vah hil nahin paa rahe hain.",
+      "meaning": "Please hurry. He cannot move."
+    },
+    {
+      "speaker": "B",
+      "text": "मदद आ रही है। उनके साथ रहिए। चिंता मत कीजिए।",
+      "say": "madad aa rahee hai. unke saath rahiye. chintaa mat keejiye.",
+      "meaning": "Help is coming. Stay with him. Do not worry."
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "मदद",
+      "say": "madad",
+      "meaning": "Help"
+    },
+    {
+      "word": "एम्बुलेंस",
+      "say": "embulens",
+      "meaning": "Ambulance"
+    },
+    {
+      "word": "पुलिस",
+      "say": "pulis",
+      "meaning": "Police"
+    },
+    {
+      "word": "जल्दी",
+      "say": "jaldee",
+      "meaning": "Hurry"
+    }
+  ]
+}

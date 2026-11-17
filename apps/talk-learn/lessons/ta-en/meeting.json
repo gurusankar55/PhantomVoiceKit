@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "Good morning, everyone. Let us start the meeting.",
+      "say": "குட் மார்னிங், எவ்ரிவன். லெட் அஸ் ஸ்டார்ட் த மீட்டிங்.",
+      "meaning": "அனைவருக்கும் காலை வணக்கம். கூட்டத்தைத் தொடங்கலாம்."
+    },
+    {
+      "speaker": "B",
+      "text": "This week we must finish the report.",
+      "say": "திஸ் வீக் வீ மஸ்ட் ஃபினிஷ் த ரிப்பூர்ட்.",
+      "meaning": "இந்த வாரம் அறிக்கையை முடிக்க வேண்டும்."
+    },
+    {
+      "speaker": "A",
+      "text": "I will write the first part. Who will do the second part?",
+      "say": "ஐ வில் ரைட் த ஃபர்ஸ்ட் பார்ட். ஹூ வில் டூ த ஸெக்கன்ட் பார்ட்?",
+      "meaning": "முதல் பகுதியை நான் எழுதுகிறேன். இரண்டாம் பகுதியை யார் செய்வார்கள்?"
+    },
+    {
+      "speaker": "B",
+      "text": "I can do it. Is Friday the deadline?",
+      "say": "ஐ கேன் டூ இட். இஸ் ஃப்ரைடே த டெட்லைன்?",
+      "meaning": "நான் செய்கிறேன். வெள்ளிக்கிழமை கடைசி நாளா?"
+    },
+    {
+      "speaker": "A",
+      "text": "Yes, please send it before five o'clock.",
+      "say": "யெஸ், ப்லீஸ் ஸென்ட் இட் பிஃபோர் ஃபைவ் ஒக்லாக்.",
+      "meaning": "ஆம், ஐந்து மணிக்கு முன் அனுப்புங்கள்."
+    },
+    {
+      "speaker": "B",
+      "text": "Does anyone have a question? Thank you, everyone.",
+      "say": "டூஸ் எனிவன் ஹாவ் அ க்வெஸ்சன்? தேங்க் யூ, எவ்ரிவன்.",
+      "meaning": "யாருக்காவது கேள்வி இருக்கிறதா? அனைவருக்கும் நன்றி."
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "Meeting",
+      "say": "மீட்டிங்",
+      "meaning": "கூட்டம்"
+    },
+    {
+      "word": "Report",
+      "say": "ரிப்பூர்ட்",
+      "meaning": "அறிக்கை"
+    },
+    {
+      "word": "Deadline",
+      "say": "டெட்லைன்",
+      "meaning": "கடைசி நாள்"
+    },
+    {
+      "word": "Question",
+      "say": "க்வெஸ்சன்",
+      "meaning": "கேள்வி"
+    }
+  ]
+}

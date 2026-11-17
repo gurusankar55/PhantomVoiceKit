@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "Hello! How are you?",
+      "say": "ஹெலோ! ஹௌ ஆர் யூ?",
+      "meaning": "வணக்கம்! எப்படி இருக்கிறீர்கள்?"
+    },
+    {
+      "speaker": "B",
+      "text": "I am fine, thank you. And you?",
+      "say": "ஐ ஆம் ஃபைன், தேங்க் யூ. ஆன்ட் யூ?",
+      "meaning": "நான் நலமாக இருக்கிறேன், நன்றி. நீங்கள்?"
+    },
+    {
+      "speaker": "A",
+      "text": "Nice to meet you. What is your name?",
+      "say": "நைஸ் டூ மீட் யூ. வாட் இஸ் யூர் நேம்?",
+      "meaning": "உங்களைச் சந்தித்ததில் மகிழ்ச்சி. உங்கள் பெயர் என்ன?"
+    },
+    {
+      "speaker": "B",
+      "text": "My name is Ravi. I am from Chennai.",
+      "say": "மை நேம் இஸ் ரவி. ஐ ஆம் ஃப்ரம் சென்னை.",
+      "meaning": "என் பெயர் ரவி. நான் சென்னையிலிருந்து வருகிறேன்."
+    },
+    {
+      "speaker": "A",
+      "text": "Good morning, Ravi. Please sit down.",
+      "say": "குட் மார்னிங், ரவி. ப்லீஸ் ஸிட் டௌன்.",
+      "meaning": "காலை வணக்கம் ரவி. தயவுசெய்து உட்காருங்கள்."
+    },
+    {
+      "speaker": "B",
+      "text": "Thank you. See you again!",
+      "say": "தேங்க் யூ. ஸீ யூ அகேன்!",
+      "meaning": "நன்றி. மீண்டும் சந்திப்போம்!"
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "Hello",
+      "say": "ஹெலோ",
+      "meaning": "வணக்கம்"
+    },
+    {
+      "word": "Thank you",
+      "say": "தேங்க் யூ",
+      "meaning": "நன்றி"
+    },
+    {
+      "word": "Name",
+      "say": "நேம்",
+      "meaning": "பெயர்"
+    },
+    {
+      "word": "Fine",
+      "say": "ஃபைன்",
+      "meaning": "நலம்"
+    }
+  ]
+}

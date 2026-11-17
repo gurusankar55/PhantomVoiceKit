@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "Bienvenidos. ¿Una mesa para dos?",
+      "say": "byen-be-NEE-dos. OO-na ME-sa PA-ra dos?",
+      "meaning": "Welcome. A table for two?"
+    },
+    {
+      "speaker": "B",
+      "text": "Sí, por favor. ¿Podemos ver el menú?",
+      "say": "see, por fa-VOR. po-DE-mos ber el me-NOO?",
+      "meaning": "Yes, please. Can we see the menu?"
+    },
+    {
+      "speaker": "A",
+      "text": "Claro. ¿Qué desean comer?",
+      "say": "KLA-ro. ke de-SE-an ko-MER?",
+      "meaning": "Of course. What would you like to eat?"
+    },
+    {
+      "speaker": "B",
+      "text": "Un biryani de verduras y dos chapatis. Y agua, por favor.",
+      "say": "oon beer-YA-nee de ber-DOO-ras ee dos cha-PA-tees. ee A-gwa, por fa-VOR.",
+      "meaning": "One vegetable biryani and two chapatis. And water, please."
+    },
+    {
+      "speaker": "A",
+      "text": "Aquí tiene su comida. ¡Buen provecho!",
+      "say": "a-KEE TYE-ne soo ko-MEE-da. bwen pro-BE-cho!",
+      "meaning": "Here is your food. Enjoy your meal!"
+    },
+    {
+      "speaker": "B",
+      "text": "Está rico. La cuenta, por favor.",
+      "say": "es-TA RREE-ko. la KWEN-ta, por fa-VOR.",
+      "meaning": "It is tasty. The bill, please."
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "menú",
+      "say": "me-NOO",
+      "meaning": "Menu"
+    },
+    {
+      "word": "agua",
+      "say": "A-gwa",
+      "meaning": "Water"
+    },
+    {
+      "word": "comida",
+      "say": "ko-MEE-da",
+      "meaning": "Food"
+    },
+    {
+      "word": "cuenta",
+      "say": "KWEN-ta",
+      "meaning": "Bill"
+    }
+  ]
+}

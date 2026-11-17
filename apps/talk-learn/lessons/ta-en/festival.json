@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "Happy Diwali! Are you ready for the festival?",
+      "say": "ஹாப்பி டிவாலி! ஆர் யூ ரெடி ஃபார் த ஃபெஸ்டிவல்?",
+      "meaning": "தீபாவளி வாழ்த்துகள்! பண்டிகைக்குத் தயாரா?"
+    },
+    {
+      "speaker": "B",
+      "text": "Happy Diwali! Yes, we have bought new clothes and sweets.",
+      "say": "ஹாப்பி டிவாலி! யெஸ், வீ ஹாவ் பொர்ட் ந்யூ க்லோத்ஸ் ஆன்ட் ஸ்வீட்ஸ்.",
+      "meaning": "தீபாவளி வாழ்த்துகள்! ஆம், புதிய துணிகளும் இனிப்புகளும் வாங்கிவிட்டோம்."
+    },
+    {
+      "speaker": "A",
+      "text": "What will you do in the evening?",
+      "say": "வாட் வில் யூ டூ இன் தீ ஈவ்னிங்?",
+      "meaning": "மாலையில் என்ன செய்வீர்கள்?"
+    },
+    {
+      "speaker": "B",
+      "text": "We will light lamps at home and pray together.",
+      "say": "வீ வில் லைட் லாம்ப்ஸ் ஆட் ஹோம் ஆன்ட் ப்ரே டுகெதர்.",
+      "meaning": "வீட்டில் விளக்கு ஏற்றி, சேர்ந்து பிரார்த்தனை செய்வோம்."
+    },
+    {
+      "speaker": "A",
+      "text": "My relatives will visit us. Please come to our house also.",
+      "say": "மை ரெலட்டிவ்ஸ் வில் விஸிட் அஸ். ப்லீஸ் கம் டூ ஆர் ஹௌஸ் ஆல்ஸோ.",
+      "meaning": "என் உறவினர்கள் வருவார்கள். நீங்களும் எங்கள் வீட்டுக்கு வாருங்கள்."
+    },
+    {
+      "speaker": "B",
+      "text": "Thank you, I will come. Have a wonderful festival!",
+      "say": "தேங்க் யூ, ஐ வில் கம். ஹாவ் அ வண்டர்ஃபுல் ஃபெஸ்டிவல்!",
+      "meaning": "நன்றி, வருகிறேன். பண்டிகை இனிதாக அமையட்டும்!"
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "Festival",
+      "say": "ஃபெஸ்டிவல்",
+      "meaning": "பண்டிகை"
+    },
+    {
+      "word": "Sweets",
+      "say": "ஸ்வீட்ஸ்",
+      "meaning": "இனிப்புகள்"
+    },
+    {
+      "word": "Clothes",
+      "say": "க்லோத்ஸ்",
+      "meaning": "துணிகள்"
+    },
+    {
+      "word": "Lamps",
+      "say": "லாம்ப்ஸ்",
+      "meaning": "விளக்குகள்"
+    }
+  ]
+}

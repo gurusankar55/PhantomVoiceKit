@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "Perdone, ¿dónde está la parada de autobús?",
+      "say": "per-DO-ne, DON-de es-TA la pa-RA-da de ow-to-BOOS?",
+      "meaning": "Excuse me, where is the bus stop?"
+    },
+    {
+      "speaker": "B",
+      "text": "Siga recto y luego gire a la izquierda.",
+      "say": "SEE-ga RREK-to ee LWE-go HEE-re a la ees-KYER-da.",
+      "meaning": "Go straight, then turn left."
+    },
+    {
+      "speaker": "A",
+      "text": "Camine cinco minutos. La parada está cerca del templo.",
+      "say": "ka-MEE-ne SEEN-ko mee-NOO-tos. la pa-RA-da es-TA SER-ka del TEM-plo.",
+      "meaning": "Then walk for five minutes. The stop is near the temple."
+    },
+    {
+      "speaker": "B",
+      "text": "¿Está lejos de aquí?",
+      "say": "es-TA LE-hos de a-KEE?",
+      "meaning": "Is it far from here?"
+    },
+    {
+      "speaker": "A",
+      "text": "No, está muy cerca. Puede ir a pie.",
+      "say": "no, es-TA mooy SER-ka. PWE-de eer a pye.",
+      "meaning": "No, it is very near. You can walk."
+    },
+    {
+      "speaker": "B",
+      "text": "Muchas gracias por su ayuda.",
+      "say": "MOO-chas GRAH-syas por soo a-YOO-da.",
+      "meaning": "Thank you very much for your help."
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "izquierda",
+      "say": "ees-KYER-da",
+      "meaning": "Left"
+    },
+    {
+      "word": "recto",
+      "say": "RREK-to",
+      "meaning": "Straight"
+    },
+    {
+      "word": "cerca",
+      "say": "SER-ka",
+      "meaning": "Near"
+    },
+    {
+      "word": "lejos",
+      "say": "LE-hos",
+      "meaning": "Far"
+    }
+  ]
+}

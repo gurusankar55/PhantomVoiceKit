@@ -17,12 +17,20 @@ const TIMEOUT_EXTRACT_MS = TIMEOUT_MS;
 const TIMEOUT_LESSON_MS = TIMEOUT_MS;
 const TIMEOUT_EVALUATE_MS = TIMEOUT_MS;
 const TIMEOUT_LAYOUT_MS = TIMEOUT_MS;
+const TIMEOUT_CONVERSATION_MS = TIMEOUT_MS;
 
 // Shared helper: POST `body` as JSON to `url`, aborting after `timeoutMs`.
-async function postJson(url, body, timeoutMs) {
+// cancelSignal (optional): an AbortSignal of the caller. When it fires, the request is dropped
+// and { error: 'cancelled' } is returned (a timeout still returns { error: 'timeout' }).
+async function postJson(url, body, timeoutMs, cancelSignal) {
   // AbortController + setTimeout works in all browsers we support.
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
+  const cancel = () => controller.abort();
+  if (cancelSignal) {
+    if (cancelSignal.aborted) cancel();
+    else cancelSignal.addEventListener('abort', cancel, { once: true });
+  }
 
   try {
     const response = await fetch(url, {
@@ -51,14 +59,15 @@ async function postJson(url, body, timeoutMs) {
     }
     return data;
   } catch (err) {
-    // AbortError means our timer fired; anything else is a network failure.
+    // AbortError means the caller cancelled or our timer fired; anything else is a network failure.
     if (err && err.name === 'AbortError') {
-      return { error: 'timeout' };
+      return { error: cancelSignal && cancelSignal.aborted ? 'cancelled' : 'timeout' };
     }
     return { error: 'network_error' };
   } finally {
     // Always clear the timer so it does not keep running.
     clearTimeout(timer);
+    if (cancelSignal) cancelSignal.removeEventListener('abort', cancel);
   }
 }
 
@@ -119,6 +128,14 @@ export function extractFields({ fileBase64, mimeType, lang, images }) {
 // box_2d is [ymin, xmin, ymax, xmax] on a 0 to 1000 scale.
 export function translateLayout({ imageBase64, mimeType, lang }) {
   return postJson('/api/translate-layout', { imageBase64, mimeType, lang }, TIMEOUT_LAYOUT_MS);
+}
+
+// Talk & Learn: a short everyday conversation between person A and person B for one lesson.
+// scenario is a lesson id such as 'greetings'; learnLang and speakLang are BCP-47 codes.
+// Reply: { lines: [{ speaker, text, say, meaning }], keyWords: [{ word, say, meaning }] }.
+// signal (optional): an AbortSignal; aborting it drops the request and gives { error: 'cancelled' }.
+export function conversation({ scenario, learnLang, speakLang, signal }) {
+  return postJson('/api/conversation', { scenario, learnLang, speakLang }, TIMEOUT_CONVERSATION_MS, signal);
 }
 
 // Get a short lesson (segments + quiz questions) for a topic.

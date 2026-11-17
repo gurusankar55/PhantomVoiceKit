@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "हैलो, कौन बोल रहा है?",
+      "say": "hailo, kaun bol rahaa hai?",
+      "meaning": "Hello, who is speaking?"
+    },
+    {
+      "speaker": "B",
+      "text": "हैलो, मैं मीना बोल रही हूँ। क्या राजेश से बात हो सकती है?",
+      "say": "hailo, main meenaa bol rahee hoon. kyaa raajesh se baat ho saktee hai?",
+      "meaning": "Hello, this is Meena. May I speak to Rajesh?"
+    },
+    {
+      "speaker": "A",
+      "text": "वे अभी यहाँ नहीं हैं। क्या कोई संदेश देना है?",
+      "say": "ve abhee yahaan nahin hain. kyaa koyee sandesh denaa hai?",
+      "meaning": "He is not here right now. Can I take a message?"
+    },
+    {
+      "speaker": "B",
+      "text": "जी हाँ, उनसे कहिए कि मुझे वापस फ़ोन करें।",
+      "say": "jee haan, unse kahiye ki mujhe vaapas fon karen.",
+      "meaning": "Yes, please tell him to call me back."
+    },
+    {
+      "speaker": "A",
+      "text": "ज़रूर। क्या आपका नंबर वही है?",
+      "say": "zaroor. kyaa aapkaa nambar vahee hai?",
+      "meaning": "Sure. Is your number the same?"
+    },
+    {
+      "speaker": "B",
+      "text": "जी हाँ, वही है। बहुत धन्यवाद।",
+      "say": "jee haan, vahee hai. bahut dhanyavaad.",
+      "meaning": "Yes, it is the same. Thank you very much."
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "संदेश",
+      "say": "sandesh",
+      "meaning": "Message"
+    },
+    {
+      "word": "नंबर",
+      "say": "nambar",
+      "meaning": "Number"
+    },
+    {
+      "word": "बात",
+      "say": "baat",
+      "meaning": "Speak"
+    },
+    {
+      "word": "वही",
+      "say": "vahee",
+      "meaning": "Same"
+    }
+  ]
+}

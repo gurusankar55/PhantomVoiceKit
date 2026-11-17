@@ -641,3 +641,23 @@ Build the Phantom Voice Kit from the ground up: project scaffolding → Express 
 
 - [x] 45. Fix sideways scroll from the hidden file input; retry on Latin letters glued into words (Requirement 51)
   - Tests: tests/unit/hiddenHelpers.test.js (a small CSS cascade: every helper at most 1 px), tests/unit/scriptCheck.test.js (the real "வரவேற்ப Leukிறேன்" example, every style)
+
+- [x] 46. Talk & Learn: learn to speak through two-person conversations (Requirement 52)
+  - [x] 46.1 `apps/talk-learn/talk-utils.js` (pure): lessons, settings, `cleanConversation`, cache key and cache, progress, `scoreSpeech`, `starsFor`, `buildQuiz`
+  - [x] 46.2 `server/routes/conversation.js` (`createConversationRouter(callGemini)`), mounted at `/api/conversation`; `conversation()` in `skeleton/api-client.js`
+  - [x] 46.3 `pickVoicePair`, `speak({ role, rate, pitch })` and `canSpeak()` in the skeleton speech output (existing callers unchanged)
+  - [x] 46.4 `apps/talk-learn` page, app and style: setup, lesson list with ticks, Listen, Line by line, Practice, key words card, quiz, no-voice notice
+  - [x] 46.5 Registration like the other apps: Home card, nav entry, 3D icon, audience "everyone", "How to use" guide, online-only lists, service worker list, README, package description
+  - [x] 46.6 All new strings (including the 14 lesson titles and the welcome text) in the 20 locale files
+  - [x] 46.7 Tests: `tests/unit/talkLearn.test.js` (scoreSpeech with property tests, cache key and cache, route validation and mapping with a fake `callGemini`, quiz, voice pair, settings, progress, locales, registration); updated counts in `submission.test.js`, `visualStyle.test.js`, `pwa.test.js`
+    - _Requirements: R52_
+
+- [x] 47. Talk & Learn 2.0, part A-1: levels, built-in lessons, prefetch, friendly loading (Requirement 53)
+  - [x] 47.1 `talk-utils.js`: `LEVELS`, 36 lessons, `levelOf`, `levelProgress`, `builtInPath`; server situation texts for the 22 new lessons
+  - [x] 47.2 `lesson-store.js`: built-in, cache, API order; shared in-flight requests; one-at-a-time prefetch that stops on busy
+  - [x] 47.3 Page: three level sections with their own progress, nothing locked; ghost loading message with Cancel
+  - [x] 47.4 Built-in lessons: 36 for Tamil to Hindi, 36 for Tamil to English, 14 for English to Hindi, 14 for English to Spanish, and `lessons/index.json`
+  - [x] 47.5 New strings in the 20 locale files (3 level headings, 22 titles, loading messages, Cancel, the "all lessons are open" note)
+  - [x] 47.6b Cancel aborts the request and never saves; a busy answer stops prefetch for the browser session; the browser check waits for the server calls instead of fixed sleeps
+  - [x] 47.6 Tests: `tests/unit/talkLearn.test.js` and `tests/unit/talkLearnLessons.test.js` (every built-in file valid and in the lesson shape, the index, load order, prefetch rules with fakes, levels and progress per level)
+    - _Requirements: R53_

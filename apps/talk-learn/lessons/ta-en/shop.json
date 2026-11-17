@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "Good morning. What do you need?",
+      "say": "குட் மார்னிங். வாட் டூ யூ நீட்?",
+      "meaning": "காலை வணக்கம். உங்களுக்கு என்ன வேண்டும்?"
+    },
+    {
+      "speaker": "B",
+      "text": "I need one kilo of rice. How much is it?",
+      "say": "ஐ நீட் வன் கீலோ ஆவ் ரைஸ். ஹௌ மச் இஸ் இட்?",
+      "meaning": "எனக்கு ஒரு கிலோ அரிசி வேண்டும். என்ன விலை?"
+    },
+    {
+      "speaker": "A",
+      "text": "It is sixty rupees a kilo.",
+      "say": "இட் இஸ் ஸிக்ஸ்டி ரூப்பீஸ் அ கீலோ.",
+      "meaning": "ஒரு கிலோ அறுபது ரூபாய்."
+    },
+    {
+      "speaker": "B",
+      "text": "Please give me two kilos. Do you have sugar?",
+      "say": "ப்லீஸ் கிவ் மீ டூ கீலோஸ். டூ யூ ஹாவ் ஷுகர்?",
+      "meaning": "இரண்டு கிலோ கொடுங்கள். சர்க்கரை இருக்கிறதா?"
+    },
+    {
+      "speaker": "A",
+      "text": "Yes, sugar is forty rupees. Anything else?",
+      "say": "யெஸ், ஷுகர் இஸ் ஃபோர்ட்டி ரூப்பீஸ். எனிட்டிங் எல்ஸ்?",
+      "meaning": "ஆம், சர்க்கரை நாற்பது ரூபாய். வேறு ஏதாவது?"
+    },
+    {
+      "speaker": "B",
+      "text": "No, that is all. Here is the money. Thank you.",
+      "say": "நோ, தாட் இஸ் ஆல். ஹீர் இஸ் த மனி. தேங்க் யூ.",
+      "meaning": "இல்லை, அவ்வளவுதான். இந்தாருங்கள் பணம். நன்றி."
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "Rice",
+      "say": "ரைஸ்",
+      "meaning": "அரிசி"
+    },
+    {
+      "word": "Sugar",
+      "say": "ஷுகர்",
+      "meaning": "சர்க்கரை"
+    },
+    {
+      "word": "How much",
+      "say": "ஹௌ மச்",
+      "meaning": "என்ன விலை"
+    },
+    {
+      "word": "Money",
+      "say": "மனி",
+      "meaning": "பணம்"
+    }
+  ]
+}

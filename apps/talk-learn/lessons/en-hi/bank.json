@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "सुप्रभात। मैं आपकी क्या मदद कर सकता हूँ?",
+      "say": "suprabhaat. main aapkee kyaa madad kar saktaa hoon?",
+      "meaning": "Good morning. How can I help you?"
+    },
+    {
+      "speaker": "B",
+      "text": "मैं बचत खाता खोलना चाहता हूँ।",
+      "say": "main bachat khaataa kholnaa chaahtaa hoon.",
+      "meaning": "I want to open a savings account."
+    },
+    {
+      "speaker": "A",
+      "text": "कृपया यह फ़ॉर्म भरिए। मुझे आपकी फ़ोटो और आधार कार्ड चाहिए।",
+      "say": "kripayaa yeh form bhariye. mujhe aapkee foto aur aadhaar kaard chaahiye.",
+      "meaning": "Please fill this form. I need your photo and Aadhaar card."
+    },
+    {
+      "speaker": "B",
+      "text": "यह लीजिए। कितने पैसे जमा करने होंगे?",
+      "say": "yeh leejiye. kitne paise jamaa karne honge?",
+      "meaning": "Here you are. How much money should I put in?"
+    },
+    {
+      "speaker": "A",
+      "text": "पाँच सौ रुपये काफ़ी हैं। यहाँ दस्तख़त कीजिए।",
+      "say": "paanch sau rupaye kaafee hain. yahaan dastakhat keejiye.",
+      "meaning": "Five hundred rupees is enough. Please sign here."
+    },
+    {
+      "speaker": "B",
+      "text": "हो गया। आपकी पासबुक एक हफ़्ते में आएगी।",
+      "say": "ho gayaa. aapkee paasbuk ek hafte mein aayegee.",
+      "meaning": "Done. Your passbook will come in one week."
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "खाता",
+      "say": "khaataa",
+      "meaning": "Account"
+    },
+    {
+      "word": "फ़ॉर्म",
+      "say": "form",
+      "meaning": "Form"
+    },
+    {
+      "word": "दस्तख़त",
+      "say": "dastakhat",
+      "meaning": "Sign"
+    },
+    {
+      "word": "काफ़ी",
+      "say": "kaafee",
+      "meaning": "Enough"
+    }
+  ]
+}

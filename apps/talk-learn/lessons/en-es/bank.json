@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "Buenos días. ¿En qué puedo ayudarle?",
+      "say": "BWE-nos DEE-as. en ke PWE-do a-yoo-DAR-le?",
+      "meaning": "Good morning. How can I help you?"
+    },
+    {
+      "speaker": "B",
+      "text": "Quiero abrir una cuenta de ahorros.",
+      "say": "KYE-ro a-BREER OO-na KWEN-ta de a-O-rros.",
+      "meaning": "I want to open a savings account."
+    },
+    {
+      "speaker": "A",
+      "text": "Llene este formulario. Necesito su foto y su tarjeta Aadhaar.",
+      "say": "YE-ne ES-te for-moo-LA-ryo. ne-se-SEE-to soo FO-to ee soo tar-HE-ta ah-DAR.",
+      "meaning": "Please fill this form. I need your photo and Aadhaar card."
+    },
+    {
+      "speaker": "B",
+      "text": "Aquí tiene. ¿Cuánto dinero debo depositar?",
+      "say": "a-KEE TYE-ne. KWAN-to dee-NE-ro DE-bo de-po-see-TAR?",
+      "meaning": "Here you are. How much money should I put in?"
+    },
+    {
+      "speaker": "A",
+      "text": "Con quinientas rupias es suficiente. Firme aquí, por favor.",
+      "say": "kon kee-NYEN-tas ROO-pyas es soo-fee-SYEN-te. FEER-me a-KEE, por fa-VOR.",
+      "meaning": "Five hundred rupees is enough. Please sign here."
+    },
+    {
+      "speaker": "B",
+      "text": "Listo. Su libreta llegará en una semana.",
+      "say": "LEES-to. soo lee-BRE-ta ye-ga-RA en OO-na se-MA-na.",
+      "meaning": "Done. Your passbook will come in one week."
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "cuenta",
+      "say": "KWEN-ta",
+      "meaning": "Account"
+    },
+    {
+      "word": "formulario",
+      "say": "for-moo-LA-ryo",
+      "meaning": "Form"
+    },
+    {
+      "word": "Firme",
+      "say": "FEER-me",
+      "meaning": "Sign"
+    },
+    {
+      "word": "suficiente",
+      "say": "soo-fee-SYEN-te",
+      "meaning": "Enough"
+    }
+  ]
+}

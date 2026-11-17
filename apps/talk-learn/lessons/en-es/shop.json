@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "Buenos días. ¿Qué necesita?",
+      "say": "BWE-nos DEE-as. ke ne-se-SEE-ta?",
+      "meaning": "Good morning. What do you need?"
+    },
+    {
+      "speaker": "B",
+      "text": "Necesito un kilo de arroz. ¿Cuánto cuesta?",
+      "say": "ne-se-SEE-to oon KEE-lo de a-RROS. KWAN-to KWES-ta?",
+      "meaning": "I need one kilo of rice. How much is it?"
+    },
+    {
+      "speaker": "A",
+      "text": "Son sesenta rupias el kilo.",
+      "say": "son se-SEN-ta ROO-pyas el KEE-lo.",
+      "meaning": "It is sixty rupees a kilo."
+    },
+    {
+      "speaker": "B",
+      "text": "Deme dos kilos, por favor. ¿Tiene azúcar?",
+      "say": "DE-me dos KEE-los, por fa-VOR. TYE-ne a-SOO-kar?",
+      "meaning": "Please give me two kilos. Do you have sugar?"
+    },
+    {
+      "speaker": "A",
+      "text": "Sí, el azúcar son cuarenta rupias. ¿Algo más?",
+      "say": "see, el a-SOO-kar son kwa-REN-ta ROO-pyas. AL-go mas?",
+      "meaning": "Yes, sugar is forty rupees. Anything else?"
+    },
+    {
+      "speaker": "B",
+      "text": "No, eso es todo. Aquí tiene. Gracias.",
+      "say": "no, E-so es TO-do. a-KEE TYE-ne. GRAH-syas.",
+      "meaning": "No, that is all. Here is the money. Thank you."
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "arroz",
+      "say": "a-RROS",
+      "meaning": "Rice"
+    },
+    {
+      "word": "azúcar",
+      "say": "a-SOO-kar",
+      "meaning": "Sugar"
+    },
+    {
+      "word": "Cuánto cuesta",
+      "say": "KWAN-to KWES-ta",
+      "meaning": "How much is it?"
+    },
+    {
+      "word": "todo",
+      "say": "TO-do",
+      "meaning": "All, everything"
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "स्वागत है। दो लोगों के लिए मेज़?",
+      "say": "svaagat hai. do logon ke liye mez?",
+      "meaning": "Welcome. A table for two?"
+    },
+    {
+      "speaker": "B",
+      "text": "जी हाँ। क्या हम मेन्यू देख सकते हैं?",
+      "say": "jee haan. kyaa ham menyoo dekh sakte hain?",
+      "meaning": "Yes, please. Can we see the menu?"
+    },
+    {
+      "speaker": "A",
+      "text": "जी ज़रूर। आप क्या खाना चाहेंगे?",
+      "say": "jee zaroor. aap kyaa khaanaa chaahenge?",
+      "meaning": "Of course. What would you like to eat?"
+    },
+    {
+      "speaker": "B",
+      "text": "एक वेज बिरयानी और दो रोटी। पानी भी दीजिए।",
+      "say": "ek vej biryaanee aur do rotee. paanee bhee deejiye.",
+      "meaning": "One vegetable biryani and two chapatis. And water, please."
+    },
+    {
+      "speaker": "A",
+      "text": "यह लीजिए आपका खाना। खाइए!",
+      "say": "yeh leejiye aapkaa khaanaa. khaayiye!",
+      "meaning": "Here is your food. Enjoy your meal!"
+    },
+    {
+      "speaker": "B",
+      "text": "बहुत स्वादिष्ट है। बिल दीजिए।",
+      "say": "bahut svaadisht hai. bil deejiye.",
+      "meaning": "It is tasty. The bill, please."
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "मेन्यू",
+      "say": "menyoo",
+      "meaning": "Menu"
+    },
+    {
+      "word": "पानी",
+      "say": "paanee",
+      "meaning": "Water"
+    },
+    {
+      "word": "खाना",
+      "say": "khaanaa",
+      "meaning": "Food"
+    },
+    {
+      "word": "बिल",
+      "say": "bil",
+      "meaning": "Bill"
+    }
+  ]
+}

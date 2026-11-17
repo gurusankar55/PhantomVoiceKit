@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "I am very sorry I am late.",
+      "say": "ஐ ஆம் வெரி ஸாரி ஐ ஆம் லேட்.",
+      "meaning": "தாமதமாக வந்ததற்கு மிகவும் வருந்துகிறேன்."
+    },
+    {
+      "speaker": "B",
+      "text": "It is all right. What happened?",
+      "say": "இட் இஸ் ஆல் ரைட். வாட் ஹாப்பன்ட்?",
+      "meaning": "பரவாயில்லை. என்ன ஆயிற்று?"
+    },
+    {
+      "speaker": "A",
+      "text": "There was a lot of traffic, and my phone battery was dead.",
+      "say": "தேர் வஸ் அ லாட் ஆவ் ட்ராஃபிக், ஆன்ட் மை ஃபோன் பாட்ரி வஸ் டெட்.",
+      "meaning": "போக்குவரத்து நெரிசல் அதிகம், என் போனில் பேட்டரியும் தீர்ந்துவிட்டது."
+    },
+    {
+      "speaker": "B",
+      "text": "I understand. But please call next time.",
+      "say": "ஐ அன்டர்ஸ்டான்ட். பட் ப்லீஸ் கால் நெக்ஸ்ட் டைம்.",
+      "meaning": "புரிகிறது. ஆனால் அடுத்த முறை அழையுங்கள்."
+    },
+    {
+      "speaker": "A",
+      "text": "You are right. It was my mistake. I will not do it again.",
+      "say": "யூ ஆர் ரைட். இட் வஸ் மை மிஸ்டேக். ஐ வில் நாட் டூ இட் அகேன்.",
+      "meaning": "நீங்கள் சொல்வது சரி. அது என் தவறு. மீண்டும் இப்படிச் செய்யமாட்டேன்."
+    },
+    {
+      "speaker": "B",
+      "text": "Do not worry. Let us start the work now.",
+      "say": "டூ நாட் வரி. லெட் அஸ் ஸ்டார்ட் த வர்க் நௌ.",
+      "meaning": "கவலைப்படாதீர்கள். இப்போது வேலையைத் தொடங்குவோம்."
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "Sorry",
+      "say": "ஸாரி",
+      "meaning": "வருந்துகிறேன்"
+    },
+    {
+      "word": "Late",
+      "say": "லேட்",
+      "meaning": "தாமதம்"
+    },
+    {
+      "word": "Mistake",
+      "say": "மிஸ்டேக்",
+      "meaning": "தவறு"
+    },
+    {
+      "word": "Do not worry",
+      "say": "டூ நாட் வரி",
+      "meaning": "கவலைப்படாதீர்கள்"
+    }
+  ]
+}

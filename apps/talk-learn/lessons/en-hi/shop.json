@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "सुप्रभात। आपको क्या चाहिए?",
+      "say": "suprabhaat. aapko kyaa chaahiye?",
+      "meaning": "Good morning. What do you need?"
+    },
+    {
+      "speaker": "B",
+      "text": "मुझे एक किलो चावल चाहिए। कितने का है?",
+      "say": "mujhe ek kilo chaaval chaahiye. kitne kaa hai?",
+      "meaning": "I need one kilo of rice. How much is it?"
+    },
+    {
+      "speaker": "A",
+      "text": "एक किलो साठ रुपये का है।",
+      "say": "ek kilo saath rupaye kaa hai.",
+      "meaning": "It is sixty rupees a kilo."
+    },
+    {
+      "speaker": "B",
+      "text": "दो किलो दे दीजिए। क्या चीनी है?",
+      "say": "do kilo de deejiye. kyaa cheenee hai?",
+      "meaning": "Please give me two kilos. Do you have sugar?"
+    },
+    {
+      "speaker": "A",
+      "text": "हाँ, चीनी चालीस रुपये की है। और कुछ?",
+      "say": "haan, cheenee chaaleess rupaye kee hai. aur kuchh?",
+      "meaning": "Yes, sugar is forty rupees. Anything else?"
+    },
+    {
+      "speaker": "B",
+      "text": "नहीं, बस इतना ही। यह लीजिए पैसे। धन्यवाद।",
+      "say": "nahin, bas itnaa hee. yeh leejiye paise. dhanyavaad.",
+      "meaning": "No, that is all. Here is the money. Thank you."
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "चावल",
+      "say": "chaaval",
+      "meaning": "Rice"
+    },
+    {
+      "word": "चीनी",
+      "say": "cheenee",
+      "meaning": "Sugar"
+    },
+    {
+      "word": "कितने",
+      "say": "kitne",
+      "meaning": "How much"
+    },
+    {
+      "word": "पैसे",
+      "say": "paise",
+      "meaning": "Money"
+    }
+  ]
+}

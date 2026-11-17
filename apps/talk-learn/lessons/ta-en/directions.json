@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "Excuse me, where is the bus stop?",
+      "say": "இக்ஸ்க்யூஸ் மீ, வெர் இஸ் த பஸ் ஸ்டாப்?",
+      "meaning": "மன்னிக்கவும், பேருந்து நிறுத்தம் எங்கே இருக்கிறது?"
+    },
+    {
+      "speaker": "B",
+      "text": "Go straight, then turn left.",
+      "say": "கோ ஸ்ட்ரேட், தென் டர்ன் லெஃப்ட்.",
+      "meaning": "நேராகப் போங்கள், பிறகு இடதுபுறம் திரும்புங்கள்."
+    },
+    {
+      "speaker": "A",
+      "text": "Then walk for five minutes. The stop is near the temple.",
+      "say": "தென் வாக் ஃபார் ஃபைவ் மினிட்ஸ். த ஸ்டாப் இஸ் நீர் த டெம்பிள்.",
+      "meaning": "பிறகு ஐந்து நிமிடம் நடங்கள். நிறுத்தம் கோயிலுக்கு அருகில் உள்ளது."
+    },
+    {
+      "speaker": "B",
+      "text": "Is it far from here?",
+      "say": "இஸ் இட் ஃபார் ஃப்ரம் ஹீர்?",
+      "meaning": "இங்கிருந்து தூரமா?"
+    },
+    {
+      "speaker": "A",
+      "text": "No, it is very near. You can walk.",
+      "say": "நோ, இட் இஸ் வெரி நீர். யூ கேன் வாக்.",
+      "meaning": "இல்லை, மிக அருகில்தான். நடந்தே போகலாம்."
+    },
+    {
+      "speaker": "B",
+      "text": "Thank you very much for your help.",
+      "say": "தேங்க் யூ வெரி மச் ஃபார் யூர் ஹெல்ப்.",
+      "meaning": "உங்கள் உதவிக்கு மிக்க நன்றி."
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "Left",
+      "say": "லெஃப்ட்",
+      "meaning": "இடது"
+    },
+    {
+      "word": "Straight",
+      "say": "ஸ்ட்ரேட்",
+      "meaning": "நேராக"
+    },
+    {
+      "word": "Near",
+      "say": "நீர்",
+      "meaning": "அருகில்"
+    },
+    {
+      "word": "Far",
+      "say": "ஃபார்",
+      "meaning": "தூரம்"
+    }
+  ]
+}

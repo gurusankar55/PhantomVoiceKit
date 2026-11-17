@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "Mother, what are you cooking today?",
+      "say": "மதர், வாட் ஆர் யூ கூக்கிங் டுடே?",
+      "meaning": "அம்மா, இன்று என்ன சமைக்கிறீர்கள்?"
+    },
+    {
+      "speaker": "B",
+      "text": "I am making rice and sambar. Please switch on the fan.",
+      "say": "ஐ ஆம் மேக்கிங் ரைஸ் ஆன்ட் சாம்பார். ப்லீஸ் ஸ்விட்ச் ஆன் த ஃபான்.",
+      "meaning": "சாதமும் சாம்பாரும் செய்கிறேன். மின்விசிறியைப் போடு."
+    },
+    {
+      "speaker": "A",
+      "text": "It is very hot today. Shall I open the window?",
+      "say": "இட் இஸ் வெரி ஹாட் டுடே. ஷால் ஐ ஓப்பன் த வின்டோ?",
+      "meaning": "இன்று மிகவும் வெயில். ஜன்னலைத் திறக்கவா?"
+    },
+    {
+      "speaker": "B",
+      "text": "Yes, open it. And please clean your room.",
+      "say": "யெஸ், ஓப்பன் இட். ஆன்ட் ப்லீஸ் க்லீன் யூர் ரூம்.",
+      "meaning": "ஆம், திற. உன் அறையையும் சுத்தம் செய்."
+    },
+    {
+      "speaker": "A",
+      "text": "I will do it after dinner. Is father at home?",
+      "say": "ஐ வில் டூ இட் ஆஃப்டர் டினர். இஸ் ஃபாதர் ஆட் ஹோம்?",
+      "meaning": "இரவு உணவுக்குப் பிறகு செய்கிறேன். அப்பா வீட்டில் இருக்கிறாரா?"
+    },
+    {
+      "speaker": "B",
+      "text": "He will come at eight. Please set the table.",
+      "say": "ஹீ வில் கம் ஆட் ஏட். ப்லீஸ் ஸெட் த டேபிள்.",
+      "meaning": "அவர் எட்டு மணிக்கு வருவார். மேசையைத் தயார் செய்."
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "Fan",
+      "say": "ஃபான்",
+      "meaning": "மின்விசிறி"
+    },
+    {
+      "word": "Window",
+      "say": "வின்டோ",
+      "meaning": "ஜன்னல்"
+    },
+    {
+      "word": "Clean",
+      "say": "க்லீன்",
+      "meaning": "சுத்தம்"
+    },
+    {
+      "word": "Dinner",
+      "say": "டினர்",
+      "meaning": "இரவு உணவு"
+    }
+  ]
+}

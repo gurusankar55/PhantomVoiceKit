@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "What do you think about working from home?",
+      "say": "வாட் டூ யூ திங்க் அபௌட் வர்கிங் ஃப்ரம் ஹோம்?",
+      "meaning": "வீட்டிலிருந்து வேலை செய்வதைப் பற்றி நீங்கள் என்ன நினைக்கிறீர்கள்?"
+    },
+    {
+      "speaker": "B",
+      "text": "I think it is good. We save time and money.",
+      "say": "ஐ திங்க் இட் இஸ் குட். வீ ஸேவ் டைம் ஆன்ட் மனி.",
+      "meaning": "எனக்கு அது நல்லது என்று தோன்றுகிறது. நேரமும் பணமும் மிச்சம்."
+    },
+    {
+      "speaker": "A",
+      "text": "I agree, but I feel a little lonely at home.",
+      "say": "ஐ அக்ரீ, பட் ஐ ஃபீல் அ லிட்டில் லோன்லி ஆட் ஹோம்.",
+      "meaning": "நான் ஒப்புக்கொள்கிறேன், ஆனால் வீட்டில் கொஞ்சம் தனிமையாக உணர்கிறேன்."
+    },
+    {
+      "speaker": "B",
+      "text": "That is true. Maybe we can work from home two days only.",
+      "say": "தாட் இஸ் ட்ரூ. மேபி வீ கேன் வர்க் ஃப்ரம் ஹோம் டூ டேஸ் ஓன்லி.",
+      "meaning": "அது உண்மைதான். இரண்டு நாள் மட்டும் வீட்டில் வேலை செய்யலாம்."
+    },
+    {
+      "speaker": "A",
+      "text": "I do not agree with that. Five days in the office is better for teamwork.",
+      "say": "ஐ டூ நாட் அக்ரீ வித் தாட். ஃபைவ் டேஸ் இன் த ஆஃபிஸ் இஸ் பெட்டர் ஃபார் டீம்வர்க்.",
+      "meaning": "அதில் எனக்கு உடன்பாடு இல்லை. குழு வேலைக்கு ஐந்து நாளும் அலுவலகத்தில் இருப்பது நல்லது."
+    },
+    {
+      "speaker": "B",
+      "text": "Everyone has a different view. Let us talk to our manager.",
+      "say": "எவ்ரிவன் ஹாஸ் அ டிஃப்ரென்ட் வ்யூ. லெட் அஸ் டொக் டூ ஆர் மானிஜர்.",
+      "meaning": "ஒவ்வொருவருக்கும் வேறு கருத்து உண்டு. மேலாளரிடம் பேசுவோம்."
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "I think",
+      "say": "ஐ திங்க்",
+      "meaning": "நான் நினைக்கிறேன்"
+    },
+    {
+      "word": "I agree",
+      "say": "ஐ அக்ரீ",
+      "meaning": "நான் ஒப்புக்கொள்கிறேன்"
+    },
+    {
+      "word": "I do not agree",
+      "say": "ஐ டூ நாட் அக்ரீ",
+      "meaning": "எனக்கு உடன்பாடு இல்லை"
+    },
+    {
+      "word": "Better",
+      "say": "பெட்டர்",
+      "meaning": "சிறந்தது"
+    }
+  ]
+}

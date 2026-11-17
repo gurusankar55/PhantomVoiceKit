@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "सुनिए, बस स्टॉप कहाँ है?",
+      "say": "suniye, bas staap kahaan hai?",
+      "meaning": "Excuse me, where is the bus stop?"
+    },
+    {
+      "speaker": "B",
+      "text": "सीधे जाइए, फिर बाएँ मुड़िए।",
+      "say": "seedhe jaayiye, phir baayen mudiye.",
+      "meaning": "Go straight, then turn left."
+    },
+    {
+      "speaker": "A",
+      "text": "फिर पाँच मिनट चलिए। स्टॉप मंदिर के पास है।",
+      "say": "phir paanch minat chaliye. staap mandir ke paas hai.",
+      "meaning": "Then walk for five minutes. The stop is near the temple."
+    },
+    {
+      "speaker": "B",
+      "text": "क्या यहाँ से दूर है?",
+      "say": "kyaa yahaan se door hai?",
+      "meaning": "Is it far from here?"
+    },
+    {
+      "speaker": "A",
+      "text": "नहीं, बहुत पास है। आप पैदल जा सकते हैं।",
+      "say": "nahin, bahut paas hai. aap paidal jaa sakte hain.",
+      "meaning": "No, it is very near. You can walk."
+    },
+    {
+      "speaker": "B",
+      "text": "आपकी मदद के लिए बहुत धन्यवाद।",
+      "say": "aapkee madad ke liye bahut dhanyavaad.",
+      "meaning": "Thank you very much for your help."
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "बाएँ",
+      "say": "baayen",
+      "meaning": "Left"
+    },
+    {
+      "word": "सीधे",
+      "say": "seedhe",
+      "meaning": "Straight"
+    },
+    {
+      "word": "पास",
+      "say": "paas",
+      "meaning": "Near"
+    },
+    {
+      "word": "दूर",
+      "say": "door",
+      "meaning": "Far"
+    }
+  ]
+}

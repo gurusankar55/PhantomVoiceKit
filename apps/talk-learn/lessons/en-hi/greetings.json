@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "नमस्ते! आप कैसे हैं?",
+      "say": "namaste! aap kaise hain?",
+      "meaning": "Hello! How are you?"
+    },
+    {
+      "speaker": "B",
+      "text": "मैं ठीक हूँ, धन्यवाद। और आप?",
+      "say": "main theek hoon, dhanyavaad. aur aap?",
+      "meaning": "I am fine, thank you. And you?"
+    },
+    {
+      "speaker": "A",
+      "text": "आपसे मिलकर खुशी हुई। आपका नाम क्या है?",
+      "say": "aapse milkar khushee huee. aapkaa naam kyaa hai?",
+      "meaning": "Nice to meet you. What is your name?"
+    },
+    {
+      "speaker": "B",
+      "text": "मेरा नाम रवि है। मैं चेन्नई से हूँ।",
+      "say": "meraa naam ravi hai. main chennayee se hoon.",
+      "meaning": "My name is Ravi. I am from Chennai."
+    },
+    {
+      "speaker": "A",
+      "text": "सुप्रभात रवि। कृपया बैठिए।",
+      "say": "suprabhaat ravi. kripayaa baithiye.",
+      "meaning": "Good morning, Ravi. Please sit down."
+    },
+    {
+      "speaker": "B",
+      "text": "धन्यवाद। फिर मिलेंगे!",
+      "say": "dhanyavaad. phir milenge!",
+      "meaning": "Thank you. See you again!"
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "नमस्ते",
+      "say": "namaste",
+      "meaning": "Hello"
+    },
+    {
+      "word": "धन्यवाद",
+      "say": "dhanyavaad",
+      "meaning": "Thank you"
+    },
+    {
+      "word": "नाम",
+      "say": "naam",
+      "meaning": "Name"
+    },
+    {
+      "word": "ठीक",
+      "say": "theek",
+      "meaning": "Fine"
+    }
+  ]
+}

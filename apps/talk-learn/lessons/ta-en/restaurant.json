@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "Welcome. A table for two?",
+      "say": "வெல்கம். அ டேபிள் ஃபார் டூ?",
+      "meaning": "வரவேற்கிறோம். இரண்டு பேருக்கு மேசையா?"
+    },
+    {
+      "speaker": "B",
+      "text": "Yes, please. Can we see the menu?",
+      "say": "யெஸ், ப்லீஸ். கேன் வீ ஸீ த மெனு?",
+      "meaning": "ஆம். மெனுவைப் பார்க்கலாமா?"
+    },
+    {
+      "speaker": "A",
+      "text": "Of course. What would you like to eat?",
+      "say": "ஆவ் கோர்ஸ். வாட் வுட் யூ லைக் டூ ஈட்?",
+      "meaning": "நிச்சயமாக. என்ன சாப்பிட விரும்புகிறீர்கள்?"
+    },
+    {
+      "speaker": "B",
+      "text": "One vegetable biryani and two chapatis. And water, please.",
+      "say": "வன் வெஜ் பிரியாணி ஆன்ட் டூ சப்பாத்தி. ஆன்ட் வாட்டர், ப்லீஸ்.",
+      "meaning": "ஒரு காய்கறி பிரியாணி, இரண்டு சப்பாத்தி. தண்ணீரும் கொடுங்கள்."
+    },
+    {
+      "speaker": "A",
+      "text": "Here is your food. Enjoy your meal!",
+      "say": "ஹீர் இஸ் யூர் ஃபூட். எஞ்ஜொய் யூர் மீல்!",
+      "meaning": "இதோ உங்கள் உணவு. சாப்பிடுங்கள்!"
+    },
+    {
+      "speaker": "B",
+      "text": "It is tasty. The bill, please.",
+      "say": "இட் இஸ் டேஸ்டி. த பில், ப்லீஸ்.",
+      "meaning": "சுவையாக இருக்கிறது. பில் கொடுங்கள்."
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "Menu",
+      "say": "மெனு",
+      "meaning": "மெனு"
+    },
+    {
+      "word": "Water",
+      "say": "வாட்டர்",
+      "meaning": "தண்ணீர்"
+    },
+    {
+      "word": "Food",
+      "say": "ஃபூட்",
+      "meaning": "உணவு"
+    },
+    {
+      "word": "Bill",
+      "say": "பில்",
+      "meaning": "பில்"
+    }
+  ]
+}

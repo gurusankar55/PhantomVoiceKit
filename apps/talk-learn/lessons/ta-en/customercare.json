@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "Thank you for calling customer care. How can I help you?",
+      "say": "தேங்க் யூ ஃபார் காலிங் கஸ்டமர் கேர். ஹௌ கேன் ஐ ஹெல்ப் யூ?",
+      "meaning": "வாடிக்கையாளர் சேவைக்கு அழைத்ததற்கு நன்றி. நான் எப்படி உதவலாம்?"
+    },
+    {
+      "speaker": "B",
+      "text": "My internet bill is wrong. It is double this month.",
+      "say": "மை இன்டெர்னெட் பில் இஸ் ராங். இட் இஸ் டபிள் திஸ் மன்த்.",
+      "meaning": "என் இணையக் கட்டணம் தவறாக உள்ளது. இந்த மாதம் இரட்டிப்பாக வந்துள்ளது."
+    },
+    {
+      "speaker": "A",
+      "text": "I am sorry. May I have your account number, please?",
+      "say": "ஐ ஆம் ஸாரி. மே ஐ ஹாவ் யூர் அக்கௌன்ட் நம்பெர், ப்லீஸ்?",
+      "meaning": "வருந்துகிறேன். உங்கள் கணக்கு எண்ணைச் சொல்ல முடியுமா?"
+    },
+    {
+      "speaker": "B",
+      "text": "It is four five six seven. My name is Mohan.",
+      "say": "இட் இஸ் ஃபார் ஃபைவ் ஸிக்ஸ் ஸெவென். மை நேம் இஸ் மோகன்.",
+      "meaning": "நான்கு ஐந்து ஆறு ஏழு. என் பெயர் மோகன்."
+    },
+    {
+      "speaker": "A",
+      "text": "I have noted your complaint. Your complaint number is nine eight two.",
+      "say": "ஐ ஹாவ் நோட்டிட் யூர் கம்ப்ளெயின்ட். யூர் கம்ப்ளெயின்ட் நம்பெர் இஸ் நைன் ஏட் டூ.",
+      "meaning": "உங்கள் புகாரைப் பதிவு செய்துவிட்டேன். புகார் எண் ஒன்பது எட்டு இரண்டு."
+    },
+    {
+      "speaker": "B",
+      "text": "How long will it take? It will be corrected in three days.",
+      "say": "ஹௌ லொங் வில் இட் டேக்? இட் வில் பீ கெரெக்டிட் இன் த்ரீ டேஸ்.",
+      "meaning": "எவ்வளவு நாளாகும்? மூன்று நாளில் சரிசெய்யப்படும்."
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "Bill",
+      "say": "பில்",
+      "meaning": "கட்டணம்"
+    },
+    {
+      "word": "Account number",
+      "say": "அக்கௌன்ட் நம்பெர்",
+      "meaning": "கணக்கு எண்"
+    },
+    {
+      "word": "Complaint number",
+      "say": "கம்ப்ளெயின்ட் நம்பெர்",
+      "meaning": "புகார் எண்"
+    },
+    {
+      "word": "Wrong",
+      "say": "ராங்",
+      "meaning": "தவறு"
+    }
+  ]
+}

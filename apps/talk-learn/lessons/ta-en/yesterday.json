@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "What did you do yesterday?",
+      "say": "வாட் டிட் யூ டூ யெஸ்டர்டே?",
+      "meaning": "நேற்று நீங்கள் என்ன செய்தீர்கள்?"
+    },
+    {
+      "speaker": "B",
+      "text": "I went to the market in the morning and met my friend.",
+      "say": "ஐ வென்ட் டூ த மார்கிட் இன் த மார்னிங் ஆன்ட் மெட் மை ஃப்ரென்ட்.",
+      "meaning": "காலையில் சந்தைக்குப் போனேன், என் நண்பரைச் சந்தித்தேன்."
+    },
+    {
+      "speaker": "A",
+      "text": "Then we had lunch together at a small restaurant.",
+      "say": "தென் வீ ஹட் லஞ்ச் டுகெதர் ஆட் அ ஸ்மால் ரெஸ்டரான்ட்.",
+      "meaning": "பிறகு ஒரு சிறிய உணவகத்தில் சேர்ந்து சாப்பிட்டோம்."
+    },
+    {
+      "speaker": "B",
+      "text": "Nice! And what happened in the evening?",
+      "say": "நைஸ்! ஆன்ட் வாட் ஹாப்பன்ட் இன் தீ ஈவ்னிங்?",
+      "meaning": "நல்லது! மாலையில் என்ன நடந்தது?"
+    },
+    {
+      "speaker": "A",
+      "text": "It started to rain, so I could not go out. I missed my bus.",
+      "say": "இட் ஸ்டார்டெட் டூ ரேன், ஸோ ஐ குட் நாட் கோ ஔட். ஐ மிஸ்ட் மை பஸ்.",
+      "meaning": "மழை பெய்யத் தொடங்கியது, அதனால் வெளியே போக முடியவில்லை. பேருந்தைத் தவறவிட்டேன்."
+    },
+    {
+      "speaker": "B",
+      "text": "Oh no! How did you reach home at last?",
+      "say": "ஓ நோ! ஹௌ டிட் யூ ரீச் ஹோம் ஆட் லாஸ்ட்?",
+      "meaning": "அய்யோ! கடைசியில் எப்படி வீடு போய்ச் சேர்ந்தீர்கள்?"
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "Yesterday",
+      "say": "யெஸ்டர்டே",
+      "meaning": "நேற்று"
+    },
+    {
+      "word": "Went",
+      "say": "வென்ட்",
+      "meaning": "போனேன்"
+    },
+    {
+      "word": "Met",
+      "say": "மெட்",
+      "meaning": "சந்தித்தேன்"
+    },
+    {
+      "word": "Rain",
+      "say": "ரேன்",
+      "meaning": "மழை"
+    }
+  ]
+}

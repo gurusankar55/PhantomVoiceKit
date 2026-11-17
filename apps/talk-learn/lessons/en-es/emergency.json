@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "¡Ayuda! ¡Por favor, ayúdenme! ¡Hubo un accidente!",
+      "say": "a-YOO-da! por fa-VOR, a-YOO-den-me! OO-bo oon ak-see-DEN-te!",
+      "meaning": "Help! Please help me! There is an accident!"
+    },
+    {
+      "speaker": "B",
+      "text": "Tranquilo. ¿Dónde está? ¿Hay algún herido?",
+      "say": "tran-KEE-lo. DON-de es-TA? ay al-GOON e-REE-do?",
+      "meaning": "Stay calm. Where are you? Is anyone hurt?"
+    },
+    {
+      "speaker": "A",
+      "text": "Estoy cerca de la calle principal. Un hombre está herido.",
+      "say": "es-TOY SER-ka de la KA-ye preen-see-PAL. oon OM-bre es-TA e-REE-do.",
+      "meaning": "I am near the main road. One man is hurt."
+    },
+    {
+      "speaker": "B",
+      "text": "Llamo a una ambulancia y a la policía ahora.",
+      "say": "YA-mo a OO-na am-boo-LAN-sya ee a la po-lee-SEE-a a-OH-ra.",
+      "meaning": "I am calling an ambulance and the police now."
+    },
+    {
+      "speaker": "A",
+      "text": "Por favor, rápido. No puede moverse.",
+      "say": "por fa-VOR, RRA-pee-do. no PWE-de mo-BER-se.",
+      "meaning": "Please hurry. He cannot move."
+    },
+    {
+      "speaker": "B",
+      "text": "La ayuda viene en camino. Quédese con él. No se preocupe.",
+      "say": "la a-YOO-da BYE-ne en ka-MEE-no. KE-de-se kon el. no se pre-o-KOO-pe.",
+      "meaning": "Help is coming. Stay with him. Do not worry."
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "ayuda",
+      "say": "a-YOO-da",
+      "meaning": "Help"
+    },
+    {
+      "word": "ambulancia",
+      "say": "am-boo-LAN-sya",
+      "meaning": "Ambulance"
+    },
+    {
+      "word": "policía",
+      "say": "po-lee-SEE-a",
+      "meaning": "Police"
+    },
+    {
+      "word": "rápido",
+      "say": "RRA-pee-do",
+      "meaning": "Quickly"
+    }
+  ]
+}

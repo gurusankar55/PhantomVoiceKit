@@ -22,3 +22,5 @@ _*.md
 Thumbs.db
 
 # NOTE: .kiro/ is intentionally NOT ignored
+# Scratch files for local checks (lesson generator, browser test)
+.tmp/

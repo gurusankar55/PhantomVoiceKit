@@ -1,0 +1,62 @@
+{
+  "lines": [
+    {
+      "speaker": "A",
+      "text": "What are you making today?",
+      "say": "வாட் ஆர் யூ மேக்கிங் டுடே?",
+      "meaning": "இன்று என்ன செய்கிறீர்கள்?"
+    },
+    {
+      "speaker": "B",
+      "text": "I am making dal and rice. Do you want to learn?",
+      "say": "ஐ ஆம் மேக்கிங் டால் ஆன்ட் ரைஸ். டூ யூ வான்ட் டூ லர்ன்?",
+      "meaning": "பருப்பும் சாதமும் செய்கிறேன். கற்றுக்கொள்ள வேண்டுமா?"
+    },
+    {
+      "speaker": "A",
+      "text": "Yes, please. First, what do I do?",
+      "say": "யெஸ், ப்லீஸ். ஃபர்ஸ்ட், வாட் டூ ஐ டூ?",
+      "meaning": "ஆம், கற்றுத் தாருங்கள். முதலில் நான் என்ன செய்ய வேண்டும்?"
+    },
+    {
+      "speaker": "B",
+      "text": "Wash the dal. Then put it in the pot with water.",
+      "say": "வாஷ் த டால். தென் புட் இட் இன் த பாட் வித் வாட்டர்.",
+      "meaning": "பருப்பைக் கழுவுங்கள். பிறகு தண்ணீருடன் பாத்திரத்தில் போடுங்கள்."
+    },
+    {
+      "speaker": "A",
+      "text": "How much salt should I add?",
+      "say": "ஹௌ மச் ஸால்ட் ஷுட் ஐ ஆட்?",
+      "meaning": "எவ்வளவு உப்பு போட வேண்டும்?"
+    },
+    {
+      "speaker": "B",
+      "text": "One spoon is enough. Cook on low heat and taste it.",
+      "say": "வன் ஸ்பூன் இஸ் இனஃப். கூக் ஆன் லோ ஹீட் ஆன்ட் டேஸ்ட் இட்.",
+      "meaning": "ஒரு கரண்டி போதும். மெல்லிய தீயில் வேகவைத்து ருசி பாருங்கள்."
+    }
+  ],
+  "keyWords": [
+    {
+      "word": "Salt",
+      "say": "ஸால்ட்",
+      "meaning": "உப்பு"
+    },
+    {
+      "word": "Water",
+      "say": "வாட்டர்",
+      "meaning": "தண்ணீர்"
+    },
+    {
+      "word": "Wash",
+      "say": "வாஷ்",
+      "meaning": "கழுவு"
+    },
+    {
+      "word": "Taste",
+      "say": "டேஸ்ட்",
+      "meaning": "ருசி"
+    }
+  ]
+}
