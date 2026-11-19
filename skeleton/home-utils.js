@@ -17,6 +17,7 @@ export const APP_AUDIENCE = Object.freeze({
   'ghost-tutor': 'everyone',
   'calm-time': 'everyone',
   'talk-learn': 'everyone',
+  'kolam-puzzle': 'everyone',
 });
 
 export const FILTERS = Object.freeze(['all', 'children', 'adults', 'everyone']);

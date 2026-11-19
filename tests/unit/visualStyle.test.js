@@ -247,12 +247,12 @@ describe('one 3D icon per entry', () => {
   const NAV = read('skeleton/nav-menu.js');
   const menuIds = [...NAV.slice(NAV.indexOf('const MENU_LINKS'), NAV.indexOf('];', NAV.indexOf('const MENU_LINKS'))).matchAll(/id: '([\w-]+)'/g)].map((m) => m[1]);
 
-  test('the 14 icons asked for: Home and every app', () => {
-    assert.deepEqual([...APP_ICON_IDS].sort(), ['calm-time', 'form-translator', 'ghost-echo', 'ghost-tutor', 'home', 'my-documents', 'picture-book', 'pumpkin-math', 'spirit-clerk', 'sticker-book', 'story-time', 'talk-learn', 'voice-notes', 'voice-translator']);
+  test('the 15 icons asked for: Home and every app', () => {
+    assert.deepEqual([...APP_ICON_IDS].sort(), ['calm-time', 'form-translator', 'ghost-echo', 'ghost-tutor', 'home', 'kolam-puzzle', 'my-documents', 'picture-book', 'pumpkin-math', 'spirit-clerk', 'sticker-book', 'story-time', 'talk-learn', 'voice-notes', 'voice-translator']);
   });
 
   test('every menu entry has its own icon and the menu uses them', () => {
-    assert.equal(menuIds.length, 14);
+    assert.equal(menuIds.length, 15);
     for (const id of menuIds) assert.ok(APP_ICON_IDS.includes(id), id);
     assert.match(NAV, /createAppIcon\(item\.id\)/);
     assert.ok(!/icon-ghost/.test(NAV), 'the plain ghost is no longer used in the menu');
@@ -260,7 +260,7 @@ describe('one 3D icon per entry', () => {
 
   test('every Home card shows the icon of the app it opens', () => {
     const cards = [...HOME.matchAll(/data-app-icon="([\w-]+)"[\s\S]*?href="\/apps\/([\w-]+)\//g)];
-    assert.equal(cards.length, 13);
+    assert.equal(cards.length, 14);
     for (const [, icon, app] of cards) assert.equal(icon, app);
   });
 

@@ -22,6 +22,7 @@ export const APP_ICON_IDS = Object.freeze([
   'calm-time',
   'voice-translator',
   'talk-learn',
+  'kolam-puzzle',
 ]);
 
 let counter = 0; // makes the gradient ids unique on the page
@@ -222,6 +223,19 @@ const ICONS = {
       '<circle cx="9.5" cy="31" r="1.9" fill="#2a1648"/><circle cx="18.5" cy="31" r="1.9" fill="#2a1648"/>' +
       '<path d="M10 36Q14 39.5 18 36" fill="none" stroke="#2a1648" stroke-width="1.8" stroke-linecap="round"/>' +
       '<ellipse cx="8" cy="25.5" rx="1.6" ry="3" fill="#fff" opacity="0.85"/>',
+  }),
+
+  // A kolam: a square of glowing dots with one curving line through them, and a green start dot
+  'kolam-puzzle': (u) => ({
+    defs: lin(u('tile'), '#7a4ad6', '#3a1680') + lin(u('line'), '#ffd27a', '#ff7a1a') + rad(u('start'), '#e9ffd2', '#3fbf1f'),
+    body:
+      `<rect x="5" y="5" width="38" height="38" rx="9" fill="url(#${u('tile')})"/>` +
+      '<path d="M9 9h30" stroke="#fff" stroke-width="1.6" stroke-linecap="round" opacity="0.35"/>' +
+      `<path d="M14 14H34Q37 14 37 17V21Q37 24 34 24H14Q11 24 11 27V31Q11 34 14 34H34" fill="none" stroke="url(#${u('line')})" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>` +
+      '<g fill="#f6f3ff"><circle cx="24" cy="14" r="1.9"/><circle cx="34" cy="14" r="1.9"/><circle cx="14" cy="24" r="1.9"/><circle cx="24" cy="24" r="1.9"/><circle cx="34" cy="24" r="1.9"/><circle cx="14" cy="34" r="1.9"/><circle cx="24" cy="34" r="1.9"/><circle cx="34" cy="34" r="1.9"/></g>' +
+      `<circle cx="14" cy="14" r="3.4" fill="url(#${u('start')})" stroke="#1f7a1f" stroke-width="0.8"/>` +
+      '<ellipse cx="13" cy="12.8" rx="1.2" ry="0.8" fill="#fff" opacity="0.8"/>' +
+      sparkle(40, 40, 3, '#fff3a8'),
   }),
 
   // Lotus with a timer ring

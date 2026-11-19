@@ -1,0 +1,251 @@
+/* Kolam Puzzle: a board of glowing dots that fits the screen, big buttons (mobile first).
+   Start / end (logical) properties only, so Arabic and Urdu (right to left) work too. */
+
+.kolam {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-width: 40rem;
+  margin: 0 auto;
+}
+
+.app-title {
+  text-align: center;
+  margin: var(--space-3) 0 0;
+}
+
+.kolam-intro {
+  margin: 0;
+  text-align: center;
+  font-size: 1.1rem;
+}
+
+/* Easy | Medium | Hard and Daily Kolam | New puzzle: side by side when they fit */
+.kolam-choices {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 6.5rem), 1fr));
+  gap: var(--space-2);
+}
+
+.kolam-choice {
+  min-height: 52px;
+  font-size: 1.05rem;
+  color: var(--color-ghost);
+  background-color: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+.kolam-choice[aria-pressed="true"] {
+  color: #1a0f2e;
+  background-color: var(--color-orange);
+  border-color: var(--color-orange-dark);
+}
+
+/* Which puzzle, the time and the records */
+.kolam-bar,
+.kolam-records {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.kolam-label,
+.kolam-timer,
+.kolam-record {
+  margin: 0;
+  font-weight: 700;
+}
+
+.kolam-label {
+  color: var(--color-orange-light);
+}
+
+.kolam-time {
+  display: inline-block;
+  min-inline-size: 3.5rem;
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+}
+
+.kolam-record {
+  color: #ffd23f;
+}
+
+.kolam-record[hidden],
+.kolam-message[hidden],
+.kolam-solved[hidden] {
+  display: none;
+}
+
+/* Progress bar */
+.kolam-progress {
+  block-size: 0.9rem;
+  overflow: hidden;
+  background-color: var(--color-bg-alt);
+  border: 2px solid var(--color-border);
+  border-radius: 999px;
+}
+
+.kolam-progress-fill {
+  block-size: 100%;
+  inline-size: 0;
+  background-color: #9cff57;
+  border-radius: 999px;
+  transition: inline-size 0.15s ease;
+}
+
+.kolam-progress-text {
+  margin: 0;
+  text-align: center;
+  color: var(--color-ghost-dim);
+}
+
+/* The board: square, as big as the screen allows (width and height), never wider than the page */
+.kolam-board-wrap {
+  display: flex;
+  justify-content: center;
+}
+
+.kolam-board {
+  display: block;
+  inline-size: min(100%, calc(100vh - 13rem), 32rem);
+  inline-size: min(100%, calc(100svh - 13rem), 32rem); /* the small screen height: the browser bars do not hide the board */
+  aspect-ratio: 1;
+  background-color: #1f1238;
+  border: 2px solid var(--color-border);
+  border-radius: 18px;
+  box-shadow: var(--depth-panel);
+  touch-action: none; /* the finger draws instead of scrolling the page */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  cursor: crosshair;
+}
+
+.kolam-board:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+.kolam-dot {
+  fill: var(--color-ghost-dim);
+  transition: fill 0.12s ease;
+}
+
+.kolam-dot--on {
+  fill: #ffffff;
+}
+
+.kolam-dot--end {
+  fill: var(--color-orange-light);
+}
+
+.kolam-dot--start {
+  fill: #9cff57;
+}
+
+.kolam-start-glow {
+  animation: kolam-pulse 1.8s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@keyframes kolam-pulse {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+.kolam-line {
+  stroke: var(--color-orange);
+  stroke-width: 0.16;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.kolam-line--solved {
+  stroke: #9cff57;
+}
+
+.kolam-wall {
+  stroke: #ff6b86;
+  stroke-width: 0.1;
+  stroke-linecap: round;
+}
+
+.kolam-wall--hit {
+  animation: kolam-hit 0.6s ease;
+}
+
+@keyframes kolam-hit {
+  0%,
+  100% {
+    stroke: #ff6b86;
+  }
+  30% {
+    stroke: #ffffff;
+  }
+}
+
+/* Messages: a wall, a dead end */
+.kolam-message {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  font-weight: 700;
+  background-color: var(--color-bg-alt);
+  border-inline-start: 6px solid var(--color-orange);
+  border-radius: var(--radius);
+}
+
+.kolam-message[data-kind="warn"] {
+  border-inline-start-color: #ff6b86;
+}
+
+/* Undo | Reset */
+.kolam-controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.kolam-control,
+.kolam-again {
+  flex-wrap: wrap; /* the icon may go above the text; the words themselves never break */
+  gap: 0.35rem;
+  min-height: 64px;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+/* Solved */
+.kolam-solved {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  text-align: center;
+  background-color: var(--color-bg-alt);
+  border: 2px solid #9cff57;
+  border-radius: 16px;
+}
+
+.kolam-solved-text {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  color: var(--color-orange);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kolam-start-glow,
+  .kolam-wall--hit {
+    animation: none;
+  }
+
+  .kolam-dot,
+  .kolam-progress-fill {
+    transition: none;
+  }
+}

@@ -21,6 +21,7 @@ export const GUIDES = Object.freeze({
   'calm-time': [S('#go-meditate'), S('#go-activity'), S('#go-routine')],
   'voice-translator': [S('#from-select', '#to-select'), S('#speak-button', '#source-text'), S('#translate-button'), S('#mode-chat')],
   'talk-learn': [S('#learn-select'), S('#lesson-list'), S('#mode-listen')],
+  'kolam-puzzle': [S('#difficulty'), S('#board'), S('#new-button')],
 });
 
 export const GUIDE_SEEN_KEY = 'phantomVoiceKit.guidesSeen';

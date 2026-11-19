@@ -76,6 +76,7 @@ const MENU_LINKS = [
   { id: 'calm-time', labelKey: 'nav.calmTime', href: '/apps/calm-time/index.html', subtitle: 'Calm Ghost · Meditation and Routine' },
   { id: 'voice-translator', labelKey: 'nav.voiceTranslator', href: '/apps/voice-translator/index.html', subtitle: 'Phantom Talk · Voice Translator' },
   { id: 'talk-learn', labelKey: 'nav.talkLearn', href: '/apps/talk-learn/index.html', subtitle: 'Talk & Learn · Speak a New Language' },
+  { id: 'kolam-puzzle', labelKey: 'nav.kolamPuzzle', href: '/apps/kolam-puzzle/index.html', subtitle: 'Kolam Puzzle · One-Line Dot Game' },
 ];
 
 // Stop any speech that is currently playing (safe if unsupported).

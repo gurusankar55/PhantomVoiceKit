@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#2a1648" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="icon" type="image/png" href="/skeleton/pwa/icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="/skeleton/pwa/icons/icon-192.png" />
+  <title data-i18n="kolamPuzzle.pageTitle">Kolam puzzle – Phantom Voice Kit</title>
+  <!-- Shared theme and app styles (absolute paths, per project rules) -->
+  <link rel="stylesheet" href="/skeleton/theme.css" />
+  <link rel="stylesheet" href="/apps/kolam-puzzle/style.css" />
+</head>
+<body>
+  <!-- Shared navigation header (menu, Back, coins, sound, Aa, language) is built by skeleton/nav-menu.js -->
+  <header id="app-header"></header>
+
+  <main id="app" class="kolam">
+    <h1 class="app-title"><span data-i18n="kolamPuzzle.title">Kolam puzzle</span><span class="brand-sub" lang="en" dir="ltr">Kolam Puzzle · One-Line Dot Game</span></h1>
+
+    <!-- Size and puzzle -->
+    <div id="difficulty" class="kolam-choices" role="group" data-i18n-attr="aria-label:kolamPuzzle.difficulty" aria-label="Difficulty">
+      <button type="button" class="kolam-choice" data-level="easy" aria-pressed="true" data-i18n="kolamPuzzle.easy">Easy</button>
+      <button type="button" class="kolam-choice" data-level="medium" aria-pressed="false" data-i18n="kolamPuzzle.medium">Medium</button>
+      <button type="button" class="kolam-choice" data-level="hard" aria-pressed="false" data-i18n="kolamPuzzle.hard">Hard</button>
+    </div>
+    <div class="kolam-choices" role="group" data-i18n-attr="aria-label:kolamPuzzle.mode" aria-label="Which puzzle">
+      <button id="daily-button" type="button" class="kolam-choice" aria-pressed="true"><span aria-hidden="true">🪔</span> <span data-i18n="kolamPuzzle.daily">Daily Kolam</span></button>
+      <button id="new-button" type="button" class="kolam-choice" aria-pressed="false"><span aria-hidden="true">✨</span> <span data-i18n="kolamPuzzle.newPuzzle">New puzzle</span></button>
+    </div>
+
+
+
+
+    <!-- The board: dots, walls and the line (drawn by app.js). Arrow keys work too. -->
+    <div class="kolam-board-wrap">
+      <svg id="board" class="kolam-board" tabindex="0" role="img" aria-label="Puzzle board"></svg>
+    </div>
+
+    <!-- Under the board: which puzzle and the time, the progress, messages -->
+    <div class="kolam-bar">
+      <p id="puzzle-label" class="kolam-label"></p>
+      <p class="kolam-timer"><span data-i18n="kolamPuzzle.timeLabel">Time</span> <span id="timer" class="kolam-time" dir="ltr">0:00</span></p>
+    </div>
+    <!-- Progress: dots on the line -->
+    <div id="progress" class="kolam-progress" role="progressbar" aria-valuemin="0" aria-valuemax="25" aria-valuenow="1">
+      <div id="progress-fill" class="kolam-progress-fill"></div>
+    </div>
+    <p id="progress-text" class="kolam-progress-text"></p>
+
+    <p id="message" class="kolam-message" role="status" hidden></p>
+
+    <div class="kolam-controls">
+      <button id="undo-button" type="button" class="btn btn--secondary kolam-control"><span aria-hidden="true">↶</span> <span data-i18n="kolamPuzzle.undo">Undo</span></button>
+      <button id="reset-button" type="button" class="btn btn--secondary kolam-control"><span aria-hidden="true">⟲</span> <span data-i18n="kolamPuzzle.reset">Reset</span></button>
+    </div>
+
+    <!-- Solved -->
+    <section id="solved" class="kolam-solved" aria-labelledby="solved-text" hidden>
+      <p id="solved-text" class="kolam-solved-text"></p>
+      <p id="new-best" class="kolam-record" data-i18n="kolamPuzzle.newBest" hidden>New best time!</p>
+      <button id="again-button" type="button" class="btn btn--large kolam-again"><span aria-hidden="true">✨</span> <span data-i18n="kolamPuzzle.newPuzzle">New puzzle</span></button>
+    </section>
+
+    <!-- The records and how to play, at the end (the board comes first on a phone) -->
+    <div class="kolam-records">
+      <p id="best-text" class="kolam-record"></p>
+      <p id="streak-text" class="kolam-record"></p>
+    </div>
+    <p class="kolam-intro" data-i18n="kolamPuzzle.intro">Start on the green dot. Drag one line through every dot, only up, down, left or right. Walls cannot be crossed.</p>
+  </main>
+
+  <script type="module" src="/apps/kolam-puzzle/app.js"></script>
+</body>
+</html>

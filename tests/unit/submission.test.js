@@ -29,17 +29,17 @@ const blocked = { getItem() { throw new Error('x'); }, setItem() { throw new Err
 // ---------- Home ----------
 
 describe('Home categories', () => {
-  test('the groups asked for, covering all 13 apps', () => {
+  test('the groups asked for, covering all 14 apps', () => {
     const group = (g) => Object.keys(APP_AUDIENCE).filter((id) => APP_AUDIENCE[id] === g).sort();
     assert.deepEqual(group('children'), ['ghost-echo', 'picture-book', 'pumpkin-math', 'sticker-book', 'story-time']);
     assert.deepEqual(group('adults'), ['form-translator', 'my-documents', 'spirit-clerk', 'voice-notes', 'voice-translator']);
-    assert.deepEqual(group('everyone'), ['calm-time', 'ghost-tutor', 'talk-learn']);
+    assert.deepEqual(group('everyone'), ['calm-time', 'ghost-tutor', 'kolam-puzzle', 'talk-learn']);
     assert.deepEqual(Object.keys(APP_AUDIENCE).sort(), [...APPS].sort());
   });
 
   test('All shows every app; each chip shows exactly its group', () => {
     const ids = Object.keys(APP_AUDIENCE);
-    assert.equal(visibleApps(ids, 'all').length, 13);
+    assert.equal(visibleApps(ids, 'all').length, 14);
     for (const filter of ['children', 'adults', 'everyone']) {
       assert.ok(visibleApps(ids, filter).every((id) => APP_AUDIENCE[id] === filter));
     }
@@ -61,9 +61,9 @@ describe('Home categories', () => {
     assert.equal(saveFilter(blocked, 'adults'), false);
   });
 
-  test('Home has a card for each of the 13 apps, four chips and four "Who is it for?" cards', () => {
+  test('Home has a card for each of the 14 apps, four chips and four "Who is it for?" cards', () => {
     const cards = [...HOME.matchAll(/<article class="app-card" data-app="([\w-]+)"[\s\S]*?href="\/apps\/([\w-]+)\//g)];
-    assert.equal(cards.length, 13);
+    assert.equal(cards.length, 14);
     for (const [, id, href] of cards) assert.equal(id, href);
     assert.deepEqual([...HOME.matchAll(/data-filter="(\w+)"/g)].map((m) => m[1]), FILTERS);
     assert.equal((HOME.match(/class="who-card"/g) ?? []).length, 4);
@@ -232,7 +232,7 @@ describe('license, README and a clean repository', () => {
     assert.ok(!/TODO/.test(license));
   });
 
-  test('the README covers the 13 apps, Kiro, running, deploying and privacy', () => {
+  test('the README covers the 14 apps, Kiro, running, deploying and privacy', () => {
     const readme = read('README.md');
     for (const id of APPS) assert.ok(readme.includes(`apps/${id}`), id);
     for (const part of ['## How Kiro was used', '.kiro/specs', '.kiro/steering', '.kiro/hooks', '## Run it locally', '## Deploy', 'render.yaml', '## Privacy', 'Sankar D']) assert.ok(readme.includes(part), part);

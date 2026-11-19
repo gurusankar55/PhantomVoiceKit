@@ -14,7 +14,7 @@
   'use strict';
 
   // Change this when the precache list changes: old caches are then deleted.
-  var VERSION = 'pvk-v2';
+  var VERSION = 'pvk-v3';
   var CACHE_NAME = VERSION + '-shell';
   var OFFLINE_PAGE = '/skeleton/pwa/offline.html';
 
@@ -41,6 +41,7 @@
     'pumpkin-math': ['index.html', 'app.js', 'math-utils.js', 'style.css'],
     'story-time': ['index.html', 'app.js', 'story-utils.js', 'style.css'],
     'calm-time': ['index.html', 'app.js', 'calm-utils.js', 'style.css'],
+    'kolam-puzzle': ['index.html', 'app.js', 'kolam-utils.js', 'style.css'],
   };
 
   // Apps that need the internet (Gemini): kept only after they were opened once; offline they

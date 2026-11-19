@@ -665,3 +665,11 @@ Build the Phantom Voice Kit from the ground up: project scaffolding → Express 
 - [x] 48. Talk & Learn 2.0, part A-2: Tamil to Kannada, Telugu and Malayalam, 36 lessons each (Requirement 54)
   - Tests: tests/unit/talkLearnLessons.test.js (every built-in file of the seven pairs: shape, scripts, Tamil-letter say, same Tamil meaning, quiz)
     - _Requirements: R54_
+
+- [x] 49. Kolam Puzzle: one-line dot puzzle with daily seed, walls, voice, rewards (Requirement 55)
+  - [x] 49.1 `apps/kolam-puzzle/kolam-utils.js` (seeded random, snake + backbite Hamiltonian path, walls on unused edges, moves, dead ends, records, streak)
+  - [x] 49.2 Page, app and style (SVG board, drag and tap, Undo, Reset, timer, progress, voice, celebrations)
+  - [x] 49.3 Registration like the other apps: Home card, menu entry, 3D icon, audience "everyone", guide, offline list of the service worker; README with how to play
+  - [x] 49.4 All strings in the 20 locale files and the welcome text
+  - [x] 49.5 Tests: `tests/unit/kolamPuzzle.test.js` (property tests: every generated puzzle is a valid Hamiltonian path with no wall on it, same seed same puzzle; moves, undo, cut, dead ends, records and streak, strings, registration); updated counts in `submission.test.js` and `visualStyle.test.js`
+    - _Requirements: R55_

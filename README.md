@@ -2,7 +2,7 @@
 
 Demo video: https://youtu.be/Imi-Y5hDKcc
 
-A reusable skeleton for voice-first web apps, with a soft 3D ghost / Halloween look, and 13 apps built on it. Entry for the **Kiroween 2026 Skeleton Crew** category.
+A reusable skeleton for voice-first web apps, with a soft 3D ghost / Halloween look, and 14 apps built on it. Entry for the **Kiroween 2026 Skeleton Crew** category.
 
 It is made for people who cannot easily read or type English: older people, people working far from home, people who find reading or typing hard, and children who are still learning. Every screen is translated into **20 languages** (Arabic and Urdu are right-to-left), every step can be done by voice, and typing or tapping always works too.
 
@@ -20,7 +20,7 @@ Languages: English, Tamil, Hindi, Telugu, Kannada, Malayalam, Korean, Chinese, J
 
 A step-by-step guide for building a new app on it is in [skeleton/README.md](skeleton/README.md).
 
-## The 13 apps
+## The 14 apps
 
 | App | Folder | For | What it does | Needs internet |
 | --- | --- | --- | --- | --- |
@@ -32,6 +32,7 @@ A step-by-step guide for building a new app on it is in [skeleton/README.md](ske
 | Talk & Learn (Talk and learn) | `apps/talk-learn` | Everyone | Learn to speak another language with 14 everyday two-person conversations (greetings, shop, taxi, doctor, bank, emergency...). Listen, go line by line, or practise as person B with the microphone and get 1 to 3 stars; then key words and a 3-question quiz. Each lesson is saved in the browser, so it is asked from Gemini only once | Yes (once per lesson) |
 | Ghost Tutor (Learn by speaking) | `apps/ghost-tutor` | Everyone | Any topic in 4 spoken parts with a quiz after each | Yes |
 | Calm Ghost (Calm time) | `apps/calm-time` | Everyone | Meditation with bell and breathing circle, activity timer, daily routine with calendar reminders | No |
+| Kolam Puzzle (Kolam puzzle) | `apps/kolam-puzzle` | Everyone | Draw one line through every dot of a 5 x 5, 6 x 6 or 7 x 7 grid without crossing walls; a Daily Kolam each day, free play, best times and a daily streak | No |
 | Ghost Echo (Memory game) | `apps/ghost-echo` | Children | Remember the pictures and say them back in order | No |
 | Picture book | `apps/picture-book` | Children | 60 big pictures; hear the word, say it back, optionally in a second language | No |
 | Pumpkin math | `apps/pumpkin-math` | Children | Count, add and take away with pumpkins; 5 levels; answer by tap or voice | No |
@@ -43,8 +44,22 @@ On the Home screen, chips filter the cards: **All / For children / For adults / 
 Other shared features:
 
 - **Large text**: the Aa button makes everything about 125 % bigger in every app.
-- **Installable**: the kit installs like an app. The 8 apps without AI work offline; the 5 AI apps say clearly when they need the internet. `/api` answers are never cached.
+- **Installable**: the kit installs like an app. The 9 apps without AI work offline; the 5 AI apps say clearly when they need the internet. `/api` answers are never cached.
 - **Rewards**: coins, level-ups and a gift box with stickers, shared by all the games.
+
+## How to play Kolam Puzzle
+
+A kolam is a drawing made of one line around a grid of dots. In this game the line goes **through** the dots.
+
+1. Choose **Easy** (5 x 5 dots), **Medium** (6 x 6) or **Hard** (7 x 7).
+2. Choose **Daily Kolam** (the same puzzle for everyone today) or **New puzzle** (free play).
+3. Put your finger (or the mouse) on the glowing **green dot** and drag. The line may go up, down, left or right, one dot at a time. It must visit **every dot exactly once**.
+4. **Red bars are walls**: the line cannot cross them. A short message (spoken in your language) says when a wall is in the way.
+5. Made a mistake? **Slide back** along the line to undo it, **tap any dot on the line** to cut it back to that dot, or use **Undo** and **Reset**. On a keyboard, the arrow keys draw and Backspace undoes.
+6. The game tells you when you are stuck: no free dot next to the end of the line, or a dot that can no longer be reached.
+7. When every dot is on the line, the puzzle is solved: coins, a celebration, and on the first Daily Kolam of the day a gift. Your **best time** for each size and your **days in a row** are kept on this device.
+
+Every puzzle can be solved: the game first draws a random line through all the dots (a snake path changed by many random "backbite" moves) and only then puts walls on edges that this line does not use. The Daily Kolam uses today's date as its random seed. Everything runs in the browser: no AI and no internet needed.
 
 ## How Kiro was used
 
